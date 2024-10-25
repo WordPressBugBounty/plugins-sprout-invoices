@@ -50,6 +50,11 @@ class SI_Invoices extends SI_Controller {
 	/**
 	 * Filter the unique post slug.
 	 *
+	 * This function generates a unique slug for each estimate, allowing users to access the estimate directly
+	 * while keeping the post ID hidden for security purposes.
+	 *
+	 * @todo Clean up the if statements. Check if all are needed or can be combinded.
+	 *
 	 * @param string $slug          The post slug.
 	 * @param int    $post_ID       Post ID.
 	 * @param string $post_status   The post status.
@@ -58,9 +63,35 @@ class SI_Invoices extends SI_Controller {
 	 * @return string $slug         The post slug.
 	 */
 	public static function post_slug( $slug, $post_ID, $post_status, $post_type ) {
-		if ( $post_type == SI_Invoice::POST_TYPE ) {
-			return $post_ID;
+		$hashed_post_slug = wp_hash( $slug . microtime() );
+
+		/**
+		 * When an invoice is created from an integration we still need to hash the post ID.
+		 */
+		if ( apply_filters( 'si_invoice_hash', false ) ) {
+			return $hashed_post_slug;
 		}
+
+		// (Legacy Code) Possibly cloned.
+		if ( SI_Invoice::POST_TYPE === $post_type && false !== strpos( $slug, '-2' ) ) {
+			return $hashed_post_slug;
+		}
+
+		// (Legacy Code) Change every post that has auto-draft.
+		if ( false !== strpos( $slug, __( 'auto-draft' ) ) || SI_Invoice::STATUS_TEMP === $post_status ) {
+			return $hashed_post_slug;
+		}
+
+		// (Legacy Code) Don't change on front-end edits.
+		if ( in_array( $post_status, array( SI_Invoice::STATUS_PENDING, SI_Invoice::STATUS_PARTIAL, SI_Invoice::STATUS_PAID, SI_Invoice::STATUS_WO ), true ) || apply_filters( 'si_is_invoice_currently_custom_status', $post_ID ) ) {
+			return $slug;
+		}
+
+		// (Legacy Code) Make sure it's a new post.
+		if ( ( ! isset( $_POST['post_name'] ) || $_POST['post_name'] == '' ) && SI_Invoice::POST_TYPE === $post_type ) {
+			return $hashed_post_slug;
+		}
+
 		return $slug;
 	}
 

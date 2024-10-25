@@ -77,16 +77,39 @@ class SI_Estimates extends SI_Controller {
 	/**
 	 * Filter the unique post slug.
 	 *
+	 * This function generates a unique slug for each estimate, allowing users to access the estimate directly
+	 * while keeping the post ID hidden for security purposes.
+	 *
+	 * @todo Clean up the if statements. Check if all are needed or can be combinded.
+	 *
 	 * @param string $slug          The post slug.
 	 * @param int    $post_ID       Post ID.
 	 * @param string $post_status   The post status.
 	 * @param string $post_type     Post type.
-	 * @param int    $post_parent   Post parent ID
-	 * @param string $original_slug The original post slug.
+	 *
+	 * @return string $slug         The post slug.
 	 */
 	public static function post_slug( $slug, $post_ID, $post_status, $post_type ) {
-		if ( $post_type == SI_Estimate::POST_TYPE ) {
-			return $post_ID;
+		$hashed_post_slug = wp_hash( $slug . microtime() );
+
+		// (Legacy Code) Possibly cloned.
+		if ( SI_Estimate::POST_TYPE === $post_type && false !== strpos( $slug, '-2' ) ) {
+			return $hashed_post_slug; // add microtime to be unique
+		}
+
+		// (Legacy Code) Change every post that has auto-draft or temp status.
+		if ( false !== strpos( $slug, __( 'auto-draft' ) ) || SI_Estimate::STATUS_TEMP === $post_status ) {
+			return $hashed_post_slug; // add microtime to be unique
+		}
+
+		// (Legacy Code) Don't change on front-end edits.
+		if ( in_array( $post_status, array( SI_Estimate::STATUS_PENDING, SI_Estimate::STATUS_APPROVED, SI_Estimate::STATUS_DECLINED ), true ) || apply_filters( 'si_is_estimate_currently_custom_status', $post_ID ) ) {
+			return $slug;
+		}
+
+		// (Legacy Code) Make sure it's a new post.
+		if ( ( ! isset( $_POST['post_name'] ) || $_POST['post_name'] == '' ) && SI_Estimate::POST_TYPE === $post_type ) {
+			return $hashed_post_slug; // add microtime to be unique
 		}
 		return $slug;
 	}
