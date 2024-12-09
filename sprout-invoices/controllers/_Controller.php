@@ -960,6 +960,10 @@ abstract class SI_Controller extends Sprout_Invoices {
 	}
 
 	public static function maybe_change_status() {
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			self::ajax_fail( 'Unauthorized User Action' );
+		}
+
 		if ( ! isset( $_REQUEST['change_status_nonce'] ) ) {
 			self::ajax_fail( 'Forget something?' ); }
 
