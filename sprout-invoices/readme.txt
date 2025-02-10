@@ -4,7 +4,7 @@ Donate link: https://sproutinvoices.com/?utm_medium=link&utm_campaign=free&utm_s
 Tags: invoice, invoicing, billing, estimates, quote, quotes, payments, billings, paypal, online payment, send invoice, bill clients, credit cards, Stripe, freshbooks, Harvest, sliced, wp-invoice
 Requires at least: 5.1
 Tested up to: 6.7
-Stable tag: 20.8.5
+Stable tag: 20.8.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -136,6 +136,10 @@ For more detailed look, checkout the full featured [demo](https://sproutinvoices
 Form integrations for everyone!
 
 == Changelog ==
+
+= 20.8.6 =
+* **Fix:** Square folder missing [#1132](https://github.com/BoldGrid/sprout-invoices/issues/1132)
+* **Fix:** Change wording for "Not going to fall for it!" [#1130](https://github.com/BoldGrid/sprout-invoices/issues/1130)
 
 = 20.8.5 =
 * **Fix:** Fixed issue with invoice/estimate status not updating correctly.

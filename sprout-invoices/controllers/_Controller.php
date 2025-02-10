@@ -912,7 +912,7 @@ abstract class SI_Controller extends Sprout_Invoices {
 		}
 
 		if ( ! empty( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['security'] ) ), self::NONCE ) ) ) { // phpcs:ignore
-			self::ajax_fail( 'Not going to fall for it!' );
+			self::ajax_fail( 'We couldn’t process that request. Please contact system adminstrator.' );
 		}
 
 		$number = sanitize_text_field( wp_unslash( $_REQUEST['number'] ) );
@@ -936,7 +936,7 @@ abstract class SI_Controller extends Sprout_Invoices {
 		}
 
 		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['private_note_nonce'] ) ), SI_Internal_Records::NONCE ) ) {
-			self::ajax_fail( 'Not going to fall for it!' ); }
+			self::ajax_fail( 'We couldn’t process that request. Please contact system adminstrator.' ); }
 
 		if ( ! current_user_can( 'edit_sprout_invoices' ) ) {
 			return; }
@@ -973,7 +973,7 @@ abstract class SI_Controller extends Sprout_Invoices {
 			self::ajax_fail( 'Forget something?' ); }
 
 		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['change_status_nonce'] ) ) , self::NONCE ) ) {
-			self::ajax_fail( 'Not going to fall for it!' ); }
+			self::ajax_fail( 'We couldn’t process that request. Please contact system adminstrator.' ); }
 
 		if ( ! isset( $_REQUEST['id'] ) ) {
 			self::ajax_fail( 'Forget something?' ); }
