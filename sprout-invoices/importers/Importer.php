@@ -34,7 +34,7 @@ class SI_Importer extends SI_Controller {
 		add_action( 'init', array( __CLASS__, 'process_importer' ) );
 
 		// Help Sections
-		add_action( 'admin_menu', array( get_class(), 'help_sections' ) );
+		add_action( 'admin_menu', array( static::class, 'help_sections' ) );
 
 		// AJAX
 		add_action( 'wp_ajax_si_import', array( __CLASS__, 'maybe_init_import' ) );
@@ -100,7 +100,7 @@ class SI_Importer extends SI_Controller {
 				'settings' => array(
 					self::IMPORTER_OPTION => array(
 						'label' => null,
-						'option' => array( get_class(), 'display_importer_options' ),
+						'option' => array( static::class, 'display_importer_options' ),
 					),
 				),
 			),

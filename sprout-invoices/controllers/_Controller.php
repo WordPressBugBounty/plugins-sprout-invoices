@@ -29,7 +29,7 @@ abstract class SI_Controller extends Sprout_Invoices {
 			add_action( 'si_plugin_activation_hook', array( __CLASS__, 'sprout_invoices_activated' ) );
 
 			// clone notification
-			add_action( 'admin_init', array( get_class(), 'maybe_clone_and_redirect' ) );
+			add_action( 'admin_init', array( static::class, 'maybe_clone_and_redirect' ) );
 		}
 
 		// Enqueue
@@ -51,10 +51,10 @@ abstract class SI_Controller extends Sprout_Invoices {
 
 		add_action( 'wp_ajax_si_number_formatter', array( __CLASS__, 'ajax_number_formatter' ) );
 
-		add_action( 'wp_ajax_sa_create_private_note',  array( get_class(), 'maybe_create_private_note' ), 10, 0 );
-		add_action( 'wp_ajax_nopriv_sa_create_private_note',  array( get_class(), 'maybe_create_private_note' ), 10, 0 );
-		add_action( 'wp_ajax_si_change_doc_status',  array( get_class(), 'maybe_change_status' ), 10, 0 );
-		add_action( 'wp_ajax_nopriv_si_change_doc_status',  array( get_class(), 'maybe_change_status' ), 10, 0 );
+		add_action( 'wp_ajax_sa_create_private_note',  array( static::class, 'maybe_create_private_note' ), 10, 0 );
+		add_action( 'wp_ajax_nopriv_sa_create_private_note',  array( static::class, 'maybe_create_private_note' ), 10, 0 );
+		add_action( 'wp_ajax_si_change_doc_status',  array( static::class, 'maybe_change_status' ), 10, 0 );
+		add_action( 'wp_ajax_nopriv_si_change_doc_status',  array( static::class, 'maybe_change_status' ), 10, 0 );
 
 		// No index
 		add_action( 'pre_si_invoice_view', array( __CLASS__, 'add_x_robots_header' ) );

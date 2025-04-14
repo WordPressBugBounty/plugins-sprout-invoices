@@ -16,7 +16,7 @@ class SI_Clients extends SI_Controller {
 		if ( is_admin() ) {
 
 			// Help Sections
-			add_action( 'admin_menu', array( get_class(), 'help_sections' ) );
+			add_action( 'admin_menu', array( static::class, 'help_sections' ) );
 
 			// Meta boxes
 			add_action( 'admin_init', array( __CLASS__, 'register_meta_boxes' ) );
@@ -48,14 +48,14 @@ class SI_Clients extends SI_Controller {
 		add_action( 'admin_init', array( __CLASS__, 'redirect_clients' ) );
 
 		// Admin bar
-		add_filter( 'si_admin_bar', array( get_class(), 'add_link_to_admin_bar' ), 10, 1 );
+		add_filter( 'si_admin_bar', array( static::class, 'add_link_to_admin_bar' ), 10, 1 );
 
 		// Currency Formatting
 		add_filter( 'sa_get_currency_symbol_pre', array( __CLASS__, 'maybe_filter_currency_symbol' ) );
 		add_filter( 'sa_set_monetary_locale', array( __CLASS__, 'maybe_filter_money_format_money_format' ), 10, 2 );
 
 		// Currency Code Change
-		add_filter( 'si_currency_code', array( get_class(), 'maybe_change_currency_code' ), 10, 2 );
+		add_filter( 'si_currency_code', array( static::class, 'maybe_change_currency_code' ), 10, 2 );
 
 		// handle deletions
 		add_action( 'before_delete_post', array( __CLASS__, 'maybe_disassociate_records' ) );
@@ -537,7 +537,7 @@ class SI_Clients extends SI_Controller {
 	 * @return array
 	 */
 	public static function user_register_columns( $columns ) {
-		$columns['client'] = esc_html__( 'Sprout Client', 'sprout-invoices' );	
+		$columns['client'] = esc_html__( 'Sprout Client', 'sprout-invoices' );
 		return $columns;
 	}
 
@@ -1064,7 +1064,7 @@ class SI_Clients extends SI_Controller {
 	public static function help_sections() {
 		add_action( 'load-edit.php', array( __CLASS__, 'help_tabs' ) );
 		add_action( 'load-post.php', array( __CLASS__, 'help_tabs' ) );
-		add_action( 'load-post-new.php', array( get_class(), 'help_tabs' ) );
+		add_action( 'load-post-new.php', array( static::class, 'help_tabs' ) );
 	}
 
 	public static function help_tabs() {

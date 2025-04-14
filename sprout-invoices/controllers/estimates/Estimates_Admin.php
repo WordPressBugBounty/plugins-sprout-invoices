@@ -18,7 +18,7 @@ class SI_Estimates_Admin extends SI_Estimates {
 		if ( is_admin() ) {
 
 			// Help Sections
-			add_action( 'admin_menu', array( get_class(), 'help_sections' ) );
+			add_action( 'admin_menu', array( static::class, 'help_sections' ) );
 
 			// Admin columns
 			add_filter( 'manage_edit-'.SI_Estimate::POST_TYPE.'_columns', array( __CLASS__, 'register_columns' ) );
@@ -38,7 +38,7 @@ class SI_Estimates_Admin extends SI_Estimates {
 		}
 
 		// Admin bar
-		add_filter( 'si_admin_bar', array( get_class(), 'add_link_to_admin_bar' ), 10, 1 );
+		add_filter( 'si_admin_bar', array( static::class, 'add_link_to_admin_bar' ), 10, 1 );
 	}
 
 	///////////
@@ -82,8 +82,8 @@ class SI_Estimates_Admin extends SI_Estimates {
 	public static function help_sections() {
 		add_action( 'load-edit.php', array( __CLASS__, 'help_tabs' ) );
 		add_action( 'load-post.php', array( __CLASS__, 'help_tabs' ) );
-		add_action( 'load-post-new.php', array( get_class(), 'help_tabs' ) );
-		add_action( 'load-edit-tags.php', array( get_class(), 'help_tabs' ) );
+		add_action( 'load-post-new.php', array( static::class, 'help_tabs' ) );
+		add_action( 'load-edit-tags.php', array( static::class, 'help_tabs' ) );
 	}
 
 	public static function help_tabs() {

@@ -12,6 +12,8 @@ function sprout_invoices_load() {
 		return; // already loaded, or a name collision
 	}
 
+	add_filter( 'doing_it_wrong_trigger_error', 'sprout_invoices_disable_jit_notices', 10, 3 );
+
 	do_action( 'sprout_invoices_preload' );
 
 	//////////
@@ -354,6 +356,19 @@ function sprout_invoices_load() {
 	SI_Killing_Machine::init();
 
 	do_action( 'sprout_invoices_loaded' );
+}
+
+/**
+ * Disable JIT Notices
+ *
+ * @since 1.6.5
+ */
+function sprout_invoices_disable_jit_notices( $doing_it_wrong, $function_name, $message ) {
+	// if the function is _load_textdomain_just_in_time, return false to prevent the error.
+	if ( '_load_textdomain_just_in_time' === $function_name && false !== strpos( $message, 'sprout-invoices' ) ) {
+		return false;
+	}
+	return $doing_it_wrong;
 }
 
 function sprout_invoices_delayed_load() {

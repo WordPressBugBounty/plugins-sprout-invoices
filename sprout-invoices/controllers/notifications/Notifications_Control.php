@@ -35,7 +35,7 @@ class SI_Notifications_Control extends SI_Controller {
 		self::$admin_email = get_option( self::ADMIN_EMAIL, get_option( 'admin_email' ) );
 
 		// Default notifications
-		add_action( 'init', array( get_class(), 'load_notifications_and_shortcodes_options' ), 5 );
+		add_action( 'init', array( static::class, 'load_notifications_and_shortcodes_options' ), 5 );
 
 		// register settings
 		add_filter( 'si_sub_admin_pages', array( __CLASS__, 'register_admin_page' ) );
@@ -55,14 +55,14 @@ class SI_Notifications_Control extends SI_Controller {
 		add_action( 'si_addons_managed', array( __CLASS__, 'clear_notification_cache' ) );
 
 		// Help Sections
-		add_action( 'admin_menu', array( get_class(), 'help_sections' ) );
+		add_action( 'admin_menu', array( static::class, 'help_sections' ) );
 
 		// Notification Ajax
 		add_action( 'wp_ajax_reset_notificaitons', array( __CLASS__, 'maybe_refresh_notifications' ) );
 
 		if ( is_admin() ) {
-			add_action( 'admin_init', array( get_class(), 'maybe_refresh_notification' ) );
-			add_action( 'admin_init', array( get_class(), 'return_notification_html' ) );
+			add_action( 'admin_init', array( static::class, 'maybe_refresh_notification' ) );
+			add_action( 'admin_init', array( static::class, 'return_notification_html' ) );
 		}
 
 	}

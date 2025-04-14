@@ -22,7 +22,7 @@ class SI_Dev_Logs extends SI_Controller {
 
 		// Register Settings
 		add_filter( 'si_settings', array( __CLASS__, 'register_settings' ) );
-		add_action( 'si_settings_saved', array( get_class(), 'save_log_option' ) );
+		add_action( 'si_settings_saved', array( static::class, 'save_log_option' ) );
 
 		// after
 		add_action( 'init', array( __CLASS__, 'record_stored_logs_and_errors' ), PHP_INT_MAX );

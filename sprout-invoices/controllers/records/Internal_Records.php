@@ -28,8 +28,8 @@ class SI_Internal_Records extends SI_Controller {
 
 		add_action( 'deleted_post', array( __CLASS__, 'attempt_associated_record_deletion' ) );
 
-		add_action( 'wp_ajax_si_delete_record',  array( get_class(), 'maybe_delete_record' ), 10, 0 );
-		add_action( 'wp_ajax_si_edit_private_note',  array( get_class(), 'maybe_update_private_note' ), 10, 0 );
+		add_action( 'wp_ajax_si_delete_record',  array( static::class, 'maybe_delete_record' ), 10, 0 );
+		add_action( 'wp_ajax_si_edit_private_note',  array( static::class, 'maybe_update_private_note' ), 10, 0 );
 		// ajax views
 		add_action( 'wp_ajax_si_edit_private_note_view',  array( __CLASS__, 'edit_private_note' ), 10, 0 );
 	}

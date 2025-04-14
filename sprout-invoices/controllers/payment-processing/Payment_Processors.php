@@ -37,7 +37,7 @@ abstract class SI_Payment_Processors extends SI_Controller {
 		add_filter( 'si_settings_options', array( __CLASS__, 'add_settings_options' ) );
 
 		// Help Sections
-		add_action( 'admin_menu', array( get_class(), 'help_sections' ) );
+		add_action( 'admin_menu', array( static::class, 'help_sections' ) );
 
 		// AJAX utility
 		add_action( 'wp_ajax_si_manually_capture_payment',  array( __CLASS__, 'manually_capture_payment' ), 10, 0 );

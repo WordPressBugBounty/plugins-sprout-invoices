@@ -30,16 +30,16 @@ class SI_Admin_Settings extends SI_Controller {
 		add_filter( 'si_sub_admin_pages', array( __CLASS__, 'register_admin_pages' ) );
 		add_filter( 'si_settings', array( __CLASS__, 'register_settings' ) );
 		add_filter( 'si_settings_options', array( __CLASS__, 'add_settings_options' ) );
-		add_action( 'si_settings_saved', array( get_class(), 'save_specialties' ) );
+		add_action( 'si_settings_saved', array( static::class, 'save_specialties' ) );
 
 		// Help Sections
-		add_action( 'admin_menu', array( get_class(), 'help_sections' ) );
+		add_action( 'admin_menu', array( static::class, 'help_sections' ) );
 
 		// Redirect after activation
 		add_action( 'admin_init', array( __CLASS__, 'redirect_on_activation' ), 20, 0 );
 
 		// Admin bar
-		add_action( 'admin_bar_menu', array( get_class(), 'sa_admin_bar' ), 62 );
+		add_action( 'admin_bar_menu', array( static::class, 'sa_admin_bar' ), 62 );
 
 		add_filter( 'si_localeconv', array( __CLASS__, 'localeconv_options' ), 0 );
 
@@ -601,7 +601,7 @@ class SI_Admin_Settings extends SI_Controller {
 			'href' => admin_url( 'admin.php?page=sprout-invoices-reports' ),
 		) );
 
-		uasort( $menu_items, array( get_class(), 'sort_by_weight' ) );
+		uasort( $menu_items, array( static::class, 'sort_by_weight' ) );
 		foreach ( $menu_items as $item ) {
 			$wp_admin_bar->add_node( array(
 				'parent' => self::MENU_ID,
@@ -617,7 +617,7 @@ class SI_Admin_Settings extends SI_Controller {
 			'meta'   => array( 'class' => 'ab-sub-secondary' ),
 		) );
 
-		uasort( $sub_menu_items, array( get_class(), 'sort_by_weight' ) );
+		uasort( $sub_menu_items, array( static::class, 'sort_by_weight' ) );
 		foreach ( $sub_menu_items as $item ) {
 			$wp_admin_bar->add_node( array(
 				'parent' => self::MENU_ID.'_options',

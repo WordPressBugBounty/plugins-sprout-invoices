@@ -502,6 +502,7 @@ class SI_Setup_Wizard_Util {
 					'',
 					'Checkbox',
 					array(
+						'value'      => $field_configs['option']['default'],
 						'attributes' => array(
 							'id'           => esc_attr( $field_name ),
 							'name'         => esc_attr( $field_name ),

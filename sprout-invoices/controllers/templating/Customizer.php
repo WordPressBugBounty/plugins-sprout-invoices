@@ -10,7 +10,7 @@ class SI_Customizer extends SI_Controller {
 		add_action( 'customize_register', array( __CLASS__, 'customizer' ) );
 
 		// Admin bar
-		add_filter( 'si_admin_bar', array( get_class(), 'add_link_to_admin_bar' ), 10, 1 );
+		add_filter( 'si_admin_bar', array( static::class, 'add_link_to_admin_bar' ), 10, 1 );
 	}
 
 

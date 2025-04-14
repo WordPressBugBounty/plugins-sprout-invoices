@@ -1144,6 +1144,7 @@ class SI_Settings_API extends SI_Controller {
 	 * @return string $input The file input.
 	 */
 	public static function get_checkbox_field( $key, $field = array() ) {
+		$value      = ( isset( $field['option']['value'] ) ) ? $field['option']['value'] : '';
 		$default    = ( isset( $field['option']['default'] ) ) ? $field['option']['default'] : '';
 		$attributes = '';
 		foreach ( $field['option']['attributes'] as $attr => $attr_value ) {
@@ -1153,7 +1154,7 @@ class SI_Settings_API extends SI_Controller {
 		?>
 		<label for="<?php echo esc_attr( $key ); ?>" class="si_input_label si_checkbox_label">
 			<input type="checkbox" name="<?php echo esc_attr( $key ); ?>" id="<?php echo esc_attr( $key ); ?>"
-				class="si-checkbox" <?php checked( $field['option']['value'], $default ); ?>
+				class="si-checkbox" <?php checked( $value, $default ); ?>
 				value="<?php echo isset( $field['option']['value'] ) ? esc_attr( $field['option']['value'] ) : 'On'; ?>"
 				<?php echo $attributes; //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				<?php

@@ -19,14 +19,14 @@ class SI_Payments extends SI_Controller {
 		add_action( 'admin_menu', array( __CLASS__, 'register_subpage' ), 0, 0 );
 
 		// Help Sections
-		add_action( 'in_admin_header', array( get_class(), 'help_sections' ) );
+		add_action( 'in_admin_header', array( static::class, 'help_sections' ) );
 
 		add_filter( 'views_sprout-invoices_page_sprout-invoices/payment_records', array( __CLASS__, 'modify_views' ) );
 
-		add_action( 'wp_ajax_si_void_payment',  array( get_class(), 'maybe_void_payment' ), 10, 0 );
+		add_action( 'wp_ajax_si_void_payment',  array( static::class, 'maybe_void_payment' ), 10, 0 );
 
 		// Admin bar
-		add_filter( 'si_admin_bar', array( get_class(), 'add_link_to_admin_bar' ), 10, 1 );
+		add_filter( 'si_admin_bar', array( static::class, 'add_link_to_admin_bar' ), 10, 1 );
 
 		add_action( 'deleted_post', array( __CLASS__, 'maybe_delete_payment' ) );
 

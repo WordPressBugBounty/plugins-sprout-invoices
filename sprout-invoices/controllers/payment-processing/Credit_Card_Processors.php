@@ -256,7 +256,7 @@ abstract class SI_Credit_Card_Processors extends SI_Payment_Processors {
 			}
 		}
 		$fields = apply_filters( 'sa_credit_fields', $fields, $checkout );
-		uasort( $fields, array( get_class(), 'sort_by_weight' ) );
+		uasort( $fields, array( $this, 'sort_by_weight' ) );
 		return $fields;
 	}
 
@@ -305,7 +305,7 @@ abstract class SI_Credit_Card_Processors extends SI_Payment_Processors {
 			),
 		);
 		$cc_fields = apply_filters( 'si_payment_review_cc_fields', $cc_fields, $checkout );
-		uasort( $cc_fields, array( get_class(), 'sort_by_weight' ) );
+		uasort( $cc_fields, array( $this, 'sort_by_weight' ) );
 
 		$bill_cache = wp_parse_args( $checkout->cache['billing'], array(
 			'first_name' => '',
@@ -339,7 +339,7 @@ abstract class SI_Credit_Card_Processors extends SI_Payment_Processors {
 			),
 		);
 		$bill_fields = apply_filters( 'si_payment_review_billing_fields', $bill_fields, $checkout );
-		uasort( $bill_fields, array( get_class(), 'sort_by_weight' ) );
+		uasort( $bill_fields, array( $this, 'sort_by_weight' ) );
 
 		self::load_view( 'templates/checkout/credit-card/review', array(
 				'billing_fields' => $bill_fields,

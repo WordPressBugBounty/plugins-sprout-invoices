@@ -13,7 +13,7 @@ class SI_Fees extends SI_Controller {
 		add_filter( 'invoice_line_item_totals', array( __CLASS__, 'modify_line_item_totals' ), 10, 2 );
 		add_filter( 'estimate_line_item_totals', array( __CLASS__, 'modify_line_item_totals' ), 10, 2 );
 
-		add_action( 'wp_ajax_si_delete_fee',  array( get_class(), 'maybe_delete_fee' ), 10, 0 );
+		add_action( 'wp_ajax_si_delete_fee',  array( static::class, 'maybe_delete_fee' ), 10, 0 );
 	}
 
 	public static function modify_line_item_totals( $totals = array(), $doc_id = 0 ) {
