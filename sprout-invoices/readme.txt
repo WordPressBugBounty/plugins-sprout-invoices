@@ -117,6 +117,9 @@ https://www.youtube.com/watch?v=n1pP_hQSKlQ
 
 *Please visit [Sprout Invoices](https://sproutinvoices.com/support/knowledgebase/sprout-invoices/faqs/?utm_medium=link&utm_campaign=free&utm_source=wordpress.org) for the latest FAQs.*
 
+= How can I report security bugs? =
+
+You can report security bugs through the Patchstack Vulnerability Disclosure Program. The Patchstack team helps validate, triage and handle any security vulnerabilities. [Report a security vulnerability.](https://patchstack.com/database/vdp/9e5fb676-62b8-40dc-af3d-3a5981559473)
 
 == Screenshots ==
 
