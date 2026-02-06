@@ -34,6 +34,7 @@ class SI_Invoice extends SI_Post_Type {
 	 */
 	private static $meta_keys = array(
 		// migrated/match of estimates
+		'access_hash'     => '_invoice_access_hash', // string - unique hash for client access
 		'client_id'       => '_client_id', // int
 		'currency'        => '_doc_currency', // string
 		'deposit'         => '_deposit', // float
@@ -133,6 +134,26 @@ class SI_Invoice extends SI_Post_Type {
 		self::register_post_type( self::POST_TYPE, 'Invoice', 'Invoices', $post_type_args );
 
 		self::register_post_statuses();
+
+		// Generate access hash on invoice save
+		add_action( 'save_post_' . self::POST_TYPE, array( __CLASS__, 'maybe_generate_access_hash' ), 10, 1 );
+	}
+
+	/**
+	 * Generate a unique access hash for this invoice if one doesn't exist
+	 *
+	 * @param int $post_id The post ID
+	 * @return void
+	 */
+	public static function maybe_generate_access_hash( $post_id ) {
+		// Check if hash already exists
+		$existing_hash = get_post_meta( $post_id, '_invoice_access_hash', true );
+
+		if ( empty( $existing_hash ) ) {
+			// Generate a cryptographically secure random hash
+			$hash = bin2hex( random_bytes( 32 ) ); // 64 character hex string
+			update_post_meta( $post_id, '_invoice_access_hash', $hash );
+		}
 	}
 
 	public static function get_statuses() {

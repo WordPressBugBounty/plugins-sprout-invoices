@@ -1,3 +1,11 @@
+= 19.9.11 =
+* **Fix:** Toggle Fatal Error
+* **Fix:** Recurring invoices not savings and producing invoices
+* **Fix:** Force signature text disappearing after saving invoice
+* **Fix:** HTML escaping in Payment terms
+* **Fix:** Admin note shortcode not working in notifications
+* **Fix:** HTML template not displaying in preview
+
 = 19.9.10.1 =
 * Bug Fix: Can't create Client user
 

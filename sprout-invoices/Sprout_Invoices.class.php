@@ -1,9 +1,8 @@
 <?php
-
-
 /**
  * A fundamental class from which all other classes in the plugin should be derived.
  * The purpose of this class is to hold data useful to all classes.
+ *
  * @package SI
  */
 
@@ -36,7 +35,7 @@ abstract class Sprout_Invoices {
 	 * Current version. Should match sprout-invoices.php plugin version.
 	 */
 
-	const SI_VERSION = '20.8.7';
+	const SI_VERSION = '20.8.9';
 
 	/**
 	 * DB Version

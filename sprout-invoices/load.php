@@ -67,6 +67,9 @@ function sprout_invoices_load() {
 
 	require_once SI_PATH.'/controllers/admin/Help.php';
 
+	// upgrades and migrations
+	require_once SI_PATH.'/controllers/admin/Upgrades.php';
+
 	// json api
 	// require_once SI_PATH.'/controllers/api/JSON_API.php';
 
@@ -246,6 +249,9 @@ function sprout_invoices_load() {
 	}
 
 	SI_Admin_Capabilities::init();
+
+	// upgrades and migrations
+	SI_Upgrades::init();
 
 	// updates
 	if ( ! SI_FREE_TEST && class_exists( 'SI_Updates' ) ) {

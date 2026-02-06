@@ -963,6 +963,12 @@ class SI_Notifications extends SI_Notifications_Control {
 		if ( isset( $data['invoice'] ) && is_a( $data['invoice'], 'SI_Invoice' ) ) {
 			$invoice_id = $data['invoice']->get_id();
 			$url = get_permalink( $invoice_id );
+
+			// Append access hash for client authentication (generates on-the-fly if missing)
+			$hash = SI_Upgrades::ensure_doc_hash( $invoice_id );
+			if ( ! empty( $hash ) ) {
+				$url = add_query_arg( 'hash', $hash, $url );
+			}
 		}
 		return apply_filters( 'shortcode_invoice_url', esc_url_raw( $url ), $data );
 	}
@@ -1463,6 +1469,12 @@ class SI_Notifications extends SI_Notifications_Control {
 		if ( isset( $data['estimate'] ) && is_a( $data['estimate'], 'SI_Estimate' ) ) {
 			$estimate_id = $data['estimate']->get_id();
 			$url = get_permalink( $estimate_id );
+
+			// Append access hash for client authentication (generates on-the-fly if missing)
+			$hash = SI_Upgrades::ensure_doc_hash( $estimate_id );
+			if ( ! empty( $hash ) ) {
+				$url = add_query_arg( 'hash', $hash, $url );
+			}
 		}
 		return apply_filters( 'shortcode_estimate_url', esc_url_raw( $url ), $data );
 	}

@@ -403,6 +403,11 @@ class SI_Settings_API extends SI_Controller {
 	 * @return void
 	 */
 	public static function si_stripe_option() {
+		// Allow only admins to update this setting.
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( 'Unauthorized', 403 );
+		}
+
 		if ( ! wp_verify_nonce( $_POST['nonce'], self::NONCE ) ) {
 			wp_die( 'Nonce verification failed', 403 );
 		}
@@ -420,6 +425,11 @@ class SI_Settings_API extends SI_Controller {
 	 * @return void
 	 */
 	public static function si_gtag_option() {
+		// Allow only admins to update this setting.
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( 'Unauthorized', 403 );
+		}
+
 		if ( ! wp_verify_nonce( $_POST['nonce'], self::NONCE ) ) {
 			wp_die( 'Nonce verification failed', 403 );
 		}
@@ -462,7 +472,6 @@ class SI_Settings_API extends SI_Controller {
 	 * @since 20.4.2
 	 */
 	public static function enqueue_gtag_script() {
-
 		// Check if Sprout Pro is enabled. We only need to enqueue the opt out message on the free plugin.
 		if ( ! is_plugin_active( 'sprout-invoices-pro/sprout-invoices-pro.php' ) ) {
 			if ( false !== strpos( get_current_screen()->id, self::TEXT_DOMAIN ) ) {
@@ -497,6 +506,11 @@ class SI_Settings_API extends SI_Controller {
 	 * @return void
 	 */
 	public static function script_localization() {
+		// Only allow admin users to access these settings.
+		if ( ! current_user_can( 'manage_sprout_invoices_options' ) ) {
+			return;
+		}
+
 		// Sending data to our plugin settings JS file
 		wp_localize_script(
 			'sprout-invoices-settings',

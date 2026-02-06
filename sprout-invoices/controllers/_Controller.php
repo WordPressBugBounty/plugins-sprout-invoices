@@ -24,12 +24,13 @@ abstract class SI_Controller extends Sprout_Invoices {
 
 	public static function init() {
 		if ( is_admin() ) {
-
 			// On Activation
 			add_action( 'si_plugin_activation_hook', array( __CLASS__, 'sprout_invoices_activated' ) );
 
 			// clone notification
 			add_action( 'admin_init', array( static::class, 'maybe_clone_and_redirect' ) );
+
+			self::register_plugin_check_filters();
 		}
 
 		// Enqueue
@@ -112,15 +113,18 @@ abstract class SI_Controller extends Sprout_Invoices {
 		if ( is_admin() ) {
 			return $query;
 		}
+
 		if ( $query->is_single() ) {
 			return $query;
 		}
+
 		if ( $query->is_main_query() ) {
 			$type = $query->get( 'post_type' );
 			if ( in_array( $type, array( SI_Invoice::POST_TYPE, SI_Estimate::POST_TYPE ) ) ) {
 				$query->set( 'post_type', 'post' );
 			}
 		}
+
 		return $query;
 	}
 
@@ -139,12 +143,14 @@ abstract class SI_Controller extends Sprout_Invoices {
 	 */
 	public static function sprout_invoices_activated() {
 		add_option( 'si_do_activation_redirect', true );
+
 		// Get the previous version number
 		$si_version = get_option( 'si_current_version', self::SI_VERSION );
 		if ( version_compare( $si_version, self::SI_VERSION, '<' ) ) { // If an upgrade create some hooks
 			do_action( 'si_version_upgrade', $si_version );
 			do_action( 'si_version_upgrade_'.$si_version );
 		}
+
 		// Set the new version number
 		update_option( 'si_current_version', self::SI_VERSION );
 	}
@@ -203,19 +209,24 @@ abstract class SI_Controller extends Sprout_Invoices {
 			'locale_standard' => str_replace( '_', '-', get_locale() ),
 			'inline_spinner' => '<span class="spinner si_inline_spinner" style="visibility:visible;display:inline-block;"></span>',
 		);
+
 		if ( is_single() && ( get_post_type( get_the_ID() ) === SI_Invoice::POST_TYPE ) ) {
 			$si_js_object += array(
 				'invoice_id' => get_the_ID(),
 				'invoice_amount' => si_get_invoice_calculated_total(),
 				'invoice_balance' => si_get_invoice_balance(),
+				'doc_hash' => SI_Upgrades::ensure_doc_hash( get_the_ID() ),
 			);
 		}
+
 		if ( is_single() && ( get_post_type( get_the_ID() ) === SI_Estimate::POST_TYPE ) ) {
 			$si_js_object += array(
 				'estimate_id' => get_the_ID(),
 				'estimate_total' => si_get_estimate_total(),
+				'doc_hash' => SI_Upgrades::ensure_doc_hash( get_the_ID() ),
 			);
 		}
+
 		return apply_filters( 'si_sprout_doc_scripts_localization', $si_js_object );
 	}
 
@@ -226,9 +237,7 @@ abstract class SI_Controller extends Sprout_Invoices {
 		$screen = get_current_screen();
 		$screen_post_type = str_replace( 'edit-', '', $screen->id );
 		if ( in_array( $screen_post_type, array( SI_Estimate::POST_TYPE, SI_Invoice::POST_TYPE ) ) ) {
-
 			if ( ! SI_FREE_TEST && file_exists( SI_PATH.'/resources/admin/plugins/redactor/redactor.min.js' ) ) {
-
 				$add_to_js_object['redactor'] = true;
 
 				wp_enqueue_script( 'redactor' );
@@ -248,14 +257,12 @@ abstract class SI_Controller extends Sprout_Invoices {
 		}
 
 		if ( SI_Client::POST_TYPE === $screen_post_type ) {
-
 			wp_enqueue_script( 'si_admin_est_and_invoices' );
 
 			self::enqueue_general_scripts_styles();
 		}
 
 		if ( SI_Project::POST_TYPE === $screen_post_type ) {
-
 			wp_enqueue_script( 'si_admin_est_and_invoices' );
 
 			self::enqueue_general_scripts_styles();
@@ -263,7 +270,6 @@ abstract class SI_Controller extends Sprout_Invoices {
 
 		if ( self::is_si_admin() ) {
 			if ( ! SI_FREE_TEST && file_exists( SI_PATH.'/resources/admin/plugins/redactor/redactor.min.js' ) ) {
-
 				$add_to_js_object['redactor'] = true;
 
 				wp_enqueue_script( 'redactor' );
@@ -290,7 +296,6 @@ abstract class SI_Controller extends Sprout_Invoices {
 	}
 
 	public static function enqueue_general_scripts_styles( $scripts = array() ) {
-
 		// Defaults
 		if ( empty( $scripts ) ) {
 			$scripts = array( 'dropdown', 'select2', 'qtip' );
@@ -346,10 +351,12 @@ abstract class SI_Controller extends Sprout_Invoices {
 		if ( self::DEBUG ) {
 			wp_clear_scheduled_hook( self::CRON_HOOK );
 		}
+
 		if ( ! wp_next_scheduled( self::CRON_HOOK ) ) {
 			$interval = apply_filters( 'si_set_schedule', 'quarterhour' );
 			wp_schedule_event( time(), $interval, self::CRON_HOOK );
 		}
+
 		if ( ! wp_next_scheduled( self::DAILY_CRON_HOOK ) ) {
 			wp_schedule_event( time(), 'daily', self::DAILY_CRON_HOOK );
 		}
@@ -393,7 +400,10 @@ abstract class SI_Controller extends Sprout_Invoices {
 		$file = apply_filters( 'sprout_invoice_template_'.$view, $file );
 
 		$args = apply_filters( 'load_view_args_'.$view, $args, $allow_theme_override );
-		if ( ! empty( $args ) ) { extract( $args ); }
+		if ( ! empty( $args ) ) {
+			extract( $args );
+		}
+
 		include $file;
 	}
 
@@ -428,6 +438,7 @@ abstract class SI_Controller extends Sprout_Invoices {
 		foreach ( $possibilities as $p ) {
 			$theme_overrides[] = self::get_template_path().'/'.$p;
 		}
+
 		if ( $found = locate_template( $theme_overrides, false ) ) {
 			return $found;
 		}
@@ -506,10 +517,12 @@ abstract class SI_Controller extends Sprout_Invoices {
 		if ( ! isset( self::$messages ) ) {
 			self::load_messages();
 		}
+
 		$message = __( $message, 'sprout-invoices' );
 		if ( ! isset( self::$messages[ $status ] ) ) {
 			self::$messages[ $status ] = array();
 		}
+
 		self::$messages[ $status ][] = $message;
 		if ( $save ) {
 			self::save_messages();
@@ -529,6 +542,7 @@ abstract class SI_Controller extends Sprout_Invoices {
 				set_transient( 'si_messaging_for_'.self::get_user_ip(), self::$messages, 300 );
 			}
 		}
+
 		update_user_meta( $user_id, $blog_id.'_'.self::MESSAGE_META_KEY, self::$messages );
 	}
 
@@ -536,6 +550,7 @@ abstract class SI_Controller extends Sprout_Invoices {
 		if ( ! isset( self::$messages ) ) {
 			self::load_messages();
 		}
+
 		return self::$messages;
 	}
 
@@ -550,6 +565,7 @@ abstract class SI_Controller extends Sprout_Invoices {
 			global $blog_id;
 			$messages = get_user_meta( $user_id, $blog_id.'_'.self::MESSAGE_META_KEY, true );
 		}
+
 		if ( $messages ) {
 			self::$messages = $messages;
 		} else {
@@ -564,6 +580,7 @@ abstract class SI_Controller extends Sprout_Invoices {
 			if ( isset( self::$messages[ self::MESSAGE_STATUS_INFO ] ) ) {
 				$statuses[] = self::MESSAGE_STATUS_INFO;
 			}
+
 			if ( isset( self::$messages[ self::MESSAGE_STATUS_ERROR ] ) ) {
 				$statuses[] = self::MESSAGE_STATUS_ERROR;
 			}
@@ -574,6 +591,7 @@ abstract class SI_Controller extends Sprout_Invoices {
 		if ( ! isset( self::$messages ) ) {
 			self::load_messages();
 		}
+
 		foreach ( $statuses as $status ) {
 			foreach ( self::$messages[ $status ] as $message ) {
 				self::load_view( 'templates/messages', array(
@@ -583,6 +601,7 @@ abstract class SI_Controller extends Sprout_Invoices {
 			}
 			self::$messages[ $status ] = array();
 		}
+
 		self::save_messages();
 		if ( defined( 'DOING_AJAX' ) ) {
 			exit();
@@ -598,9 +617,11 @@ abstract class SI_Controller extends Sprout_Invoices {
 					$redirect = urlencode( add_query_arg( $_REQUEST, $redirect ) );
 				}
 			}
+
 			wp_redirect( wp_login_url( $redirect ) );
 			exit();
 		}
+
 		return true; // explicit return value, for the benefit of the router plugin
 	}
 
@@ -611,10 +632,12 @@ abstract class SI_Controller extends Sprout_Invoices {
 		global $blog_id;
 
 		if ( empty( $blog_id ) || ! is_multisite() ) {
-			$url = get_option( 'home' ); } else {
-			$url = get_blog_option( $blog_id, 'home' ); }
+			$url = get_option( 'home' );
+		} else {
+			$url = get_blog_option( $blog_id, 'home' );
+		}
 
-			return apply_filters( 'si_get_home_url_option', esc_url( $url ) );
+		return apply_filters( 'si_get_home_url_option', esc_url( $url ) );
 	}
 
 	/**
@@ -622,11 +645,13 @@ abstract class SI_Controller extends Sprout_Invoices {
 	 */
 	public static function sort_by_weight( $a, $b ) {
 		if ( ! isset( $a['weight'] ) || ! isset( $b['weight'] ) ) {
-			return 0; }
+			return 0;
+		}
 
 		if ( $a['weight'] == $b['weight'] ) {
 			return 0;
 		}
+
 		return ( $a['weight'] < $b['weight'] ) ? -1 : 1;
 	}
 
@@ -635,11 +660,13 @@ abstract class SI_Controller extends Sprout_Invoices {
 	 */
 	public static function sort_by_date( $a, $b ) {
 		if ( ! isset( $a['date'] ) || ! isset( $b['date'] ) ) {
-			return 0; }
+			return 0;
+		}
 
 		if ( $a['date'] == $b['date'] ) {
 			return 0;
 		}
+
 		return ( $a['date'] < $b['date'] ) ? -1 : 1;
 	}
 
@@ -658,6 +685,7 @@ abstract class SI_Controller extends Sprout_Invoices {
 		if ( ! defined( 'DONOTCACHEPAGE' ) ) {
 			define( 'DONOTCACHEPAGE', true );
 		}
+
 		nocache_headers();
 	}
 
@@ -670,15 +698,11 @@ abstract class SI_Controller extends Sprout_Invoices {
 	public static function clear_post_cache( $post_id ) {
 		if ( function_exists( 'wp_cache_post_change' ) ) {
 			// WP Super Cache
-
 			$GLOBALS['super_cache_enabled'] = 1;
 			wp_cache_post_change( $post_id );
-
 		} elseif ( function_exists( 'w3tc_pgcache_flush_post' ) ) {
 			// W3 Total Cache
-
 			w3tc_pgcache_flush_post( $post_id );
-
 		}
 	}
 
@@ -692,7 +716,6 @@ abstract class SI_Controller extends Sprout_Invoices {
 		$post = get_post( $post_id );
 		$new_post_id = 0;
 		if ( isset( $post ) && $post != null ) {
-
 			if ( $new_post_type == '' ) {
 				$new_post_type = $post->post_type;
 			}
@@ -759,6 +782,7 @@ abstract class SI_Controller extends Sprout_Invoices {
 				$date = current_time( 'timestamp' ) + ( DAY_IN_SECONDS * $days );
 				$invoice->set_due_date( $date );
 			}
+
 			// estimate clean up.
 			if ( SI_Estimate::POST_TYPE === $post->post_type ) {
 				// set dates.
@@ -771,6 +795,7 @@ abstract class SI_Controller extends Sprout_Invoices {
 				}
 			}
 		}
+
 		// end
 		do_action( 'si_cloned_post', $new_post_id, $post_id, $new_post_type, $new_post_status );
 		return $new_post_id;
@@ -801,6 +826,7 @@ abstract class SI_Controller extends Sprout_Invoices {
 		if ( $new_post_type != '' ) {
 			$url = add_query_arg( array( 'post_type' => $new_post_type ), esc_url_raw( $url ) );
 		}
+
 		return apply_filters( 'si_get_clone_post_url', esc_url_raw( $url ), $post_id, $new_post_type );
 	}
 
@@ -822,8 +848,10 @@ abstract class SI_Controller extends Sprout_Invoices {
 			if ( is_a( $client, 'SI_Client' ) ) {
 				$address = $client->get_address();
 			}
+
 			$user = get_userdata( $user_id );
 		}
+
 		$fields = array();
 		$fields['first_name'] = array(
 			'weight' => 50,
@@ -906,7 +934,6 @@ abstract class SI_Controller extends Sprout_Invoices {
 	////////////////////
 
 	public static function ajax_number_formatter() {
-
 		if ( ! isset( $_REQUEST['number'] ) ) {
 			self::ajax_fail( 'Forget something?' );
 		}
@@ -923,25 +950,50 @@ abstract class SI_Controller extends Sprout_Invoices {
 			'int' => (int) si_get_number_format( $number ),
 			);
 		header( 'Content-type: application/json' );
-		if ( self::DEBUG ) { header( 'Access-Control-Allow-Origin: *' ); }
+		if ( self::DEBUG ) {
+			header( 'Access-Control-Allow-Origin: *' );
+		}
+
 		echo wp_json_encode( $currency );
 		exit();
 
 	}
 
 	public static function maybe_create_private_note() {
-
 		if ( ! isset( $_REQUEST['private_note_nonce'] ) ) {
 			self::ajax_fail( 'Forget something?' );
 		}
 
 		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['private_note_nonce'] ) ), SI_Internal_Records::NONCE ) ) {
-			self::ajax_fail( 'We couldn’t process that request. Please contact system adminstrator.' ); }
+			self::ajax_fail( 'We could not process that request. Please contact system administrator.' );
+		}
 
-		if ( ! current_user_can( 'edit_sprout_invoices' ) ) {
-			return; }
-		$notes = isset( $_REQUEST['notes'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['notes'] ) ) : '';
 		$associated_id = isset( $_REQUEST['associated_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['associated_id'] ) ) : 0;
+
+		// Authorization check: Either logged in with permission OR has the secret access hash
+		if ( is_user_logged_in() ) {
+			// Authenticated users need edit_sprout_invoices capability
+			if ( ! current_user_can( 'edit_sprout_invoices' ) ) {
+				self::ajax_fail( 'You do not have permission to create notes.' );
+			}
+		} else {
+			// Unauthenticated users must provide the correct access hash for THIS specific document
+			if ( ! isset( $_REQUEST['doc_hash'] ) ) {
+				self::ajax_fail( 'Missing document access key.' );
+			}
+
+			$provided_hash = sanitize_text_field( wp_unslash( $_REQUEST['doc_hash'] ) );
+
+			// Ensure hash exists (generates on-the-fly if missing)
+			$actual_hash = SI_Upgrades::ensure_doc_hash( $associated_id );
+
+			// Verify the provided hash matches this specific document's hash
+			if ( empty( $actual_hash ) || ! hash_equals( $actual_hash, $provided_hash ) ) {
+				self::ajax_fail( 'Invalid document access key.' );
+			}
+		}
+
+		$notes = isset( $_REQUEST['notes'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['notes'] ) ) : '';
 		$record_id = SI_Internal_Records::new_record( $notes, SI_Controller::PRIVATE_NOTES_TYPE, sanitize_text_field( wp_unslash( $_REQUEST['associated_id'] ) ), '', 0, false );
 		$error = ( $record_id ) ? '' : esc_html__( 'Private note failed to save, try again.', 'sprout-invoices' );
 		$data = array(
@@ -953,7 +1005,10 @@ abstract class SI_Controller extends Sprout_Invoices {
 		);
 
 		header( 'Content-type: application/json' );
-		if ( self::DEBUG ) { header( 'Access-Control-Allow-Origin: *' ); }
+		if ( self::DEBUG ) {
+			header( 'Access-Control-Allow-Origin: *' );
+		}
+
 		echo wp_json_encode( $data );
 		exit();
 
@@ -962,27 +1017,58 @@ abstract class SI_Controller extends Sprout_Invoices {
 	/**
 	 * Maybe Change Status
 	 *
-	 * Note: There is no need to check if the user can edit the post
-	 * because this system is designed in a way that anyone with the
-	 * link to the invoice or estimate can change the status. This is
-	 * because the link to the invoice or estimate is a private hashed
-	 * link. Nonce is used to prevent CSRF attacks.
+	 * Allows users to change invoice/estimate status via AJAX.
+	 *
+	 * Security model:
+	 * - Authenticated users: Must have edit_post capability for the document
+	 * - Unauthenticated users: Must provide the correct post hash for the specific document
+	 *
+	 * The post hash acts as a secret token - only those with the full URL can change status.
+	 * This enables client self-service without requiring WordPress accounts.
 	 */
 	public static function maybe_change_status() {
 		if ( ! isset( $_REQUEST['change_status_nonce'] ) ) {
-			self::ajax_fail( 'Forget something?' ); }
+			self::ajax_fail( 'Forget something?' );
+		}
 
 		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['change_status_nonce'] ) ) , self::NONCE ) ) {
-			self::ajax_fail( 'We couldn’t process that request. Please contact system adminstrator.' ); }
+			self::ajax_fail( 'We could not process that request. Please contact system administrator.' );
+		}
 
 		if ( ! isset( $_REQUEST['id'] ) ) {
-			self::ajax_fail( 'Forget something?' ); }
+			self::ajax_fail( 'Forget something?' );
+		}
 
 		if ( ! isset( $_REQUEST['status'] ) ) {
-			self::ajax_fail( 'Forget something?' ); }
+			self::ajax_fail( 'Forget something?' );
+		}
+
+		$doc_id = sanitize_text_field( wp_unslash( $_REQUEST['id'] ) );
+
+		// Authorization check: Either logged in with permission OR has the secret access hash
+		if ( is_user_logged_in() ) {
+			// Authenticated users need edit permission
+			if ( ! current_user_can( 'edit_post', $doc_id ) ) {
+				self::ajax_fail( 'You do not have permission to change this status.' );
+			}
+		} else {
+			// Unauthenticated users must provide the correct access hash for THIS specific document
+			if ( ! isset( $_REQUEST['doc_hash'] ) ) {
+				self::ajax_fail( 'Missing document access key.' );
+			}
+
+			$provided_hash = sanitize_text_field( wp_unslash( $_REQUEST['doc_hash'] ) );
+
+			// Ensure hash exists (generates on-the-fly if missing)
+			$actual_hash = SI_Upgrades::ensure_doc_hash( $doc_id );
+
+			// Verify the provided hash matches this specific document's hash
+			if ( empty( $actual_hash ) || ! hash_equals( $actual_hash, $provided_hash ) ) {
+				self::ajax_fail( 'Invalid document access key.' );
+			}
+		}
 
 		$view = '';
-		$doc_id = sanitize_text_field( wp_unslash( $_REQUEST['id'] ) );
 		$new_status = sanitize_text_field( wp_unslash( $_REQUEST['status'] ) );
 		switch ( get_post_type( $doc_id ) ) {
 			case SI_Invoice::POST_TYPE:
@@ -1023,7 +1109,11 @@ abstract class SI_Controller extends Sprout_Invoices {
 		do_action( 'doc_status_changed', $doc, $_REQUEST );
 
 		header( 'Content-type: application/json' );
-		if ( self::DEBUG ) { header( 'Access-Control-Allow-Origin: *' ); }
+
+		if ( self::DEBUG ) {
+			header( 'Access-Control-Allow-Origin: *' );
+		}
+
 		echo wp_json_encode( array( 'new_button' => $view ) );
 		exit();
 
@@ -1091,22 +1181,33 @@ abstract class SI_Controller extends Sprout_Invoices {
 		if ( $message == '' ) {
 			$message = __( 'Something failed.', 'sprout-invoices' );
 		}
-		if ( $json ) { header( 'Content-Type: application/json; charset=' . get_option( 'blog_charset' ) ); }
-		if ( self::DEBUG ) { header( 'Access-Control-Allow-Origin: *' ); }
+
+		if ( $json ) {
+			header( 'Content-Type: application/json; charset=' . get_option( 'blog_charset' ) );
+		}
+
+		if ( self::DEBUG ) {
+			header( 'Access-Control-Allow-Origin: *' );
+		}
+
 		if ( $json ) {
 			echo wp_json_encode( array( 'error' => 1, 'response' => esc_html( $message ) ) );
 		} else {
 			wp_send_json( $message );
 		}
+
 		exit();
 	}
 
 	public static function get_user_ip() {
 
-		if ( isset( $_SERVER['HTTP_USER_AGENT'] ) && preg_match( '/bot|crawl|slurp|spider|mediapartners/i', sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) )
+		if (
+			isset( $_SERVER['HTTP_USER_AGENT'] )
+			&& preg_match( '/bot|crawl|slurp|spider|mediapartners/i', sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) )
 		) {
 			return false;
 		}
+
 		$client  = isset( $_SERVER['HTTP_CLIENT_IP'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_CLIENT_IP'] ) ) : '';
 		$forward = isset( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) : '';
 		$remote  = isset( $_SERVER['REMOTE_ADDR']) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
@@ -1119,6 +1220,7 @@ abstract class SI_Controller extends Sprout_Invoices {
 		} elseif ( filter_var( $remote, FILTER_VALIDATE_IP ) ) {
 			$ip = $remote;
 		}
+
 		return apply_filters( 'si_get_user_ip', $ip );
 	}
 
@@ -1129,15 +1231,18 @@ abstract class SI_Controller extends Sprout_Invoices {
 		if ( ! is_numeric( $number ) ) {
 			return $number;
 		}
+
 		if ( ! $number ) {
 			return 'zero';
 		}
+
 		$ends = array( 'th','st','nd','rd','th','th','th','th','th','th' );
 		if ( ($number % 100) >= 11 && ($number % 100) <= 13 ) {
 			$abbreviation = $number. 'th';
 		} else {
 			$abbreviation = $number. $ends[ $number % 10 ];
 		}
+
 		return $abbreviation;
 
 	}
@@ -1199,4 +1304,71 @@ abstract class SI_Controller extends Sprout_Invoices {
 
         return $sanitized_data;
     }
+
+	/**
+	 * Registers Plugin Check filters so they run in all contexts.
+	 *
+	 * @since  X.X.X
+	 * @static
+	 *
+	 * @link https://github.com/WordPress/plugin-check/blob/1.6.0/includes/Utilities/Plugin_Request_Utility.php#L160
+	 * @link https://github.com/WordPress/plugin-check/blob/1.6.0/includes/Utilities/Plugin_Request_Utility.php#L180
+	 * @link https://github.com/WordPress/plugin-check/blob/1.6.0/includes/Checker/Checks/Plugin_Repo/Plugin_Readme_Check.php#L928
+	 *
+	 * @return void
+	 */
+	private static function register_plugin_check_filters(): void {
+		// Ignore vendor packages and external library directories when running the plugin check plugin.
+		add_filter(
+			'wp_plugin_check_ignore_directories',
+			static function ( array $dirs_to_ignore ) {
+				return array_merge(
+					$dirs_to_ignore,
+					array(
+						'.github',
+						'bin',
+						'build',
+						'bundles',
+						'languages',
+						'node_modules',
+						'tests',
+						'qa',
+						'tests',
+						'vendor',
+					)
+				);
+			}
+		);
+
+		// Ignore specific files when running the plugin check plugin.
+		add_filter(
+			'wp_plugin_check_ignore_files',
+			static function ( array $files_to_ignore ) {
+				return array_merge(
+					$files_to_ignore,
+					array(
+						'.editorconfig',
+						'.eslintrc.js',
+						'.gitattributes',
+						'.gitignore',
+						'.phpunit.result.cache',
+						'.travis.yml',
+					)
+				);
+			}
+		);
+
+		// Ignore specific warnings when running the plugin check plugin.
+		add_filter(
+			'wp_plugin_check_ignored_readme_warnings',
+			static function ( array $ignored ) {
+				return array_merge(
+					$ignored,
+					array(
+						'trimmed_section_changelog',
+					)
+				);
+			}
+		);
+	}
 }

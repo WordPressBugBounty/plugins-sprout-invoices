@@ -40,7 +40,7 @@ class SI_Field_Bypass extends SI_Field {
 			?>
 			</div>
 			<span class="input_desc help_block">
-				<?php echo esc_html__( $this->field_description, 'sprout-invoices' ); ?>
+				<?php echo esc_html( $this->field_description ); ?>
 			</span>
 		</div>
 		<?php

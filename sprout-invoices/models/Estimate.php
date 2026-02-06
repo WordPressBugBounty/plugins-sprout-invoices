@@ -26,6 +26,7 @@ class SI_Estimate extends SI_Post_Type {
 
 	// meta fields with a prefixed key of _doc are transferable (when cloned) to invoices
 	private static $meta_keys = array(
+		'access_hash' => '_estimate_access_hash', // string - unique hash for client access
 		'client_id' => '_client_id', // int
 		'currency' => '_doc_currency', // string
 		'discount' => '_doc_discount', // int
@@ -66,6 +67,9 @@ class SI_Estimate extends SI_Post_Type {
 		);
 		self::register_post_type( self::POST_TYPE, 'Estimate', 'Estimates', $post_type_args );
 
+		// Generate access hash on estimate save
+		add_action( 'save_post_' . self::POST_TYPE, array( __CLASS__, 'maybe_generate_access_hash' ), 10, 1 );
+
 		// register category taxonomy
 		// TODO remove since it's now deprecated
 		$singular = 'Task';
@@ -77,6 +81,23 @@ class SI_Estimate extends SI_Post_Type {
 		self::register_taxonomy( self::LINE_ITEM_TAXONOMY, array(), $singular, $plural, $taxonomy_args );
 
 		self::register_post_statuses();
+	}
+
+	/**
+	 * Generate a unique access hash for this estimate if one doesn't exist
+	 *
+	 * @param int $post_id The post ID
+	 * @return void
+	 */
+	public static function maybe_generate_access_hash( $post_id ) {
+		// Check if hash already exists
+		$existing_hash = get_post_meta( $post_id, '_estimate_access_hash', true );
+
+		if ( empty( $existing_hash ) ) {
+			// Generate a cryptographically secure random hash
+			$hash = bin2hex( random_bytes( 32 ) ); // 64 character hex string
+			update_post_meta( $post_id, '_estimate_access_hash', $hash );
+		}
 	}
 
 	public static function get_statuses() {

@@ -562,7 +562,7 @@ abstract class SI_Post_Type extends Sprout_Invoices {
 
 	/**
 	 * Trim inputs and arrays
-	 * @param  string/array $value value/s to trim
+	 * @param  string|array $value value/s to trim
 	 * @return
 	 */
 	public static function trim_input( $value ) {
@@ -580,7 +580,7 @@ abstract class SI_Post_Type extends Sprout_Invoices {
 			}
 			return $return;
 		}
-		return trim( $value );
+		return empty( $value ) ? '' : trim( $value );
 	}
 
 	/**

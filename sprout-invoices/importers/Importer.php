@@ -210,6 +210,11 @@ class SI_Importer extends SI_Controller {
 			self::ajax_fail( 'Not going to fall for it!' );
 		}
 
+		// Check if user is logged in and has import permissions
+		if ( ! current_user_can( 'manage_sprout_invoices_importer' ) ) {
+			self::ajax_fail( 'You do not have permission to import data.' );
+		}
+
 		$class = isset( $_REQUEST['importer'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['importer'] ) ) : '';
 		$method = isset( $_REQUEST['method'] ) ? 'import_' . sanitize_text_field( wp_unslash( $_REQUEST['method'] ) ) : '';
 		if ( method_exists( $class, $method ) ) {

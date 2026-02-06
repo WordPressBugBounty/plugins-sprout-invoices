@@ -53,7 +53,7 @@
 
 			$action_links.html(si_js_object.inline_spinner);
 
-			$.post( si_js_object.ajax_url, { action: 'si_change_doc_status', id: $id, status: $new_status, change_status_nonce: $nonce },
+			$.post( si_js_object.ajax_url, { action: 'si_change_doc_status', id: $id, status: $new_status, change_status_nonce: $nonce, doc_hash: si_js_object.doc_hash },
 				function( data ) {
 					if ( data.error ) {
 						$action_links.html( data.response );  

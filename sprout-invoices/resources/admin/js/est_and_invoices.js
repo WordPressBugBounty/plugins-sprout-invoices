@@ -328,7 +328,7 @@
 		$status_button.html(si_js_object.inline_spinner);
 		$publish_button.val( si_js_object.updating_string );
 
-		$.post( ajaxurl, { action: 'si_change_doc_status', id: $id, status: $new_status, change_status_nonce: $nonce },
+		$.post( ajaxurl, { action: 'si_change_doc_status', id: $id, status: $new_status, change_status_nonce: $nonce, doc_hash: si_js_object.doc_hash },
 			function( data ) {
 				if ( data.error ) {
 					$status_button.html( data.response );

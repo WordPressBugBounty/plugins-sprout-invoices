@@ -2,6 +2,26 @@
     "require-dev": {
         "lox/xhprof": "dev-master",
         "phpunit/phpunit": "^9",
-        "yoast/phpunit-polyfills": "^1.0"
+        "yoast/phpunit-polyfills": "^3.0"
+    },
+    "replace": {
+        "symfony/polyfill-php72": "*",
+        "symfony/polyfill-php73": "*",
+        "symfony/polyfill-php74": "*",
+        "symfony/polyfill-php80": "*",
+        "symfony/polyfill-php81": "*",
+        "symfony/polyfill-php82": "*",
+        "symfony/polyfill-php83": "*",
+        "symfony/polyfill-mbstring": "*"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        },
+        "optimize-autoloader": true,
+        "COMPOSER_MIRROR_PATH_REPOS": true,
+        "platform": {
+            "php": "7.4"
+        }
     }
 }

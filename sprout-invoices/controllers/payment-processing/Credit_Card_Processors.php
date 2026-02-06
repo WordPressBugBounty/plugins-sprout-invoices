@@ -32,7 +32,7 @@ abstract class SI_Credit_Card_Processors extends SI_Payment_Processors {
 		if ( $this->cc_cache && $checkout->get_current_page() != SI_Checkouts::PAYMENT_PAGE ) {
 			$data = array(
 				'type' => 'hidden',
-				'value' => esc_attr( serialize( $this->cc_cache ) ),
+				'value' => esc_attr( json_encode( $this->cc_cache ) ),
 			);
 			sa_form_field( 'cc_cache', $data, 'credit' );
 		}
@@ -46,7 +46,7 @@ abstract class SI_Credit_Card_Processors extends SI_Payment_Processors {
 	 */
 	public function process_credit_card_cache( $action, SI_Checkouts $checkout ) {
 		if ( isset( $_POST['sa_credit_cc_cache'] ) ) {
-			$cache = unserialize( sanitize_text_field( wp_unslash( $_POST['sa_credit_cc_cache'] ) ) );
+			$cache = json_decode( sanitize_text_field( wp_unslash( $_POST['sa_credit_cc_cache'] ) ), true );
 			if ( $this->validate_credit_card( $cache, $checkout ) ) {
 				$this->cc_cache = $cache;
 
