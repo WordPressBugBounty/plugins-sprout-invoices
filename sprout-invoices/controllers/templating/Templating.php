@@ -686,6 +686,32 @@ class SI_Templating_API extends SI_Controller {
 	 */
 	public static function save_doc_template_selection( $post_id = 0 ) {
 		$doc_template = ( isset( $_POST['doc_template'] ) ) ? sanitize_text_field( wp_unslash( $_POST['doc_template'] ) ) : '' ;
+
+		// Security: Validate template against whitelist to prevent path traversal attacks
+		if ( '' !== $doc_template ) {
+			$post_type = get_post_type( $post_id );
+			$valid_templates = array();
+
+			// Get valid templates based on post type
+			if ( SI_Invoice::POST_TYPE === $post_type ) {
+				$valid_templates = array_keys( self::get_invoice_templates() );
+			} elseif ( SI_Estimate::POST_TYPE === $post_type ) {
+				$valid_templates = array_keys( self::get_estimate_templates() );
+			}
+
+			// Only save if template is in the whitelist
+			if ( ! in_array( $doc_template, $valid_templates, true ) ) {
+				// Invalid template - reject and log (only in debug mode to prevent log flooding)
+				if ( self::DEBUG ) {
+					do_action( 'si_error', 'Invalid template selection attempted', array(
+						'post_id' => $post_id,
+						'attempted_template' => $doc_template,
+					) );
+				}
+				$doc_template = ''; // Reset to default
+			}
+		}
+
 		self::save_doc_current_template( $post_id, $doc_template );
 	}
 
@@ -696,9 +722,41 @@ class SI_Templating_API extends SI_Controller {
 	 */
 	public static function save_client_options( $post_id = 0 ) {
 		$doc_template_invoice = ( isset( $_POST['doc_template_invoice'] ) ) ? sanitize_text_field( wp_unslash( $_POST['doc_template_invoice'] ) ) : '';
+
+		// Security: Validate invoice template against whitelist
+		if ( '' !== $doc_template_invoice ) {
+			$valid_templates = array_keys( self::get_invoice_templates() );
+			if ( ! in_array( $doc_template_invoice, $valid_templates, true ) ) {
+				// Only log in debug mode to prevent log flooding
+				if ( self::DEBUG ) {
+					do_action( 'si_error', 'Invalid invoice template selection attempted for client', array(
+						'client_id' => $post_id,
+						'attempted_template' => $doc_template_invoice,
+					) );
+				}
+				$doc_template_invoice = ''; // Reset to default
+			}
+		}
+
 		self::save_client_invoice_template( $post_id, $doc_template_invoice );
 
 		$doc_template_estimate = ( isset( $_POST['doc_template_estimate'] ) ) ? sanitize_text_field( wp_unslash( $_POST['doc_template_estimate'] ) ) : '';
+
+		// Security: Validate estimate template against whitelist
+		if ( '' !== $doc_template_estimate ) {
+			$valid_templates = array_keys( self::get_estimate_templates() );
+			if ( ! in_array( $doc_template_estimate, $valid_templates, true ) ) {
+				// Only log in debug mode to prevent log flooding
+				if ( self::DEBUG ) {
+					do_action( 'si_error', 'Invalid estimate template selection attempted for client', array(
+						'client_id' => $post_id,
+						'attempted_template' => $doc_template_estimate,
+					) );
+				}
+				$doc_template_estimate = ''; // Reset to default
+			}
+		}
+
 		self::save_client_estimate_template( $post_id, $doc_template_estimate );
 	}
 

@@ -433,6 +433,21 @@ abstract class SI_Controller extends Sprout_Invoices {
 	protected static function locate_template( $possibilities, $default = '' ) {
 		$possibilities = apply_filters( 'sprout_invoice_template_possibilities', $possibilities );
 		$possibilities = array_filter( $possibilities );
+
+		// Security: Validate each possibility for path traversal attempts
+		foreach ( $possibilities as $key => $p ) {
+			// Reject any path containing directory traversal sequences
+			if ( empty( $p ) || strpos( $p, '..' ) !== false || strpos( $p, "\0" ) !== false ) {
+				unset( $possibilities[ $key ] );
+				// Only log in debug mode to prevent DoS via database flooding
+				if ( self::DEBUG ) {
+					do_action( 'si_error', 'Path traversal attempt detected in template path', array(
+						'attempted_path' => $p,
+					) );
+				}
+			}
+		}
+
 		// check if the theme has an override for the template
 		$theme_overrides = array();
 		foreach ( $possibilities as $p ) {
@@ -444,9 +459,16 @@ abstract class SI_Controller extends Sprout_Invoices {
 		}
 
 		// check for it in the templates directory
+		// Security: Compute base path once before loop to avoid repeated filesystem calls
+		$base_path = realpath( SI_PATH . '/views/templates/' );
+
 		foreach ( $possibilities as $p ) {
-			if ( file_exists( SI_PATH.'/views/templates/'.$p ) ) {
-				return SI_PATH.'/views/templates/'.$p;
+			$template_path = SI_PATH . '/views/templates/' . $p;
+			// Security: Ensure the resolved path is within the templates directory
+			$real_path = realpath( $template_path );
+
+			if ( $real_path && $base_path && strpos( $real_path, $base_path ) === 0 && file_exists( $real_path ) ) {
+				return $real_path;
 			}
 		}
 
