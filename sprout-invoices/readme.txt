@@ -5,7 +5,7 @@ Tags: invoice, invoicing, billing, estimates, quote, quotes, payments, billings,
 Requires at least: 5.1
 Tested up to: 6.9
 Requires PHP: 7.2.5
-Stable tag: 20.8.10
+Stable tag: 20.8.11
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -140,6 +140,9 @@ For more detailed look, checkout the full featured [demo](https://sproutinvoices
 Form integrations for everyone!
 
 == Changelog ==
+
+= 20.8.11 =
+* **Security Fix:** Fixed vulnerability with document hash being exposed in rendered HTML for invoices and estimates
 
 = 20.8.10 =
 * **Security Fix:** Patched local file inclusion vulnerability

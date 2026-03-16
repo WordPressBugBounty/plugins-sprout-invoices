@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php -l:*)",
+      "Bash(wp:*)",
+      "Bash(ls:*)",
+      "Bash(curl -s 'https://devel-jacobd.boldgrid.com/sprout-invoice/test-client-invoice-security-verification/')",
+      "Bash(chmod:*)",
+      "Bash(php:*)",
+      "Bash(./verify-fix-comparison.sh:*)",
+      "Bash(vendor/bin/phpunit:*)",
+      "Bash(composer install:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(./vendor/bin/phpunit:*)",
+      "Bash(grep:*)",
+      "Bash(gh pr:*)",
+      "Bash(git tag:*)",
+      "Bash(./build-release.sh 20.8.11 free 2>&1)"
+    ]
+  }
+}

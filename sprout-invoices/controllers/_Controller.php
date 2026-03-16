@@ -212,18 +212,16 @@ abstract class SI_Controller extends Sprout_Invoices {
 
 		if ( is_single() && ( get_post_type( get_the_ID() ) === SI_Invoice::POST_TYPE ) ) {
 			$si_js_object += array(
-				'invoice_id' => get_the_ID(),
+				'invoice_id'     => get_the_ID(),
 				'invoice_amount' => si_get_invoice_calculated_total(),
 				'invoice_balance' => si_get_invoice_balance(),
-				'doc_hash' => SI_Upgrades::ensure_doc_hash( get_the_ID() ),
 			);
 		}
 
 		if ( is_single() && ( get_post_type( get_the_ID() ) === SI_Estimate::POST_TYPE ) ) {
 			$si_js_object += array(
-				'estimate_id' => get_the_ID(),
+				'estimate_id'    => get_the_ID(),
 				'estimate_total' => si_get_estimate_total(),
-				'doc_hash' => SI_Upgrades::ensure_doc_hash( get_the_ID() ),
 			);
 		}
 
@@ -1092,7 +1090,19 @@ abstract class SI_Controller extends Sprout_Invoices {
 
 		$view = '';
 		$new_status = sanitize_text_field( wp_unslash( $_REQUEST['status'] ) );
-		switch ( get_post_type( $doc_id ) ) {
+		$post_type  = get_post_type( $doc_id );
+
+		// Unauthenticated users are limited to accepting or declining estimates.
+		// No frontend UI exposes any other status action to unauthenticated clients:
+		// all four themes and the embeds bundle only render accept/decline buttons on
+		// estimates, and no invoice templates expose a status-change button at all.
+		if ( ! is_user_logged_in() ) {
+			if ( SI_Estimate::POST_TYPE !== $post_type || ! in_array( $new_status, array( 'accept', 'decline' ), true ) ) {
+				self::ajax_fail( 'You do not have permission to change this status.' );
+			}
+		}
+
+		switch ( $post_type ) {
 			case SI_Invoice::POST_TYPE:
 				$doc = SI_Invoice::get_instance( $doc_id );
 				$doc->set_status( $new_status );
@@ -1137,7 +1147,7 @@ abstract class SI_Controller extends Sprout_Invoices {
 		}
 
 		echo wp_json_encode( array( 'new_button' => $view ) );
-		exit();
+		wp_die();
 
 	}
 
@@ -1218,7 +1228,7 @@ abstract class SI_Controller extends Sprout_Invoices {
 			wp_send_json( $message );
 		}
 
-		exit();
+		wp_die();
 	}
 
 	public static function get_user_ip() {

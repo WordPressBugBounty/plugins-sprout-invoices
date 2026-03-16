@@ -29,11 +29,12 @@ jQuery(function($) {
 			$action_links = $( this ).parent(),
 			$new_status = $status_change_link.data( 'status-change' ),
 			$id = $status_change_link.data( 'id' ),
-			$nonce = $status_change_link.data( 'nonce' );
+			$nonce = $status_change_link.data( 'nonce' ),
+			$doc_hash = new URLSearchParams( window.location.search ).get( 'hash' ) || '';
 
 		$action_links.html(si_js_object.inline_spinner);
 
-		$.post( si_js_object.ajax_url, { action: 'si_change_doc_status', id: $id, status: $new_status, change_status_nonce: $nonce, doc_hash: si_js_object.doc_hash },
+		$.post( si_js_object.ajax_url, { action: 'si_change_doc_status', id: $id, status: $new_status, change_status_nonce: $nonce, doc_hash: $doc_hash },
 			function( data ) {
 				if ( data.error ) {
 					$action_links.html( data.response );
