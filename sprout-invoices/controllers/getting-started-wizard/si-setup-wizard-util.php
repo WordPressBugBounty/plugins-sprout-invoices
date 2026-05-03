@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 /**
  * File: sprout-invoices/controllers/getting-started-wizard/si-setup-wizard-util.php
  *

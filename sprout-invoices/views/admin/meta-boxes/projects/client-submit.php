@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <p>
 	<b><?php esc_html_e( 'Projects', 'sprout-invoices' ); ?></b>
 	<?php if ( ! empty( $projects ) ) : ?>

@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 /**
  * A fundamental class from which all other classes in the plugin should be derived.
  * The purpose of this class is to hold data useful to all classes.
@@ -35,7 +36,7 @@ abstract class Sprout_Invoices {
 	 * Current version. Should match sprout-invoices.php plugin version.
 	 */
 
-	const SI_VERSION = '20.8.11';
+	const SI_VERSION = '20.8.13';
 
 	/**
 	 * DB Version

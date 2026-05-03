@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Clients Controller
@@ -107,7 +108,7 @@ class SI_Clients extends SI_Controller {
 				'weight' => 10,
 			),
 			'si_client_submit' => array(
-				'title' => 'Update',
+				'title' => __( 'Update', 'sprout-invoices' ),
 				'show_callback' => array( __CLASS__, 'show_submit_meta_box' ),
 				'save_callback' => array( __CLASS__, 'save_submit_meta_box' ),
 				'context' => 'side',
@@ -233,6 +234,8 @@ class SI_Clients extends SI_Controller {
 	 * @return
 	 */
 	public static function save_meta_box_client_information( $post_id, $post, $callback_args, $estimate_id = null ) {
+		check_admin_referer( 'update-post_' . $post_id, '_wpnonce' );
+
 		// name is filtered via update_post_data
 		$website = ( isset( $_POST['sa_metabox_website'] ) && $_POST['sa_metabox_website'] != '' ) ? sanitize_text_field( wp_unslash( $_POST['sa_metabox_website'] ) ) : '';
 		$phone   = ( isset( $_POST['sa_metabox_phone'] ) && $_POST['sa_metabox_phone'] != '' ) ? sanitize_text_field( wp_unslash( $_POST['sa_metabox_phone'] ) ) : '';
@@ -276,8 +279,8 @@ class SI_Clients extends SI_Controller {
 	public static function update_post_data( $data = array(), $post = array() ) {
 		if ( $post['post_type'] == SI_Client::POST_TYPE ) {
 			$title = $post['post_title'];
-			if ( isset( $_POST['sa_metabox_name'] ) && $_POST['sa_metabox_name'] != '' ) {
-				$title = sanitize_text_field( wp_unslash( $_POST['sa_metabox_name'] ) );
+			if ( isset( $_POST['sa_metabox_name'] ) && $_POST['sa_metabox_name'] != '' ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified by WP core before wp_insert_post_data fires
+				$title = sanitize_text_field( wp_unslash( $_POST['sa_metabox_name'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			}
 			// modify the post title
 			$data['post_title'] = $title;
@@ -294,6 +297,8 @@ class SI_Clients extends SI_Controller {
 	 * @return
 	 */
 	public static function save_meta_box_client_adv_information( $post_id, $post, $callback_args, $estimate_id = null ) {
+		check_admin_referer( 'update-post_' . $post_id, '_wpnonce' );
+
 		$currency        = ( isset( $_POST['sa_metabox_currency'] ) && $_POST['sa_metabox_currency'] != '' ) ? sanitize_text_field( wp_unslash( $_POST['sa_metabox_currency'] ) ) : '';
 		$currency_symbol = ( isset( $_POST['sa_metabox_currency_symbol'] ) && $_POST['sa_metabox_currency_symbol'] != '' ) ? sanitize_text_field( wp_unslash( $_POST['sa_metabox_currency_symbol'] ) ) : '';
 		$money_format    = ( isset( $_POST['sa_metabox_money_format'] ) && $_POST['sa_metabox_money_format'] != '' ) ? sanitize_text_field( wp_unslash( $_POST['sa_metabox_money_format'] ) ) : '';
@@ -318,11 +323,11 @@ class SI_Clients extends SI_Controller {
 		$client = SI_Client::get_instance( $post_id );
 		$client->clear_associated_users();
 
-		if ( ! isset( $_POST['associated_users'] ) ) {
+		if ( ! isset( $_POST['associated_users'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified by WP core post save flow before this metabox callback fires
 			return;
 		}
 
-		$associated_users = array_map( 'sanitize_text_field', wp_unslash( $_POST['associated_users'] ) );
+		$associated_users = array_map( 'sanitize_text_field', wp_unslash( $_POST['associated_users'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		foreach ( $associated_users as $user_id ) {
 			$client->add_associated_user( $user_id );
 		}
@@ -368,7 +373,7 @@ class SI_Clients extends SI_Controller {
 
 		$user = wp_get_current_user();
 		if ( ! isset( $user->roles ) || ( ! empty( $user->roles ) && $user->roles[0] == 'sa_client' ) ) {
-			wp_redirect( home_url() );
+			wp_safe_redirect( home_url() );
 			exit();
 		}
 
@@ -466,6 +471,7 @@ class SI_Clients extends SI_Controller {
 					echo '</dl>';
 					if ( count( $invoices ) > $split ) {
 						printf(
+							/* translators: %1$s: value, %2$s: value, %3$s: value */
 							esc_html__( '%1$s%2$s of %3$s%4$s%5$s%6$s%7$s most recent shown', 'sprout-invoices' ) . '</span>',
 							'<span class="description">...',
 							esc_html( $split ),
@@ -556,7 +562,8 @@ class SI_Clients extends SI_Controller {
 				if ( ! empty( $client_ids ) ) {
 					$string = '';
 					foreach ( $client_ids as $client_id ) {
-						$string .= sprintf( __( '<a class="doc_link" title="%s" href="%s">%s</a>', 'sprout-invoices' ), get_the_title( $client_id ), get_edit_post_link( $client_id ), '<div class="dashicons dashicons-id-alt"></div>' );
+						/* translators: %1$s: client title, %2$s: edit link URL, %3$s: icon HTML */
+						$string .= sprintf( __( '<a class="doc_link" title="%1$s" href="%2$s">%3$s</a>', 'sprout-invoices' ), get_the_title( $client_id ), get_edit_post_link( $client_id ), '<div class="dashicons dashicons-id-alt"></div>' );
 					}
 					return $string;
 				}
@@ -754,7 +761,8 @@ class SI_Clients extends SI_Controller {
 			'options' => $required,
 			'options' => array_flip( SI_Locales::$locales ),
 			'attributes' => array( 'class' => 'select2' ),
-			'description' => sprintf( __( 'Current format: %1$s. The default money formatting (%2$s) can be overridden for all client estimates and invoices here.', 'sprout-invoices' ), sa_get_formatted_money( rand( 11000, 9999999 ), get_the_id() ), '<code>'.$si_localeconv['int_curr_symbol'].'</code>' ),
+			/* translators: %1$s: value, %2$s: value */
+			'description' => sprintf( __( 'Current format: %1$s. The default money formatting (%2$s) can be overridden for all client estimates and invoices here.', 'sprout-invoices' ), sa_get_formatted_money( wp_rand( 11000, 9999999 ), get_the_id() ), '<code>'.$si_localeconv['int_curr_symbol'].'</code>' ),
 		);
 
 		$fields['nonce'] = array(
@@ -865,7 +873,7 @@ class SI_Clients extends SI_Controller {
 	public static function maybe_create_client() {
 		// form maybe be serialized
 		if ( isset( $_REQUEST['serialized_fields'] ) ) {
-			$serialized_fields = array_map( array( __CLASS__, 'sanitize_serialized_field' ), wp_unslash( $_REQUEST['serialized_fields'] ) );
+			$serialized_fields = array_map( array( __CLASS__, 'sanitize_serialized_field' ), wp_unslash( $_REQUEST['serialized_fields'] ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitize_serialized_field handles sanitization of each field
 			foreach ( $serialized_fields as $key => $data ) {
 				$_REQUEST[ $data['name'] ] = $data['value'];
 			}
@@ -941,7 +949,7 @@ class SI_Clients extends SI_Controller {
 
 		// form maybe be serialized
 		if ( isset( $_REQUEST['serialized_fields'] ) ) {
-			$serialized_fields = array_map( array( __CLASS__, 'sanitize_serialized_field' ), wp_unslash( $_REQUEST['serialized_fields'] ) );
+			$serialized_fields = array_map( array( __CLASS__, 'sanitize_serialized_field' ), wp_unslash( $_REQUEST['serialized_fields'] ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitize_serialized_field handles sanitization of each field
 			foreach ( $serialized_fields as $key => $data ) {
 				$_REQUEST[ $data['name'] ] = $data['value'];
 			}
@@ -1000,8 +1008,8 @@ class SI_Clients extends SI_Controller {
 			self::ajax_fail( 'User cannot create new posts!' );
 		}
 
-		if ( ! $client_id && isset( $_REQUEST['client_id'] ) ) {
-			$client_id = sanitize_text_field( wp_unslash($_REQUEST['client_id'] ) );
+		if ( ! $client_id && isset( $_REQUEST['client_id'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: client_id from REQUEST used only to load data for display, no state change
+			$client_id = sanitize_text_field( wp_unslash($_REQUEST['client_id'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		}
 
 		$client = SI_Client::get_instance( $client_id );

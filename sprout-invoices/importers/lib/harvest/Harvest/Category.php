@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 /*
  * copyright (c) 2009 MDBitz - Matthew John Denton - mdbitz.com
  *

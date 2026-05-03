@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 	$editor_settings = array(
 		'media_buttons' => false,
 		'textarea_rows' => 4,

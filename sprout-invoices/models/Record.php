@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * SI Record Model
@@ -25,14 +26,12 @@ class SI_Record extends SI_Post_Type {
 		self::register_post_type( self::POST_TYPE, 'Record', 'Records', $post_type_args );
 
 		// register Locations taxonomy
-		$singular = 'Record Type';
-		$plural = 'Record Types';
 		$taxonomy_args = array(
 			'hierarchical' => true,
 			'public' => false,
 			'show_ui' => false,
 		);
-		self::register_taxonomy( self::TAXONOMY, array( self::POST_TYPE ), $singular, $plural, $taxonomy_args );
+		self::register_taxonomy( self::TAXONOMY, array( self::POST_TYPE ), 'Record Type', 'Record Types', $taxonomy_args );
 
 		self::flush_cache_hooks();
 	}

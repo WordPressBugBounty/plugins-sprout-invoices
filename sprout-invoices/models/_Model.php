@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * SI Post types. A model that all post types derive from.
@@ -37,16 +38,17 @@ abstract class SI_Post_Type extends Sprout_Invoices {
 			$singular = $post_type;
 		}
 		if ( ! $plural ) {
-			$plural = $singular.'s';
+			$plural = $singular . 's';
 		}
 		$defaults = array(
-			'show_ui' => true,
-			'show_in_menu' => false,
+			'show_ui'           => true,
+			'show_in_menu'      => false,
 			'show_in_nav_menus' => false,
-			'public' => true,
-			'supports' => array( 'title', 'editor', 'author', 'thumbnail', 'excerpt', 'revisions' ),
-			'label' => __( $plural, 'sprout-invoices' ),
-			'labels' => self::post_type_labels( $singular, $plural ),
+			'public'            => true,
+			'supports'          => array( 'title', 'editor', 'author', 'thumbnail', 'excerpt', 'revisions' ),
+			// Store raw names; labels are generated at init time to avoid early textdomain loading.
+			'_si_singular'      => $singular,
+			'_si_plural'        => $plural,
 		);
 		$args = wp_parse_args( $args, $defaults );
 		if ( isset( self::$post_types_to_register[ $post_type ] ) ) {
@@ -66,18 +68,26 @@ abstract class SI_Post_Type extends Sprout_Invoices {
 	 */
 	private static function post_type_labels( $singular, $plural ) {
 		return array(
-			'name' => __( $plural, 'sprout-invoices' ),
-			'singular_name' => __( $singular, 'sprout-invoices' ),
-			'add_new' => __( 'Add ' . $singular, 'sprout-invoices' ),
-			'add_new_item' => __( 'Add New ' . $singular, 'sprout-invoices' ),
-			'edit_item' => __( 'Edit ' . $singular, 'sprout-invoices' ),
-			'new_item' => __( 'New ' . $singular, 'sprout-invoices' ),
-			'all_items' => __( $plural, 'sprout-invoices' ),
-			'view_item' => __( 'View ' . $singular, 'sprout-invoices' ),
-			'search_items' => __( 'Search ' . $plural, 'sprout-invoices' ),
-			'not_found' => __( 'No ' . $plural . ' found', 'sprout-invoices' ),
-			'not_found_in_trash' => __( 'No ' . $plural . ' found in Trash', 'sprout-invoices' ),
-			'menu_name' => __( $plural, 'sprout-invoices' ),
+			'name' => $plural,
+			'singular_name' => $singular,
+			/* translators: %s: value */
+			'add_new' => sprintf( __( 'Add %s', 'sprout-invoices' ), $singular ),
+			/* translators: %s: value */
+			'add_new_item' => sprintf( __( 'Add New %s', 'sprout-invoices' ), $singular ),
+			/* translators: %s: value */
+			'edit_item' => sprintf( __( 'Edit %s', 'sprout-invoices' ), $singular ),
+			/* translators: %s: value */
+			'new_item' => sprintf( __( 'New %s', 'sprout-invoices' ), $singular ),
+			'all_items' => $plural,
+			/* translators: %s: value */
+			'view_item' => sprintf( __( 'View %s', 'sprout-invoices' ), $singular ),
+			/* translators: %s: value */
+			'search_items' => sprintf( __( 'Search %s', 'sprout-invoices' ), $plural ),
+			/* translators: %s: value */
+			'not_found' => sprintf( __( 'No %s found', 'sprout-invoices' ), $plural ),
+			/* translators: %s: value */
+			'not_found_in_trash' => sprintf( __( 'No %s found in Trash', 'sprout-invoices' ), $plural ),
+			'menu_name' => $plural,
 		);
 	}
 
@@ -107,7 +117,14 @@ abstract class SI_Post_Type extends Sprout_Invoices {
 	 */
 	public static function register_post_types() {
 		foreach ( self::$post_types_to_register as $post_type => $args ) {
-			$args = apply_filters( 'si_register_post_type_args-'.$post_type, $args );
+			// Generate labels at init time (textdomain is loaded at init priority 1).
+			$singular        = $args['_si_singular'];
+			$plural          = $args['_si_plural'];
+			unset( $args['_si_singular'], $args['_si_plural'] );
+			$args['label']   = __( $plural, 'sprout-invoices' );   // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+			$args['labels']  = self::post_type_labels( __( $singular, 'sprout-invoices' ), __( $plural, 'sprout-invoices' ) ); // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+
+			$args = apply_filters( 'si_register_post_type_args-' . $post_type, $args );
 			$args = apply_filters( 'si_register_post_type_args', $args, $post_type );
 			register_post_type( $post_type, $args );
 		}
@@ -166,31 +183,45 @@ abstract class SI_Post_Type extends Sprout_Invoices {
 		if ( $args['public'] ) {
 			$messages = array(
 				0 => '', // Unused. Messages start at index 1.
-				1 => sprintf( __( '%s updated. <a href="%s">View %s</a>', 'sprout-invoices' ), ucfirst( $name ), esc_url( get_permalink( $post_id ) ), $name ),
+				/* translators: %1$s: value, %2$s: value, %3$s: value */
+				1 => sprintf( __( '%1$s updated. <a href="%2$s">View %3$s</a>', 'sprout-invoices' ), ucfirst( $name ), esc_url( get_permalink( $post_id ) ), $name ),
 				2 => __( 'Custom field updated.', 'sprout-invoices' ),
 				3 => __( 'Custom field deleted.', 'sprout-invoices' ),
+				/* translators: %s: value */
 				4 => sprintf( __( '%s updated.', 'sprout-invoices' ), ucfirst( $name ) ),
 				/* translators: %s: date and time of the revision */
-				5 => isset( $_GET['revision'] ) ? sprintf( __( '%s restored to revision from %s', 'sprout-invoices' ), ucfirst( $name ), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
-				6 => sprintf( __( '%s published. <a href="%s">View %s</a>', 'sprout-invoices' ), ucfirst( $name ), esc_url( get_permalink( $post_id ) ), $name ),
+				5 => isset( $_GET['revision'] ) ? sprintf( __( '%1$s restored to revision from %2$s', 'sprout-invoices' ), ucfirst( $name ), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false, // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: GET revision param used to build display message, no state change
+				/* translators: %1$s: value, %2$s: value, %3$s: value */
+				6 => sprintf( __( '%1$s published. <a href="%2$s">View %3$s</a>', 'sprout-invoices' ), ucfirst( $name ), esc_url( get_permalink( $post_id ) ), $name ),
+				/* translators: %s: value */
 				7 => sprintf( __( '%s saved.', 'sprout-invoices' ), ucfirst( $name ) ),
-				8 => sprintf( __( '%s submitted. <a target="_blank" href="%s">Preview %s</a>', 'sprout-invoices' ), ucfirst( $name ), esc_url( add_query_arg( 'preview', 'true', get_permalink( $post_id ) ) ), $name ),
-				9 => sprintf( __( '%s scheduled for: <strong>%1$s</strong>. <a target="_blank" href="%2$s">Preview %s</a>', 'sprout-invoices' ), $name, date_i18n( __( 'M j, Y @ G:i', 'sprout-invoices' ), strtotime( $post->post_date ) ), esc_url( get_permalink( $post_id ) ), $name ),
-				10 => sprintf( __( '%s draft updated. <a target="_blank" href="%s">Preview %s</a>', 'sprout-invoices' ), ucfirst( $name ), esc_url( add_query_arg( 'preview', 'true', get_permalink( $post_id ) ) ), $name ),
+				/* translators: %1$s: value, %2$s: value, %3$s: value */
+				8 => sprintf( __( '%1$s submitted. <a target="_blank" href="%2$s">Preview %3$s</a>', 'sprout-invoices' ), ucfirst( $name ), esc_url( add_query_arg( 'preview', 'true', get_permalink( $post_id ) ) ), $name ),
+				/* translators: %1$s: value, %2$s: value, %3$s: value, %4$s: value */
+				9 => sprintf( __( '%3$s scheduled for: <strong>%1$s</strong>. <a target="_blank" href="%2$s">Preview %4$s</a>', 'sprout-invoices' ), $name, date_i18n( __( 'M j, Y @ G:i', 'sprout-invoices' ), strtotime( $post->post_date ) ), esc_url( get_permalink( $post_id ) ), $name ),
+				/* translators: %1$s: value, %2$s: value, %3$s: value */
+				10 => sprintf( __( '%1$s draft updated. <a target="_blank" href="%2$s">Preview %3$s</a>', 'sprout-invoices' ), ucfirst( $name ), esc_url( add_query_arg( 'preview', 'true', get_permalink( $post_id ) ) ), $name ),
 			);
 		} else { // post types that are not public should not have links to a post
 			$messages = array(
 				0 => '', // Unused. Messages start at index 1.
+				/* translators: %s: value */
 				1 => sprintf( __( '%s updated.', 'sprout-invoices' ), ucfirst( $name ) ),
 				2 => __( 'Custom field updated.', 'sprout-invoices' ),
 				3 => __( 'Custom field deleted.', 'sprout-invoices' ),
+				/* translators: %s: value */
 				4 => sprintf( __( '%s updated.', 'sprout-invoices' ), ucfirst( $name ) ),
 				/* translators: %s: date and time of the revision */
-				5 => isset( $_GET['revision'] ) ? sprintf( __( '%s restored to revision from %s', 'sprout-invoices' ), ucfirst( $name ), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
+				5 => isset( $_GET['revision'] ) ? sprintf( __( '%1$s restored to revision from %2$s', 'sprout-invoices' ), ucfirst( $name ), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false, // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: GET revision param used to build display message, no state change
+				/* translators: %s: value */
 				6 => sprintf( __( '%s published.', 'sprout-invoices' ), ucfirst( $name ) ),
+				/* translators: %s: value */
 				7 => sprintf( __( '%s saved.', 'sprout-invoices' ), ucfirst( $name ) ),
+				/* translators: %s: value */
 				8 => sprintf( __( '%s submitted.', 'sprout-invoices' ), ucfirst( $name ) ),
-				9 => sprintf( __( '%s scheduled for: <strong>%1$s</strong>.', 'sprout-invoices' ), ucfirst( $name ), date_i18n( __( 'M j, Y @ G:i', 'sprout-invoices' ), strtotime( $post->post_date ) ) ),
+				/* translators: %1$s: value, %2$s: value */
+				9 => sprintf( __( '%2$s scheduled for: <strong>%1$s</strong>.', 'sprout-invoices' ), ucfirst( $name ), date_i18n( __( 'M j, Y @ G:i', 'sprout-invoices' ), strtotime( $post->post_date ) ) ),
+				/* translators: %s: value */
 				10 => sprintf( __( '%s draft updated.', 'sprout-invoices' ), ucfirst( $name ) ),
 			);
 		}
@@ -216,14 +247,14 @@ abstract class SI_Post_Type extends Sprout_Invoices {
 			$singular = $taxonomy;
 		}
 		if ( ! $plural ) {
-			$plural = $singular.'s';
+			$plural = $singular . 's';
 		}
 		$defaults = array(
-			'hierarchical' => true,
-			'labels' => self::taxonomy_labels( $singular, $plural ),
-			'show_ui' => true,
-			'query_var' => true,
+			'hierarchical'      => true,
+			'show_ui'           => true,
+			'query_var'         => true,
 			'show_in_nav_menus' => false,
+			// Labels generated at init time; store raw names to avoid early textdomain loading.
 		);
 		$args = wp_parse_args( $args, $defaults );
 		if ( isset( self::$taxonomies_to_register[ $taxonomy ] ) ) {
@@ -232,24 +263,35 @@ abstract class SI_Post_Type extends Sprout_Invoices {
 		}
 		self::$taxonomies_to_register[ $taxonomy ] = array(
 			'post_types' => $post_types,
-			'args' => $args,
+			'args'       => $args,
+			'singular'   => $singular,
+			'plural'     => $plural,
 		);
 	}
 
 	private static function taxonomy_labels( $singular, $plural ) {
 		return array(
-			'name' => __( $plural, 'sprout-invoices' ),
-			'singular_name' => __( $singular, 'sprout-invoices' ),
-			'search_items' => __( 'Search '.$plural, 'sprout-invoices' ),
-			'popular_items' => __( 'Popular '.$plural, 'sprout-invoices' ),
-			'all_items' => __( 'All '.$plural, 'sprout-invoices' ),
-			'parent_item' => __( 'Parent '.$singular, 'sprout-invoices' ),
-			'parent_item_colon' => __( 'Parent '.$singular.':', 'sprout-invoices' ),
-			'edit_item' => __( 'Edit '.$singular, 'sprout-invoices' ),
-			'update_item' => __( 'Update '.$singular, 'sprout-invoices' ),
-			'add_new_item' => __( 'Add New '.$singular, 'sprout-invoices' ),
-			'new_item_name' => __( 'New '.$singular.' Name', 'sprout-invoices' ),
-			'menu_name' => __( $plural, 'sprout-invoices' ),
+			'name' => $plural,
+			'singular_name' => $singular,
+			/* translators: %s: value */
+			'search_items' => sprintf( __( 'Search %s', 'sprout-invoices' ), $plural ),
+			/* translators: %s: value */
+			'popular_items' => sprintf( __( 'Popular %s', 'sprout-invoices' ), $plural ),
+			/* translators: %s: value */
+			'all_items' => sprintf( __( 'All %s', 'sprout-invoices' ), $plural ),
+			/* translators: %s: value */
+			'parent_item' => sprintf( __( 'Parent %s', 'sprout-invoices' ), $singular ),
+			/* translators: %s: value */
+			'parent_item_colon' => sprintf( __( 'Parent %s:', 'sprout-invoices' ), $singular ),
+			/* translators: %s: value */
+			'edit_item' => sprintf( __( 'Edit %s', 'sprout-invoices' ), $singular ),
+			/* translators: %s: value */
+			'update_item' => sprintf( __( 'Update %s', 'sprout-invoices' ), $singular ),
+			/* translators: %s: value */
+			'add_new_item' => sprintf( __( 'Add New %s', 'sprout-invoices' ), $singular ),
+			/* translators: %s: value */
+			'new_item_name' => sprintf( __( 'New %s Name', 'sprout-invoices' ), $singular ),
+			'menu_name' => $plural,
 		);
 	}
 
@@ -278,9 +320,15 @@ abstract class SI_Post_Type extends Sprout_Invoices {
 	 */
 	public static function register_taxonomies() {
 		foreach ( self::$taxonomies_to_register as $taxonomy => $data ) {
-			$post_types = apply_filters( 'si_register_taxonomy_post_types-'.$taxonomy, $data['post_types'], $data['args'], $data );
-			$args = apply_filters( 'si_register_taxonomy_args-'.$taxonomy, $data['args'], $data['post_types'], $data );
-			$args = apply_filters( 'si_register_taxonomy_args', $args, $taxonomy, $data['post_types'], $data );
+			// Generate labels at init time (textdomain is loaded at init priority 1).
+			$singular     = __( $data['singular'], 'sprout-invoices' ); // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+			$plural       = __( $data['plural'], 'sprout-invoices' );   // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+			$args         = $data['args'];
+			$args['labels'] = self::taxonomy_labels( $singular, $plural );
+
+			$post_types = apply_filters( 'si_register_taxonomy_post_types-' . $taxonomy, $data['post_types'], $args, $data );
+			$args       = apply_filters( 'si_register_taxonomy_args-' . $taxonomy, $args, $data['post_types'], $data );
+			$args       = apply_filters( 'si_register_taxonomy_args', $args, $taxonomy, $data['post_types'], $data );
 			register_taxonomy( $taxonomy, $post_types, $args );
 		}
 	}
@@ -294,12 +342,12 @@ abstract class SI_Post_Type extends Sprout_Invoices {
 	 * ------------------------------------------------------------- */
 	final public function __clone() {
 		// cannot be cloned
-		trigger_error( __CLASS__.' may not be cloned', E_USER_ERROR );
+		wp_die( esc_html( __CLASS__ . ' may not be cloned' ) );
 	}
 
 	final public function __sleep() {
 		// cannot be serialized
-		trigger_error( __CLASS__.' may not be serialized', E_USER_ERROR );
+		wp_die( esc_html( __CLASS__ . ' may not be serialized' ) );
 	}
 
 	/**
@@ -417,7 +465,7 @@ abstract class SI_Post_Type extends Sprout_Invoices {
 	 * @return string
 	 */
 	public function get_title() {
-		return str_replace( __( 'Auto Draft' ), '', $this->post->post_title );
+		return str_replace( __( 'Auto Draft', 'default' ), '', $this->post->post_title ); // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Reusing WordPress core string translation
 	}
 
 

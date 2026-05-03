@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <div class="dashboard_widget inside">
 	<div class="main">
 		<canvas id="payments_status_chart" min-height="300" max-height="500"></canvas>

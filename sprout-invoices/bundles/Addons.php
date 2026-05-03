@@ -3,6 +3,9 @@
 /**
  * Addons: Admin purchasing, check for updates, etc.
  */
+
+defined( 'ABSPATH' ) || exit;
+
 class SA_Addons extends SI_Controller {
 	const SETTINGS_PAGE           = 'addons';
 	const ADDON_OPTION            = 'si_active_addons_v3';
@@ -148,7 +151,7 @@ class SA_Addons extends SI_Controller {
 			'form_integrations' => $form_ints,
 			'tax_addons'        => $tax_addons,
 			'option'            => self::ADDON_OPTION,
-			'mp_addons'         => self::get_marketplace_addons(),
+			'mp_addons'         => self::get_marketplace_addons() ?: array(),
 			'enabled_addons'    => self::$active_addons,
 			'allsettings'       => SI_Settings_API::get_si_settings(),
 		);
@@ -237,8 +240,17 @@ class SA_Addons extends SI_Controller {
 	 * @return void
 	 */
 	public static function render_addon_settings_content( $addon ) {
+		if ( wp_doing_ajax() ) {
+			$nonce = isset( $_SERVER['HTTP_X_WP_NONCE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_WP_NONCE'] ) ) : '';
+			if ( ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
+				wp_send_json_error( array( 'message' => __( 'Security check failed.', 'sprout-invoices' ) ), 403 );
+			}
+			if ( ! current_user_can( 'manage_options' ) ) {
+				wp_send_json_error( array( 'message' => __( 'You do not have permission.', 'sprout-invoices' ) ), 403 );
+			}
+		}
 		if ( ! empty( $_POST ) && isset( $_POST['addon'] ) ) {
-			$addon = $_POST['addon'];
+			$addon = sanitize_text_field( wp_unslash( $_POST['addon'] ) );
 		}
 		$args = array(
 			'addon'       => $addon,
@@ -567,7 +579,11 @@ class SA_Addons extends SI_Controller {
 		$free_addons = array();
 		$corp_addons = array();
 
-		foreach ( $marketplace_items as $addon_id => $addon ) {
+		if ( ! is_array( $marketplace_items ) && ! is_object( $marketplace_items ) ) {
+		return false;
+	}
+
+	foreach ( $marketplace_items as $addon_id => $addon ) {
 			if ( 44588 === $addon->id ) {
 				$corp_addons[ $addon_id ] = $addon;
 			} elseif ( $addon->biz_bundled ) {

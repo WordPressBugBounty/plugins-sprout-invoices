@@ -1,4 +1,6 @@
-<?php foreach ( $processor_settings as $key => $section_settings ) : ?>
+<?php
+if ( ! defined( 'ABSPATH' ) ) exit;
+foreach ( $processor_settings as $key => $section_settings ) : ?>
 	<div class="si-box-top">
 		<?php if ( isset( $section_settings['title'] ) && '' !== $section_settings['title'] ) : ?>
 			<?php echo esc_html( $section_settings['title'] ); ?>

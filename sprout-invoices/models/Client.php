@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Client Model
@@ -89,6 +90,7 @@ class SI_Client extends SI_Post_Type {
 	 */
 	public static function new_client( $passed_args ) {
 		$defaults = array(
+			/* translators: %1$s: value */
 			'company_name' => sprintf( __( 'New Client: %s', 'sprout-invoices' ), date_i18n( get_option( 'date_format' ).' @ '.get_option( 'time_format' ), current_time( 'timestamp' ) ) ),
 			'website' => '',
 			'phone' => '',

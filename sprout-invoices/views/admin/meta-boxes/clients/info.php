@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 	$fields['name']['default'] = ( get_the_title( $id ) != 'Auto Draft' ) ? get_the_title( $id ) : '';
 	if ( ! empty( $associated_users ) ) {
 		unset( $fields['email'] );

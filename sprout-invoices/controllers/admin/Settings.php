@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Admin settings controller.
@@ -58,7 +59,7 @@ class SI_Admin_Settings extends SI_Controller {
 		}
 		if ( $si == $plugin_file ) {
 
-			$settings = array( 'settings' => '<a href="admin.php?page=sprout-invoices-settings">' . __( 'Settings', 'General' ) . '</a>' );
+			$settings = array( 'settings' => '<a href="admin.php?page=sprout-invoices-settings">' . __( 'Settings', 'sprout-invoices' ) . '</a>' );
 			$support_link = array( 'support' => sprintf( '<a href="%s" style="color:#FF0000" target="_blank"><b>%s</b></a>', si_get_sa_link( 'https://sproutinvoices.com/support/my-tickets/' ), __( 'Need Help?', 'sprout-invoices' ) ) );
 			$site_link = array( 'site' => sprintf( '<a href="%s">%s</a>', 'admin.php?page=sprout-invoices-addons', __( 'Add-ons', 'sprout-invoices' ) ) );
 
@@ -203,7 +204,7 @@ class SI_Admin_Settings extends SI_Controller {
 			// Flush the rewrite rules after SI is activated.
 			flush_rewrite_rules();
 			delete_option( 'si_do_activation_redirect' );
-			wp_redirect( admin_url( 'admin.php?page=sprout-invoices' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=sprout-invoices' ) );
 		}
 	}
 
@@ -215,7 +216,7 @@ class SI_Admin_Settings extends SI_Controller {
 	public static function si_settings_render_welcome_page() {
 		$sub_pages = apply_filters( 'si_sub_admin_pages', array() );
 		uasort( $sub_pages, array( __CLASS__, 'sort_by_weight' ) );
-		$current_page = ( isset( $_GET['page'] ) ) ? str_replace( 'sprout-invoices-', '', sanitize_text_field( wp_unslash( $_GET['page'] ) ) ) : '';
+		$current_page = ( isset( $_GET['page'] ) ) ? str_replace( 'sprout-invoices-', '', sanitize_text_field( wp_unslash( $_GET['page'] ) ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: GET param used to render settings page, no state change
 
 		$view = ( ! SI_FREE_TEST && ( SA_Addons::is_pro_installed() || SA_Addons::is_biz_installed() ) ) ? 'admin/sprout-invoices-dashboard-premium.php' : 'admin/sprout-invoices-dashboard.php';
 		$args = array(
@@ -293,9 +294,11 @@ class SI_Admin_Settings extends SI_Controller {
 	public static function save_address( $address = array() ) {
 		$fields = self::address_form_fields( false );
 		$address = array();
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce verified by Settings_API before si_settings_saved fires
 		foreach ( $fields as $key => $value ) {
 			$address[ $key ] = isset( $_POST[ 'sa_metabox_' . $key ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'sa_metabox_' . $key ] ) ) : '';
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 		$address = stripslashes_deep( $address );
 		update_option( self::ADDRESS_OPTION, $address );
 	}
@@ -464,6 +467,7 @@ class SI_Admin_Settings extends SI_Controller {
 			'grouping'          => array(),
 			'mon_grouping'      => array( 3, 3 ),
 		);
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce verified by Settings_API before si_settings_saved fires
 		foreach ( $lc_options as $key => $default ) {
 			if ( isset( $_POST[ 'sa_metabox_' . $key ] ) && 'false' === $_POST[ 'sa_metabox_' . $key ] ) {
 				$_POST[ 'sa_metabox_' . $key ] = false;
@@ -479,6 +483,7 @@ class SI_Admin_Settings extends SI_Controller {
 				$localeconv['mon_grouping'] = array_map( 'trim', $mon_grouping );
 			}
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 		$localeconv = stripslashes_deep( $localeconv );
 		update_option( self::CURRENCY_FORMAT_OPTION, $localeconv );
 	}
@@ -606,7 +611,7 @@ class SI_Admin_Settings extends SI_Controller {
 			$wp_admin_bar->add_node( array(
 				'parent' => self::MENU_ID,
 				'id' => $item['id'],
-				'title' => __( $item['title'], 'sprout-invoices' ),
+				'title' => $item['title'],
 				'href' => $item['href'],
 			) );
 		}
@@ -622,7 +627,7 @@ class SI_Admin_Settings extends SI_Controller {
 			$wp_admin_bar->add_node( array(
 				'parent' => self::MENU_ID.'_options',
 				'id' => $item['id'],
-				'title' => __( $item['title'], 'sprout-invoices' ),
+				'title' => $item['title'],
 				'href' => $item['href'],
 			) );
 		}
@@ -641,7 +646,7 @@ class SI_Admin_Settings extends SI_Controller {
 	public static function help_tabs() {
 
 		$screen = get_current_screen();
-		if ( ! isset( $_GET['tab'] ) ) {
+		if ( ! isset( $_GET['tab'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: GET param used to select help tab display, no state change
 			// get screen and add sections.
 			$screen = get_current_screen();
 

@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  *
@@ -58,13 +59,14 @@ class SI_Notifications_Test extends SI_Notifications {
 
 	public static function register_resources() {
 		// admin js
-		wp_register_script( 'si_test_notifications', SI_URL . '/resources/admin/js/notification-tests.js', array( 'jquery' ), self::SI_VERSION );
+		wp_register_script( 'si_test_notifications', SI_URL . '/resources/admin/js/notification-tests.js', array( 'jquery' ), self::SI_VERSION, true );
 	}
 
 	public static function admin_enqueue() {
 		wp_localize_script( 'si_test_notifications', 'test_notification',
 			array(
 				'action' => self::SEND_ACTION,
+				'nonce' => wp_create_nonce( self::SEND_ACTION ),
 				'sent_button_text' => __( 'Send Another', 'sprout-invoices' ),
 				'warning' => __( 'Are you sure? This will delete any customized notifications and replace them with the default HTML templates.', 'sprout-invoices' ),
 				)
@@ -151,6 +153,11 @@ class SI_Notifications_Test extends SI_Notifications {
 			return;
 		}
 
+		$nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : '';
+		if ( ! wp_verify_nonce( $nonce, self::SEND_ACTION ) ) {
+			wp_send_json_error( array( 'message' => __( 'Security check failed.', 'sprout-invoices' ) ), 403 );
+		}
+
 		$data = $_POST;
 
 		if ( ! isset( $data['notification'] ) ) {
@@ -220,7 +227,8 @@ class SI_Notifications_Test extends SI_Notifications {
 		remove_filter( 'si_is_test_notification', '__return_true', 2005 );
 
 		$response = array(
-				'message' => sprintf( __( '<p class="ajax_message">Test notification sent. Review all <a href="%s">notification records</a>.</p>', 'sprout-invoices' ), admin_url( 'tools.php?page=si_records&sa_record_type=20&m=0&sa_record_type=3&paged=1' ) ),
+				/* translators: %s: URL to notification records page */
+				'message' => '<p class="ajax_message">' . sprintf( __( 'Test notification sent. Review all <a href="%s">notification records</a>.', 'sprout-invoices' ), admin_url( 'tools.php?page=si_records&sa_record_type=20&m=0&sa_record_type=3&paged=1' ) ) . '</p>',
 			);
 
 		wp_send_json_success( $response );

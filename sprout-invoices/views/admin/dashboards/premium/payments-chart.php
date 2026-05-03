@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <div class="dashboard_widget inside">
 
 	<div id="payments" class="chart_filter">

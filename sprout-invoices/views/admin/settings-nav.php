@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <div id="si-page-header" class="si-has-logo">
 	<h1><?php esc_html_e( 'Sprout Invoices', 'sprout-invoices' ); ?></h1>
 		<a class="si-action-button button button-primary" href="post-new.php?post_type=sa_invoice" >Create Invoice</a>

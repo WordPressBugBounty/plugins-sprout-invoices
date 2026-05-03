@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Paypal offsite payment processor.
@@ -226,7 +227,7 @@ class SI_Checks extends SI_Offsite_Processors {
 		}
 		$payment = SI_Payment::get_instance( $payment_id );
 		if ( $date != '' ) {
-			$payment->set_post_date( date( 'Y-m-d H:i:s', strtotime( $date ) ) );
+			$payment->set_post_date( gmdate( 'Y-m-d H:i:s', strtotime( $date ) ) );
 		}
 		do_action( 'payment_pending', $payment );
 		return $payment;
@@ -236,7 +237,7 @@ class SI_Checks extends SI_Offsite_Processors {
 		if ( ! is_a( $checkout->get_processor(), __CLASS__ ) ) {
 			return;
 		}
-		wp_redirect( $checkout->checkout_confirmation_url( self::PAYMENT_SLUG ) );
+		wp_safe_redirect( $checkout->checkout_confirmation_url( self::PAYMENT_SLUG ) );
 		exit();
 	}
 
@@ -255,4 +256,4 @@ class SI_Checks extends SI_Offsite_Processors {
 		}
 	}
 }
-SI_Checks::register();
+add_action( 'init', array( 'SI_Checks', 'register' ) );

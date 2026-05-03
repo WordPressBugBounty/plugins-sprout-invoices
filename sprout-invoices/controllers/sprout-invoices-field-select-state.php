@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 /**
  * File: sprout-invoices/controllers/sprout-invoices-field-select-state.php
  *
@@ -23,6 +24,7 @@ class SI_Field_Select_State extends SI_Field {
 	 * @since 20.7.0
 	 */
 	public function get_field_markup() {
+		ob_start();
 		?>
 			<div
 				class="si_input_field_wrap si_field_wrap_input_<?php echo esc_attr( $this->field_type ); ?>"
@@ -60,5 +62,6 @@ class SI_Field_Select_State extends SI_Field {
 				</select>
 			</div>
 		<?php
+		return ob_get_clean();
 	}
 }

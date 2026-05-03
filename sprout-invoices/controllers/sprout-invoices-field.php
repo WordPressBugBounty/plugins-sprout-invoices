@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 /**
  * file: sprout-invoices/controllers/sprout-invoices-fields.php
  *
@@ -127,9 +128,9 @@ class SI_Field extends SI_Controller {
 		?>
 		<div
 			class="si_field_<?php echo esc_attr( $this->field_type ); ?>"
-			style="<?php echo esc_attr( $field_styles ); ?>"
+			style="<?php echo esc_attr( $field_styles ?? '' ); ?>"
 		>
-		<?php echo wp_kses( $field_markup, SI_Settings_API::get_allowed_html() ); ?>
+		<?php echo wp_kses( $field_markup ?? '', SI_Settings_API::get_allowed_html() ); ?>
 		</div>
 		<?php
 	}
@@ -173,4 +174,3 @@ class SI_Field extends SI_Controller {
 	}
 
 }
-

@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 
 /**
@@ -579,7 +580,7 @@ if ( ! function_exists( 'si_get_estimate_terms' ) ) :
 			$id = get_the_ID();
 		}
 		$estimate = SI_Estimate::get_instance( $id );
-		return apply_filters( 'si_get_estimate_terms', apply_filters( 'the_content', $estimate->get_terms() ), $estimate );
+		return apply_filters( 'si_get_estimate_terms', apply_filters( 'the_content', (string) $estimate->get_terms() ), $estimate );
 	}
 endif;
 
@@ -593,7 +594,7 @@ if ( ! function_exists( 'si_estimate_terms' ) ) :
 		if ( ! $id ) {
 			$id = get_the_ID();
 		}
-		echo wp_kses_post( apply_filters( 'si_estimate_terms', si_get_estimate_terms( $id ), $id ) );
+		echo wp_kses_post( (string) apply_filters( 'si_estimate_terms', si_get_estimate_terms( $id ), $id ) );
 	}
 endif;
 
@@ -639,7 +640,7 @@ if ( ! function_exists( 'si_get_estimate_notes' ) ) :
 			$id = get_the_ID();
 		}
 		$estimate = SI_Estimate::get_instance( $id );
-		return apply_filters( 'si_get_estimate_notes', apply_filters( 'the_content', $estimate->get_notes() ), $estimate );
+		return apply_filters( 'si_get_estimate_notes', apply_filters( 'the_content', (string) $estimate->get_notes() ), $estimate );
 	}
 endif;
 
@@ -653,7 +654,7 @@ if ( ! function_exists( 'si_estimate_notes' ) ) :
 		if ( ! $id ) {
 			$id = get_the_ID();
 		}
-		echo wp_kses_post( apply_filters( 'si_estimate_notes', si_get_estimate_notes( $id ), $id ) );
+		echo wp_kses_post( (string) apply_filters( 'si_estimate_notes', si_get_estimate_notes( $id ), $id ) );
 	}
 endif;
 

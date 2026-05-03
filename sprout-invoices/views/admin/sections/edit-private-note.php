@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <div id="private_note_edit_modal">
 	<div id="tt_body" class="admin_fields clearfix">
 		<?php sa_admin_fields( $fields, 'note' ); ?>

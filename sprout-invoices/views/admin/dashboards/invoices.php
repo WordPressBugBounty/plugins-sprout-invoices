@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <h3 class="dashboard_widget_title">
 	<span><?php esc_html_e( 'Invoice Dashboard', 'sprout-invoices' ) ?></span>
 </h3>

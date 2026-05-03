@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <section id="section_<?php echo esc_attr( $class_name ) ?>">
 	<h1><?php echo esc_html( $label ) ?></h1>
 

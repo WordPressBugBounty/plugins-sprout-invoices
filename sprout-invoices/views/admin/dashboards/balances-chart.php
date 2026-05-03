@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <h3 class="dashboard_widget_title">
 	<span><?php esc_html_e( 'Outstanding Balances &amp; Payments', 'sprout-invoices' ) ?></span>
 </h3>

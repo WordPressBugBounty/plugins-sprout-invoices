@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <div id="line_items_totals">
 
 	<?php do_action( 'si_line_item_totals_section_start', $id ); ?>

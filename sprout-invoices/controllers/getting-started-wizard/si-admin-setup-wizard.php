@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 /**
  * File: sprout-invoices/controllers/getting-started-wizard/si-startup-wizard.php
  *
@@ -48,15 +49,18 @@ class SI_Admin_Setup_Wizard {
 			'page_title' => __( 'Sprout Invoices Setup Wizard', 'sprout-invoices' ),
 		);
 
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only: GET params used for wizard navigation/display, no state change
 		$tab     = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : '';
 		$section = isset( $_GET['section'] ) ? sanitize_text_field( wp_unslash( $_GET['section'] ) ) : '';
 
 		if ( ! isset( $_GET['page'] ) || 'sprout-invoices' !== sanitize_text_field( wp_unslash( $_GET['page'] ) ) ) {
+			// phpcs:enable WordPress.Security.NonceVerification.Recommended
 			return;
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 		if ( ! empty( $tab ) && ! empty( $section ) ) {
-			add_action( 'si_wizard_content_' . sanitize_text_field( wp_unslash( $_GET['tab'] ) ) . '_' . sanitize_text_field( wp_unslash( $_GET['section'] ) ), array( $this, 'si_settings_tabs' ) );
+			add_action( 'si_wizard_content_' . $tab . '_' . $section, array( $this, 'si_settings_tabs' ) );
 			$args['current_tab']     = $tab;
 			$args['current_section'] = $section;
 		}

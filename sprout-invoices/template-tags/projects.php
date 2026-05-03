@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 
 if ( ! function_exists( 'si_projects_select' ) ) :
@@ -46,6 +47,7 @@ if ( ! function_exists( 'si_projects_select' ) ) :
 		if ( ! empty( $selections ) ) {
 			$out = '<select name="'.$el_id.'" class="select2">';
 			if ( $blank ) {
+				/* translators: %s: value */
 				$out .= sprintf( '<option value="0">%s</option>', __( 'Select Project', 'sprout-invoices' ) );
 			}
 			foreach ( $selections as $client => $projects ) {
@@ -58,6 +60,7 @@ if ( ! function_exists( 'si_projects_select' ) ) :
 			$out .= '</select>';
 		}
 		else {
+			/* translators: %s: value */
 			$out = '<span>'.sprintf( __( 'No <a href="%s" target="_blank">projects</a> found', 'sprout-invoices' ), admin_url( 'post-new.php?post_type='.SI_Project::POST_TYPE ) ).'</span>';
 		}
 

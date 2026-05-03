@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Credit Card Processors parent class, extends all payment processors.
@@ -45,8 +46,10 @@ abstract class SI_Credit_Card_Processors extends SI_Payment_Processors {
 	 * @return
 	 */
 	public function process_credit_card_cache( $action, SI_Checkouts $checkout ) {
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce is verified in SI_Checkouts::handle_action() before the si_checkout_action hook fires.
 		if ( isset( $_POST['sa_credit_cc_cache'] ) ) {
 			$cache = json_decode( sanitize_text_field( wp_unslash( $_POST['sa_credit_cc_cache'] ) ), true );
+			// phpcs:enable WordPress.Security.NonceVerification.Missing
 			if ( $this->validate_credit_card( $cache, $checkout ) ) {
 				$this->cc_cache = $cache;
 
@@ -62,6 +65,7 @@ abstract class SI_Credit_Card_Processors extends SI_Payment_Processors {
 	 * @return void
 	 */
 	public function process_payment_page( SI_Checkouts $checkout ) {
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce is verified in SI_Checkouts::handle_action() before the si_checkout_action_payment hook fires.
 		$fields = $this->payment_fields( $checkout );
 		foreach ( array_keys( $fields ) as $key ) {
 			if ( $key == 'cc_number' ) { // catch the cc_number so it can be sanatized
@@ -72,6 +76,7 @@ abstract class SI_Credit_Card_Processors extends SI_Payment_Processors {
 				$this->cc_cache[ $key ] = sanitize_text_field( wp_unslash( $_POST[ 'sa_credit_'.$key ] ) );
 			}
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 		$valid = $this->validate_billing( $checkout );
 		$valid = $this->validate_credit_card( $this->cc_cache, $checkout );
 		return $valid;
@@ -206,10 +211,10 @@ abstract class SI_Credit_Card_Processors extends SI_Payment_Processors {
 	 * @return bool
 	 */
 	public static function is_expired( $year, $month ) {
-		if ( $year < date( 'Y' ) ) {
+		if ( $year < gmdate( 'Y' ) ) {
 			return true;
-		} elseif ( $year == date( 'Y' ) ) {
-			if ( $month < date( 'n' ) ) {
+		} elseif ( $year == gmdate( 'Y' ) ) {
+			if ( $month < gmdate( 'n' ) ) {
 				return true;
 			}
 		}
@@ -365,9 +370,10 @@ abstract class SI_Credit_Card_Processors extends SI_Payment_Processors {
 		if ( apply_filters( 'si_valid_process_payment_page_fields', true ) ) {
 			$fields = $this->payment_billing_fields( $checkout );
 			foreach ( $fields as $key => $data ) {
-				$checkout->cache['billing'][ $key ] = isset( $_POST[ 'sa_billing_' . $key ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'sa_billing_' . $key ] ) ) :'';
+				$checkout->cache['billing'][ $key ] = isset( $_POST[ 'sa_billing_' . $key ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'sa_billing_' . $key ] ) ) :''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce is verified in SI_Checkouts::handle_action() before this method is called from the checkout action hook.
 				if ( isset( $data['required'] ) && $data['required'] && ! ( isset( $checkout->cache['billing'][ $key ] ) && $checkout->cache['billing'][ $key ] != '' ) ) {
 					$valid = false;
+					/* translators: %s: value */
 					self::set_message( sprintf( __( '"%s" field is required.', 'sprout-invoices' ), $data['label'] ), self::MESSAGE_STATUS_ERROR );
 				}
 			}
@@ -391,6 +397,7 @@ abstract class SI_Credit_Card_Processors extends SI_Payment_Processors {
 			$cc_fields = $this->payment_fields( $checkout );
 			foreach ( $cc_fields as $key => $data ) {
 				if ( isset( $data['required'] ) && $data['required'] && ! ( isset( $cc_data[ $key ] ) && strlen( $cc_data[ $key ] ) > 0 ) ) {
+					/* translators: %s: value */
 					self::set_message( sprintf( __( '"%s" field is required.', 'sprout-invoices' ), $cc_fields[ $key ]['label'] ), self::MESSAGE_STATUS_ERROR );
 					$valid = false;
 				}

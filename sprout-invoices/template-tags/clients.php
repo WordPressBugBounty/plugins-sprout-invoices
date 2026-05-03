@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 function si_get_client_id( $id = 0 ) {
 	if ( ! $id ) {
@@ -46,7 +47,7 @@ if ( ! function_exists( 'si_client_address' ) ) :
 		if ( ! $id ) {
 			$id = si_get_client_id();
 		}
-		echo apply_filters( 'si_client_address', si_address( si_get_client_address( $id ) ), $id );
+		echo apply_filters( 'si_client_address', si_address( si_get_client_address( $id ) ), $id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Pre-built HTML from trusted internal function
 	}
 endif;
 

@@ -1,11 +1,12 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 	$current_status = '';
 	$disabled = ''; ?>
 
 <div id="subject_header" class="clearfix">
 	<div id="subject_header_actions" class="clearfix">
 		<div id="subject_input_wrap">
-			<?php $title = ( $status != 'auto-draft' && get_the_title( $id ) != esc_html__( 'Auto Draft' ) ) ? get_the_title( $id ) : '' ; ?>
+			<?php $title = ( $status != 'auto-draft' && get_the_title( $id ) != esc_html__( 'Auto Draft', 'default' ) ) ? get_the_title( $id ) : '' ; // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Reusing WordPress core string translation ?>
 			<input type="text" name="subject" value="<?php echo esc_attr( $title ); ?>" placeholder="<?php esc_html_e( 'Subject...', 'sprout-invoices' ) ?>">
 		</div>
 
@@ -27,12 +28,12 @@
 		<b><?php esc_html_e( 'Permalink', 'sprout-invoices' ) ?></b>
 		<span id="permalink-select" tabindex="-1"><?php echo esc_url( get_permalink( $id ) ) ?></span>
 		<span id="view-post-btn"><a href="<?php echo esc_url( get_permalink( $id ) ) ?>" class="button button-small"><?php esc_html_e( 'View Invoice', 'sprout-invoices' ) ?></a></span>
-		<?php if (  apply_filters( 'show_upgrade_messaging', true ) ) {
+		<?php if ( apply_filters( 'show_upgrade_messaging', true ) ) {
 			printf(
-			// translators: 1: span tag. 
-			esc_html__( '%1$s', 'sprout-invoices' ),
-			'<span class="helptip" title="Upgrade for Private URLs"></span>',
-			esc_url( si_get_purchase_link() ) 
+				// translators: %1$s: tooltip text for upgrade helptip
+				'<a href="%2$s"><span class="helptip" title="%1$s"></span></a>',
+				esc_attr__( 'Upgrade for Private URLs', 'sprout-invoices' ),
+				esc_url( si_get_purchase_link() )
 			);
 		} ?>
 	</div>

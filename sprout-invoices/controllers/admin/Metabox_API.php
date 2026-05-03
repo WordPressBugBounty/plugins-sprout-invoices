@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Metabox meta controller.
@@ -37,7 +38,7 @@ class SI_Metabox_API extends SI_Controller {
 		}
 		foreach ( $post_types as $post_type ) {
 			$defaults = array(
-					'title' => 'Settings',
+					'title' => __( 'Settings', 'sprout-invoices' ),
 					'callback' => array( __CLASS__, 'show_meta_box' ),
 					'screen' => $post_type,
 					'context' => 'normal',
@@ -70,7 +71,7 @@ class SI_Metabox_API extends SI_Controller {
 			foreach ( $meta_boxes as $metabox_name => $args ) {
 				$args = apply_filters( $metabox_name . '_meta_box_args', $args );
 				extract( $args );
-				add_meta_box( $metabox_name, __( $title, 'sprout-invoices' ), $callback, $screen, $context, $priority, $args );
+				add_meta_box( $metabox_name, $title, $callback, $screen, $context, $priority, $args );
 			}
 		}
 	}
@@ -101,6 +102,7 @@ class SI_Metabox_API extends SI_Controller {
 	 * @return
 	 */
 	public static function save_meta_boxes( $post_id, $post ) {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing -- Nonce verified by WP core before save_post fires; these are guard clauses only
 		// Don't save meta boxes when the importer is used.
 		if ( isset( $_GET['import'] ) && $_GET['import'] == 'wordpress' ) {
 			return;
@@ -114,6 +116,7 @@ class SI_Metabox_API extends SI_Controller {
 		if ( wp_is_post_autosave( $post_id ) || $post->post_status == 'auto-draft' || defined( 'DOING_AJAX' ) || isset( $_GET['bulk_edit'] ) ) {
 			return;
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing
 
 		foreach ( self::$meta_boxes as $post_type => $post_meta_boxes ) {
 			// Only save the meta boxes that count

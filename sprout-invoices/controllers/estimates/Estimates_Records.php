@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 
 /**
@@ -31,9 +32,11 @@ class SI_Estimates_Records extends SI_Estimates {
 	 */
 	public static function maybe_create_status_update_record( SI_Estimate $estimate, $status = '', $original_status = '' ) {
 		do_action( 'si_new_record',
-			sprintf( __( 'Status changed: %s to <b>%s</b>.', 'sprout-invoices' ), $estimate->get_status_label( $original_status ), $estimate->get_status_label( $status ) ),
+			/* translators: %1$s: value, %2$s: value */
+			sprintf( __( 'Status changed: %1$s to <b>%2$s</b>.', 'sprout-invoices' ), $estimate->get_status_label( $original_status ), $estimate->get_status_label( $status ) ),
 			self::HISTORY_STATUS_UPDATE,
 			$estimate->get_id(),
+			/* translators: %1$s: value */
 			sprintf( __( 'Status update for %s.', 'sprout-invoices' ), $estimate->get_id() ),
 			0,
 		false );
@@ -50,10 +53,12 @@ class SI_Estimates_Records extends SI_Estimates {
 		if ( get_post_type( $cloned_post_id ) === SI_Estimate::POST_TYPE ) {
 			if ( SI_Invoice::POST_TYPE === $new_post_type ) {
 				do_action( 'si_new_record',
-					sprintf( __( 'Invoice Created: <a href="%s">%s</a>.', 'sprout-invoices' ), get_edit_post_link( $new_post_id ), get_the_title( $new_post_id ) ),
+					/* translators: %1$s: URL to the invoice edit page, %2$s: invoice title */
+					sprintf( __( 'Invoice Created: <a href="%1$s">%2$s</a>.', 'sprout-invoices' ), get_edit_post_link( $new_post_id ), get_the_title( $new_post_id ) ),
 					self::HISTORY_INVOICE_CREATED,
 					$cloned_post_id,
-					sprintf( __( 'Invoice Created: %s.', 'sprout-invoices' ), get_the_title( $new_post_id ) ),
+					/* translators: %1$s: value */
+					sprintf( __( 'Invoice Created: %1$s.', 'sprout-invoices' ), get_the_title( $new_post_id ) ),
 					0,
 				false );
 			}
@@ -86,6 +91,7 @@ class SI_Estimates_Records extends SI_Estimates {
 		}
 
 		$estimate = SI_Estimate::get_instance( $post->ID );
+		/* translators: %1$s: value */
 		$title = sprintf( __( 'Estimate viewed by %s for the first time.', 'sprout-invoices' ), esc_html( $whom ) );
 
 		$found = false;

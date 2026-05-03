@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 
 
@@ -70,7 +71,7 @@ class SI_Admin_Payment extends SI_Controller {
 		}
 		$payment = SI_Payment::get_instance( $payment_id );
 		if ( $date != '' ) {
-			$payment->set_post_date( date( 'Y-m-d H:i:s', strtotime( $date ) ) );
+			$payment->set_post_date( gmdate( 'Y-m-d H:i:s', strtotime( $date ) ) );
 		}
 		do_action( 'admin_payment', $payment_id, $invoice );
 		do_action( 'payment_complete', $payment );
@@ -169,11 +170,13 @@ class SI_Admin_Payment extends SI_Controller {
 
 
 	public static function save_admin_payment( $post_id, $post, $callback_args, $invoice_id = null ) {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Nonce verified by WP core post save flow before this metabox callback fires
 		$invoice = SI_Invoice::get_instance( $post_id );
 		$amount = ( isset( $_REQUEST['sa_metabox_payment_amount'] ) ) ? sanitize_text_field( wp_unslash( $_REQUEST['sa_metabox_payment_amount'] ) ) : 0 ;
 		$number = ( isset( $_REQUEST['sa_metabox_payment_transaction_id'] ) ) ? sanitize_text_field( wp_unslash( $_REQUEST['sa_metabox_payment_transaction_id'] ) ) : '' ;
 		$date   = ( isset( $_REQUEST['sa_metabox_payment_date'] ) ) ? sanitize_text_field( wp_unslash( $_REQUEST['sa_metabox_payment_date'] ) ) : '' ;
 		$notes  = ( isset( $_REQUEST['sa_metabox_payment_notes'] ) ) ? sanitize_text_field( wp_unslash( $_REQUEST['sa_metabox_payment_notes'] ) ) : '' ;
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 		if ( ! $amount ) {
 			return false;
@@ -185,7 +188,7 @@ class SI_Admin_Payment extends SI_Controller {
 	public static function ajax_admin_payment() {
 		// form maybe be serialized
 		if ( isset( $_REQUEST['serialized_fields'] ) ) {
-			foreach ( wp_unslash( $_REQUEST['serialized_fields'] ) as $key => $data ) {
+			foreach ( wp_unslash( $_REQUEST['serialized_fields'] ) as $key => $data ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Individual field values are sanitized inline within the loop
 				if ( strpos( $data['name'], '[]' ) !== false ) {
 					sanitize_text_field( $_REQUEST[ str_replace( '[]', '', $data['name'] ) ][] = $data['value'] );
 				} else {

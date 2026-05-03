@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Checkouts Controller
@@ -50,7 +51,7 @@ class SI_Checkouts extends SI_Controller {
 	}
 
 	public static function is_checkout_page() {
-		return isset( $_GET[ self::CHECKOUT_QUERY_VAR ] );
+		return isset( $_GET[ self::CHECKOUT_QUERY_VAR ] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: display condition check, no state change
 	}
 
 	/*
@@ -58,12 +59,12 @@ class SI_Checkouts extends SI_Controller {
 	 * ------------------------------------------------------------- */
 	public function __clone() {
 		// cannot be cloned
-		trigger_error( __CLASS__.' may not be cloned', E_USER_ERROR );
+		wp_die( esc_html( __CLASS__ . ' may not be cloned' ) );
 	}
 
 	public function __sleep() {
 		// cannot be serialized
-		trigger_error( __CLASS__.' may not be serialized', E_USER_ERROR );
+		wp_die( esc_html( __CLASS__ . ' may not be serialized' ) );
 	}
 	public static function get_instance() {
 		if ( ! ( self::$checkout_controller && is_a( self::$checkout_controller, __CLASS__ ) ) ) {
@@ -78,7 +79,7 @@ class SI_Checkouts extends SI_Controller {
 		$this->load_invoice();
 		$this->payment_processor = SI_Payment_Processors::get_payment_processor();
 		$this->load_pages();
-		$this->handle_action( isset( $_REQUEST[ self::CHECKOUT_ACTION ] ) ? sanitize_text_field( wp_unslash( $_REQUEST[ self::CHECKOUT_ACTION ] ) ) : '' );
+		$this->handle_action( isset( $_REQUEST[ self::CHECKOUT_ACTION ] ) ? sanitize_text_field( wp_unslash( $_REQUEST[ self::CHECKOUT_ACTION ] ) ) : '' ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: action routing via GET/REQUEST before checkout nonce is verified in handle_action()
 	}
 
 	public function checkout_url( $processor_slug = '1' ) {
@@ -99,7 +100,7 @@ class SI_Checkouts extends SI_Controller {
 	 * @return string           full path.
 	 */
 	public static function override_template( $template ) {
-		if ( isset( $_REQUEST[ self::CHECKOUT_QUERY_VAR ] ) ) {
+		if ( isset( $_REQUEST[ self::CHECKOUT_QUERY_VAR ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: template selection check, no state change
 			if ( SI_Invoice::is_invoice_query() ) {
 				$checkout = self::get_instance();
 				$current = $checkout->get_current_page();
@@ -120,6 +121,11 @@ class SI_Checkouts extends SI_Controller {
 	private function handle_action( $action ) {
 		// do the callback for the just-submitted checkout page
 		if ( $action ) {
+			if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] ) {
+				if ( ! isset( $_POST['si_checkout_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['si_checkout_nonce'] ) ), 'si_checkout_action' ) ) {
+					wp_die( esc_html__( 'Security check failed.', 'sprout-invoices' ) );
+				}
+			}
 			if ( ! $this->checkout_complete ) {
 				// save state in case we're redirected elsewhere
 				add_filter( 'wp_redirect', array( $this, 'save_cache_on_redirect' ), 10, 1 );
@@ -216,6 +222,7 @@ class SI_Checkouts extends SI_Controller {
 	private function load_invoice() {
 
 		$invoice_id = 0;
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only: loading invoice by ID/slug from URL query var, no state change
 		if ( isset( $_GET['sa_invoice'] ) && ! self::using_permalinks() ) {
 			if ( is_numeric( $_GET['sa_invoice'] ) ) {
 				$invoice_id = (int) $_GET['sa_invoice'];
@@ -230,6 +237,7 @@ class SI_Checkouts extends SI_Controller {
 				$invoice_id = $post->ID;
 			}
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 		// If permalinks are used this is the default method of finding the post id.
 		if ( ! $invoice_id ) {
 			$invoice_id = isset( $_SERVER['REQUEST_URI'] ) ? url_to_postid( esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) ) : 0;
@@ -244,7 +252,7 @@ class SI_Checkouts extends SI_Controller {
 
 		if ( ! $this->invoice && ! $this->checkout_complete ) {
 			self::set_message( __( 'No invoice associated with this checkout.', 'sprout-invoices' ), self::MESSAGE_STATUS_ERROR );
-			wp_redirect( '/', 303 );
+			wp_safe_redirect( '/', 303 );
 			exit();
 		}
 		do_action( 'si_load_invoice', $this, $this->invoice );
@@ -442,12 +450,14 @@ class SI_Checkouts extends SI_Controller {
 			if ( $invoice->get_balance() < 0.01 ) {
 				self::set_message( __( 'Payment Pending', 'sprout-invoices' ), self::MESSAGE_STATUS_INFO );
 			} else {
+				/* translators: %1$s: value */
 				self::set_message( sprintf( __( 'Pending Payment Received. Current Balance: %s', 'sprout-invoices' ), sa_get_formatted_money( $invoice->get_balance() ) ), self::MESSAGE_STATUS_INFO );
 			}
 		} else {
 			if ( $invoice->get_balance() < 0.01 ) {
 				self::set_message( __( 'Payment Received & Invoice Paid!', 'sprout-invoices' ), self::MESSAGE_STATUS_INFO );
 			} else {
+				/* translators: %1$s: value */
 				self::set_message( sprintf( __( 'Partial Payment Received. Current Balance: %s', 'sprout-invoices' ), sa_get_formatted_money( $invoice->get_balance() ) ), self::MESSAGE_STATUS_INFO );
 			}
 		}

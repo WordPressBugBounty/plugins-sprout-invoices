@@ -1,6 +1,8 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <div id="credit_card_checkout_wrap">
 	<?php do_action( 'si_credit_card_checkout_wrap' ) ?>
 	<form action="<?php echo esc_attr( si_get_credit_card_checkout_form_action() )?>" method="post" accept-charset="utf-8" class="sa-form sa-form-aligned" id="si_credit_card_form">
+		<?php wp_nonce_field( 'si_checkout_action', 'si_checkout_nonce' ); ?>
 		<?php do_action( 'si_billing_credit_card_form', $checkout ) ?>
 		<div id="billing_cc_fields" class="clearfix">
 			<fieldset id="billing_fields" class="sa-fieldset">

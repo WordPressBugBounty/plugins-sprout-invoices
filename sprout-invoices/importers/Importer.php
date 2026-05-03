@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Importer controller
@@ -76,7 +77,7 @@ class SI_Importer extends SI_Controller {
 		$sub_pages = apply_filters( 'si_sub_admin_pages', array() );
 		uasort( $sub_pages, array( __CLASS__, 'sort_by_weight' ) );
 
-		$current_page = ( isset( $_GET['page'] ) ) ? str_replace( 'sprout-invoices-', '', sanitize_text_field( wp_unslash( $_GET['page'] ) ) ) : '';
+		$current_page = ( isset( $_GET['page'] ) ) ? str_replace( 'sprout-invoices-', '', sanitize_text_field( wp_unslash( $_GET['page'] ) ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: GET param used to render admin page, no state change
 		$settings     = self::importer_options();
 		uasort( $settings, array( __CLASS__, 'sort_by_weight' ) );
 		$args = array(
@@ -178,11 +179,15 @@ class SI_Importer extends SI_Controller {
 			return;
 		}
 
-		if ( isset( $_GET['page'] ) && 'sprout-invoices-import' === $_GET['page'] ) {
+		if ( isset( $_GET['page'] ) && 'sprout-invoices-import' === $_GET['page'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: page param used to set a progress flag, no form data processed
 			update_option( self::PROGRESS_TRACKER, true );
 		}
 
-		if ( isset( $_POST['importer'] ) && '' !== $_POST['importer'] ) {
+		if ( isset( $_POST['importer'] ) && '' !== $_POST['importer'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified below before processing
+			$nonce = isset( $_POST[ self::PROCESS_ACTION ] ) ? sanitize_text_field( wp_unslash( $_POST[ self::PROCESS_ACTION ] ) ) : '';
+			if ( ! wp_verify_nonce( $nonce, self::PROCESS_ACTION ) ) {
+				return;
+			}
 			$class = sanitize_text_field( wp_unslash( $_POST['importer'] ) );
 			do_action( 'si_processing_importer', $class );
 			if ( method_exists( $class, 'init' ) ) {
@@ -229,12 +234,12 @@ class SI_Importer extends SI_Controller {
 	 * ------------------------------------------------------------- */
 	public function __clone() {
 		// Cannot be cloned!
-		trigger_error( __CLASS__.' may not be cloned', E_USER_ERROR );
+		wp_die( esc_html( __CLASS__ . ' may not be cloned' ) );
 	}
 
 	public function __sleep() {
 		// cannot be serialized
-		trigger_error( __CLASS__.' may not be serialized', E_USER_ERROR );
+		wp_die( esc_html( __CLASS__ . ' may not be serialized' ) );
 	}
 
 	public function __construct() {
@@ -250,7 +255,7 @@ class SI_Importer extends SI_Controller {
 	}
 
 	public static function help_tabs() {
-		if ( isset( $_GET['tab'] ) && sanitize_key( $_GET['tab'] ) === self::SETTINGS_PAGE ) {
+		if ( isset( $_GET['tab'] ) && sanitize_key( $_GET['tab'] ) === self::SETTINGS_PAGE ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: GET param used to show help tabs, no state change
 			// get screen and add sections.
 			$screen = get_current_screen();
 
@@ -273,7 +278,7 @@ class SI_Importer extends SI_Controller {
 	/////////////
 
 	public static function sanitize_subdomain( $url = '' ) {
-		$parsed_url = parse_url( $url );
+		$parsed_url = wp_parse_url( $url );
 		if ( ! isset( $parsed_url['host'] ) ) { // the path was given
 			return esc_attr( $url );
 		}

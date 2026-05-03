@@ -17,7 +17,7 @@
 			$type_header = $('#line_items_header');
 
 		$type_list.after(si_js_object.inline_spinner);
-		$.post( ajaxurl, { action: 'sa_get_item_option', item_type: item_type, doc_id: doc_id },
+		$.post( ajaxurl, { action: 'sa_get_item_option', item_type: item_type, doc_id: doc_id, nonce: ( 'undefined' !== typeof si_line_items_nonce ? si_line_items_nonce.nonce : '' ) },
 			function( response ) {
 				if ( response.success ) {
 					var $row = $(response.data.option);

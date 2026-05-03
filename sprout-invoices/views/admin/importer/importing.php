@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <div id="addons_admin">
 
 	<main id="main" class="container site-main" role="main">
@@ -9,7 +10,7 @@
 				start_import_ajax_method('authentication');
 
 				function start_import_ajax_method ( $method ) {
-					var $importer = '<?php if ( isset($_POST['importer'] ) ) echo esc_js( sanitize_text_field( wp_unslash( $_POST['importer'] ) ) ) ?>',
+					var $importer = '<?php if ( isset($_POST['importer'] ) ) echo esc_js( sanitize_text_field( wp_unslash( $_POST['importer'] ) ) ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Read-only: POST importer value echoed into JS for display, no state change ?>',
 						$nonce = si_js_object.security;
 					$.post( ajaxurl, { action: 'si_import', importer: $importer, method: $method, security: $nonce },
 						function( data ) {

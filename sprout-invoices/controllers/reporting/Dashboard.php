@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 
 /**
@@ -37,7 +38,7 @@ class SI_Dashboard extends SI_Controller {
 
 	public static function register_resources() {
 		// Charting
-		wp_register_script( 'chartjs', SI_URL . '/resources/admin/plugins/chartjs/chart.min.js', array( 'jquery' ), false, false );
+		wp_register_script( 'chartjs', SI_URL . '/resources/admin/plugins/chartjs/chart.min.js', array( 'jquery' ), self::SI_VERSION, true );
 
 	}
 
@@ -76,7 +77,7 @@ class SI_Dashboard extends SI_Controller {
 		if ( ! in_array( $screen->id, array( 'dashboard', 'dashboard_page_sprout-invoices-stats' ) ) ) {
 			return;
 		}
-		if ( isset( $_GET['report'] ) && '' !== $_GET['report'] ) {
+		if ( isset( $_GET['report'] ) && '' !== $_GET['report'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: display condition, no state change
 			return;
 		}
 		if ( 'dashboard' === $screen->id && ! self::show_charts_on_wp_dash() ) {
@@ -122,8 +123,8 @@ class SI_Dashboard extends SI_Controller {
 
 
 	public static function redirect_to_stats() {
-		if ( isset( $_GET['tab'] ) && self::SETTINGS_PAGE === $_GET['tab'] && ! isset( $_GET[ self::REPORT_QV ] ) ) {
-			wp_redirect( admin_url() . 'index.php?page=sprout-invoices-' . self::STATS_PAGE );
+		if ( isset( $_GET['tab'] ) && self::SETTINGS_PAGE === $_GET['tab'] && ! isset( $_GET[ self::REPORT_QV ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: redirect condition check, no state change
+			wp_safe_redirect( admin_url() . 'index.php?page=sprout-invoices-' . self::STATS_PAGE );
 			exit;
 		}
 	}
@@ -146,7 +147,7 @@ class SI_Dashboard extends SI_Controller {
 			ob_start(); // hack - but the same hack wp-admin/widgets.php uses
 			wp_dashboard_trigger_widget_control( sanitize_text_field( wp_unslash( $_POST['widget_id'] ) ));
 			ob_end_clean();
-			wp_redirect( remove_query_arg( 'edit' ) );
+			wp_safe_redirect( remove_query_arg( 'edit' ) );
 			exit;
 		}
 
@@ -160,8 +161,10 @@ class SI_Dashboard extends SI_Controller {
 	public static function reports_dashboard() {
 		$sub_pages = apply_filters( 'si_sub_admin_pages', array() );
 		uasort( $sub_pages, array( __CLASS__, 'sort_by_weight' ) );
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only: GET params used to select which report view to display, no state change
 		$current_page = ( isset( $_GET['page'] ) ) ? str_replace( 'sprout-invoices-', '', sanitize_text_field( wp_unslash( $_GET['page'] ) ) ) : '';
 		$report_dash  = ( isset( $_GET[ self::REPORT_QV ] ) ) ? sanitize_text_field( wp_unslash( $_GET[ self::REPORT_QV ] ) ) : false ;
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 		switch ( $report_dash ) {
 			case 'invoices':
 				$report = 'admin/reports/invoices.php';
@@ -194,6 +197,7 @@ class SI_Dashboard extends SI_Controller {
 	//////////////
 
 	public static function is_report_page() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only: GET params used to identify current page context, no state change
 		// stats page
 		if ( isset( $_GET['page'] ) && self::STATS_PAGE === $_GET['page'] ) {
 			return true;
@@ -204,11 +208,12 @@ class SI_Dashboard extends SI_Controller {
 		if ( isset( $_GET['tab'] ) && self::SETTINGS_PAGE === $_GET['tab'] ) {
 			return true;
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 		return false;
 	}
 
 	public static function is_si_dash() {
-		if ( isset( $_GET[ self::REPORT_QV ] ) ) {
+		if ( isset( $_GET[ self::REPORT_QV ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: page context check, no state change
 			false;
 		}
 		$screen = get_current_screen();

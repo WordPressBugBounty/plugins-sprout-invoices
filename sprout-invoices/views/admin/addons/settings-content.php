@@ -1,4 +1,6 @@
-<?php uasort( $allsettings, array( 'SI_Controller', 'sort_by_weight' ) ); ?>
+<?php
+if ( ! defined( 'ABSPATH' ) ) exit;
+uasort( $allsettings, array( 'SI_Controller', 'sort_by_weight' ) ); ?>
 <?php foreach ( $allsettings as $key => $section_settings ) : ?>
 	<?php
 	// all settings for this tab

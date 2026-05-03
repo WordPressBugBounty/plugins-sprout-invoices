@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <div class="misc-pub-section" data-edit-id="project" data-edit-type="select">
 	<span id="project" class="wp-media-buttons-icon"><b><?php echo esc_html( $title ); ?></b> <span title="<?php esc_html_e( 'Select an existing project.', 'sprout-invoices' ) ?>" class="helptip"></span></span>
 

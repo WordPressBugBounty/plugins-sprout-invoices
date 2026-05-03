@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <h1><?php esc_html_e( 'Download the Free PayPal Integration!', 'sprout-invoices' ) ?></h1>
 
 <div class="single_addon_wrap">

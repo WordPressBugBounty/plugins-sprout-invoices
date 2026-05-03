@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 /*
  * copyright (c) 2009 MDBitz - Matthew John Denton - mdbitz.com
  *
@@ -116,7 +117,7 @@ class Harvest_Result
                 if( $this->_headers != null && array_key_exists($property, $this->_headers) ) {
                     return $this->_headers[$property];
                 } else {
-                    throw new Harvest_Exception(sprintf('Unknown property %s::%s', get_class($this), $property));
+                    throw new Harvest_Exception(sprintf('Unknown property %s::%s', get_class($this), $property)); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Third-party library, exceptions are not user-facing output
                 }
             break;
         }
@@ -155,7 +156,7 @@ class Harvest_Result
                 $this->_headers = $value;
             break;
             default:
-                throw new Harvest_Exception(sprintf('Unknown property %s::%s', get_class($this), $property));
+                throw new Harvest_Exception(sprintf('Unknown property %s::%s', get_class($this), $property)); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Third-party library, exceptions are not user-facing output
             break;
         }
     }

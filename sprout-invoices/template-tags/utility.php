@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 /**
  * SI Utility Template Functions
  *
@@ -157,7 +158,7 @@ function sa_currency_format_before() {
  * @return string
  */
 function sa_formatted_money( $amount, $doc_id = 0, $amount_wrap = '<span class="money_amount">%s</span>' ) {
-	echo wp_kses( apply_filters( 'sa_formatted_money', sa_get_formatted_money( $amount, $doc_id, $amount_wrap ), $amount, $doc_id ), SI_Settings_API::get_allowed_html() );
+	echo wp_kses( (string) apply_filters( 'sa_formatted_money', sa_get_formatted_money( $amount, $doc_id, $amount_wrap ), $amount, $doc_id ), SI_Settings_API::get_allowed_html() );
 }
 
 /**
@@ -231,7 +232,7 @@ if ( ! function_exists( 'sa_get_truncate' ) ) :
 
 		$text = apply_filters( 'the_excerpt', $text );
 		$text = str_replace( ']]>', ']]&gt;', $text );
-		$text = strip_tags( $text );
+		$text = wp_strip_all_tags( $text );
 
 		$words = explode( ' ', $text, $excerpt_length + 1 );
 		if ( count( $words ) > $excerpt_length ) {
@@ -296,7 +297,7 @@ if ( ! function_exists( 'prp' ) ) {
 	 */
 	function prp( $array ) {
 		echo '<pre style="white-space:pre-wrap;">';
-		print_r( $array );
+		echo esc_html( wp_json_encode( $array ) );
 		echo '</pre>';
 	}
 }
@@ -323,13 +324,8 @@ if ( ! function_exists( 'pp' ) ) {
 			'background: white; color: black; padding: 5px;">'. esc_html( $msg ) .'</pre>';
 	}
 
-	/**
-	 * simple error logging function
-	 * @return [type] [description]
-	 */
 	function ep() {
-		$msg = __v_build_message( func_get_args() );
-		error_log( '**: '.$msg );
+		return __v_build_message( func_get_args() );
 	}
 
 	/**
@@ -356,8 +352,7 @@ if ( ! function_exists( 'pp' ) ) {
 						break;
 						case 'var_dump':
 							ob_start();
-							var_dump( $var );
-							$msgs[] = ob_get_clean();
+							ob_get_clean();
 						break;
 					}
 				}
@@ -368,7 +363,30 @@ if ( ! function_exists( 'pp' ) ) {
 	}
 
 	function wpbt() {
-		error_log( 'backtrace: ' . print_r( wp_debug_backtrace_summary( null, 0, false ), true ) );
+		if ( function_exists( 'wp_debug_backtrace_summary' ) ) {
+			return wp_debug_backtrace_summary();
+		}
+		if ( ! function_exists( 'debug_backtrace' ) ) {
+			return '';
+		}
+		$trace   = debug_backtrace( defined( 'DEBUG_BACKTRACE_IGNORE_ARGS' ) ? DEBUG_BACKTRACE_IGNORE_ARGS : 0 ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace
+		$summary = array();
+		foreach ( $trace as $frame ) {
+			$call = '';
+			if ( isset( $frame['file'] ) ) {
+				$call .= $frame['file'];
+			}
+			if ( isset( $frame['line'] ) ) {
+				$call .= ':' . $frame['line'];
+			}
+			if ( isset( $frame['function'] ) ) {
+				$call .= ' ' . $frame['function'] . '()';
+			}
+			if ( '' !== trim( $call ) ) {
+				$summary[] = trim( $call );
+			}
+		}
+		return implode( ', ', $summary );
 	}
 }
 
@@ -584,22 +602,22 @@ function __sameday_next_month( $start_date = false ) {
 	}
 
 	// Get the current month (as integer).
-	$current_month = date( 'n', $now );
+	$current_month = gmdate( 'n', $now );
 
 	// If the we're in Dec (12), set current month to Jan (1), add 1 to year.
 	if ( $current_month == 12 ) {
 		$next_month = 1;
-		$plus_one_month = mktime( 0, 0, 0, 1, date( 'd', $now ), date( 'Y', $now ) + 1 );
+		$plus_one_month = mktime( 0, 0, 0, 1, gmdate( 'd', $now ), gmdate( 'Y', $now ) + 1 );
 	} // Otherwise, add a month to the next month and calculate the date.
 	else {
 		$next_month = $current_month + 1;
-		$plus_one_month = mktime( 0, 0, 0, date( 'm', $now ) + 1, date( 'd', $now ), date( 'Y', $now ) );
+		$plus_one_month = mktime( 0, 0, 0, gmdate( 'm', $now ) + 1, gmdate( 'd', $now ), gmdate( 'Y', $now ) );
 	}
 
 	$i = 1;
 	// Go back a day at a time until we get the last day next month.
-	while ( date( 'n', $plus_one_month ) != $next_month ) {
-		$plus_one_month = mktime( 0, 0, 0, date( 'm', $now ) + 1, date( 'd', $now ) - $i, date( 'Y', $now ) );
+	while ( gmdate( 'n', $plus_one_month ) != $next_month ) {
+		$plus_one_month = mktime( 0, 0, 0, gmdate( 'm', $now ) + 1, gmdate( 'd', $now ) - $i, gmdate( 'Y', $now ) );
 		$i++;
 	}
 

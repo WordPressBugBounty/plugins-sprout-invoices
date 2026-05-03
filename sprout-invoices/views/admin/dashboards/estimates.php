@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <h3 class="dashboard_widget_title">
 	<span><?php esc_html_e( 'Estimate Dashboard', 'sprout-invoices' ) ?></span>
 </h3>
@@ -79,9 +80,9 @@
 				'post_status' => array( SI_Estimate::STATUS_PENDING ),
 				'posts_per_page' => 3,
 				'fields' => 'ids',
-				'meta_query' => array(
+				'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Standard WP_Query usage, no alternative without custom table
 						array(
-							'meta_key' => '_expiration_date',
+							'meta_key' => '_expiration_date', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Standard WP_Query usage, no alternative without custom table
 							'value' => array( 0, current_time( 'timestamp' ) ),
 							'compare' => 'BETWEEN',
 							),

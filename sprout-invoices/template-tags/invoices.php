@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
 	 * Sprout Apps Invoice Template Functions
@@ -729,7 +730,7 @@ if ( ! function_exists( 'si_get_invoice_terms' ) ) :
 			$id = get_the_ID();
 		}
 		$invoice = SI_Invoice::get_instance( $id );
-		return apply_filters( 'si_get_invoice_terms', apply_filters( 'the_content', $invoice->get_terms() ), $invoice );
+		return apply_filters( 'si_get_invoice_terms', apply_filters( 'the_content', (string) $invoice->get_terms() ), $invoice );
 	}
 endif;
 
@@ -743,7 +744,7 @@ if ( ! function_exists( 'si_invoice_terms' ) ) :
 		if ( ! $id ) {
 			$id = get_the_ID();
 		}
-		echo wp_kses_post( apply_filters( 'si_invoice_terms', si_get_invoice_terms( $id ), $id ) );
+		echo wp_kses_post( (string) apply_filters( 'si_invoice_terms', si_get_invoice_terms( $id ), $id ) );
 	}
 endif;
 
@@ -789,7 +790,7 @@ if ( ! function_exists( 'si_get_invoice_notes' ) ) :
 			$id = get_the_ID();
 		}
 		$invoice = SI_Invoice::get_instance( $id );
-		return apply_filters( 'si_get_invoice_notes', apply_filters( 'the_content', $invoice->get_notes() ), $invoice );
+		return apply_filters( 'si_get_invoice_notes', apply_filters( 'the_content', (string) $invoice->get_notes() ), $invoice );
 	}
 endif;
 
@@ -803,7 +804,7 @@ if ( ! function_exists( 'si_invoice_notes' ) ) :
 		if ( ! $id ) {
 			$id = get_the_ID();
 		}
-		echo wp_kses_post( apply_filters( 'si_invoice_notes', si_get_invoice_notes( $id ), $id ) );
+		echo wp_kses_post( (string) apply_filters( 'si_invoice_notes', si_get_invoice_notes( $id ), $id ) );
 	}
 endif;
 
@@ -1071,8 +1072,8 @@ function si_doc_history_records( $doc_id = 0, $filtered = true ) {
 			}
 			$returned_history[ $item_id ]['status_type']  = $record->get_type();
 			$returned_history[ $item_id ]['post_date']    = $r_post->post_date;
-			$returned_history[ $item_id ]['update_title'] = $r_post->post_title;
-			$returned_history[ $item_id ]['content']      = $r_post->post_content;
+			$returned_history[ $item_id ]['update_title'] = (string) $r_post->post_title;
+			$returned_history[ $item_id ]['content']      = (string) $r_post->post_content;
 		} elseif ( get_post_type( $item_id ) === SI_Payment::POST_TYPE ) {
 			$payment = SI_Payment::get_instance( $item_id );
 			$p_post  = $payment->get_post();

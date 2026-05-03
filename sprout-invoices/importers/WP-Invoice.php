@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * WPInvoice Importer
@@ -41,6 +42,7 @@ class SI_WPInvoice_Import extends SI_Importer {
 
 		$description = __( 'Use these options before importing all of your sliced invoice records to Sprout Invoices.', 'sprout-invoices' );
 		if ( ! class_exists( 'WPI_Invoice' ) ) {
+			/* translators: %s: URL to the plugins page */
 			$description = sprintf( '<b>' . __( 'Please <a href="%s">activate WP-Invoice</a> before proceeding.', 'sprout-invoices' ) . '</b>', admin_url( 'plugins.php' ) );
 		}
 
@@ -79,7 +81,7 @@ class SI_WPInvoice_Import extends SI_Importer {
 	 * @return bool
 	 */
 	public static function delete_wpinvoice_data() {
-		self::$wpinvoice_delete = ( isset( $_POST[ self::DELETE_WPINVOICE_DATA ] ) && $_POST[ self::DELETE_WPINVOICE_DATA ] == 'remove' ) ? true : false ;
+		self::$wpinvoice_delete = ( isset( $_POST[ self::DELETE_WPINVOICE_DATA ] ) && $_POST[ self::DELETE_WPINVOICE_DATA ] == 'remove' ) ? true : false ; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Called from nonce-verified context
 		return self::$wpinvoice_delete;
 	}
 
@@ -118,14 +120,17 @@ class SI_WPInvoice_Import extends SI_Importer {
 		$total_records = count( $wp_invoice_ids );
 		self::return_progress( array(
 			'authentication' => array(
+			/* translators: %s: total number of invoices to import */
 			'message' => sprintf( __( 'Preparing to import from %s invoices...', 'sprout-invoices' ), $total_records ),
 			'progress' => 90,
 			),
 			'clients' => array(
+			/* translators: %s: total number of WP-Invoice records */
 			'message' => sprintf( __( 'Importing clients from %s WP-Invoice records...', 'sprout-invoices' ), $total_records ),
 			'progress' => 10,
 			),
 			'contacts' => array(
+			/* translators: %s: total number of WP-Invoice records */
 			'message' => sprintf( __( 'Importing contacts from %s WP-Invoice records...', 'sprout-invoices' ), $total_records ),
 			'progress' => 10,
 			),
@@ -134,10 +139,12 @@ class SI_WPInvoice_Import extends SI_Importer {
 			'progress' => 0,
 			),
 			'invoices' => array(
+			/* translators: %s: total number of WP-Invoice records */
 			'message' => sprintf( __( 'Importing invoices from %s WP-Invoice records...', 'sprout-invoices' ), $total_records ),
 			'progress' => 10,
 			),
 			'payments' => array(
+			/* translators: %s: total number of WP-Invoice records */
 			'message' => sprintf( __( 'Importing payments from %s WP-Invoice records...', 'sprout-invoices' ), $total_records ),
 			'progress' => 10,
 			'next_step' => 'invoices',
@@ -155,7 +162,7 @@ class SI_WPInvoice_Import extends SI_Importer {
 		add_filter( 'suppress_notifications', '__return_true' );
 
 		// run script forever
-		set_time_limit( 0 );
+		set_time_limit( 0 ); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- required for long-running import
 
 		$args = array(
 				'post_type' => 'wpi_object', // why object? I don't get it either.
@@ -184,15 +191,18 @@ class SI_WPInvoice_Import extends SI_Importer {
 
 			self::return_progress( array(
 				'authentication' => array(
+				/* translators: %s: total number of invoices imported */
 				'message' => sprintf( __( 'Imported %s invoices!', 'sprout-invoices' ), $progress_tally['total_records'] ),
 				'progress' => 100,
 				),
 				'clients' => array(
-				'message' => sprintf( __( 'Importing %s clients from %s WP-Invoice records...', 'sprout-invoices' ), $progress_tally['clients_tally'], $progress_tally['total_records'] ),
+				/* translators: %1$s: number of clients imported, %2$s: total number of WP-Invoice records */
+				'message' => sprintf( __( 'Importing %1$s clients from %2$s WP-Invoice records...', 'sprout-invoices' ), $progress_tally['clients_tally'], $progress_tally['total_records'] ),
 				'progress' => 100,
 				),
 				'contacts' => array(
-				'message' => sprintf( __( 'Importing %s contacts from %s WP-Invoice records...', 'sprout-invoices' ), $progress_tally['contacts_tally'], $progress_tally['total_records'] ),
+				/* translators: %1$s: number of contacts imported, %2$s: total number of WP-Invoice records */
+				'message' => sprintf( __( 'Importing %1$s contacts from %2$s WP-Invoice records...', 'sprout-invoices' ), $progress_tally['contacts_tally'], $progress_tally['total_records'] ),
 				'progress' => 100,
 				),
 				'estimates' => array(
@@ -200,11 +210,13 @@ class SI_WPInvoice_Import extends SI_Importer {
 				'progress' => 100,
 				),
 				'invoices' => array(
-				'message' => sprintf( __( 'Importing %s invoices from %s WP-Invoice records...', 'sprout-invoices' ), $progress_tally['invoices_tally'], $progress_tally['total_records'] ),
+				/* translators: %1$s: number of invoices imported, %2$s: total number of WP-Invoice records */
+				'message' => sprintf( __( 'Importing %1$s invoices from %2$s WP-Invoice records...', 'sprout-invoices' ), $progress_tally['invoices_tally'], $progress_tally['total_records'] ),
 				'progress' => 100,
 				),
 				'payments' => array(
-				'message' => sprintf( __( 'Importing %s payments from %s WP-Invoice records...', 'sprout-invoices' ), $progress_tally['payments_tally'], $progress_tally['total_records'] ),
+				/* translators: %1$s: number of payments imported, %2$s: total number of WP-Invoice records */
+				'message' => sprintf( __( 'Importing %1$s payments from %2$s WP-Invoice records...', 'sprout-invoices' ), $progress_tally['payments_tally'], $progress_tally['total_records'] ),
 				'progress' => 100,
 				'next_step' => 'complete',
 				),
@@ -264,15 +276,18 @@ class SI_WPInvoice_Import extends SI_Importer {
 
 		self::return_progress( array(
 			'authentication' => array(
+			/* translators: %s: total number of invoices to import */
 			'message' => sprintf( __( 'Preparing to import from %s invoices...', 'sprout-invoices' ), $progress_tally['total_records'] ),
 			'progress' => intval( ( $progress_tally['invoices_tally'] / $progress_tally['total_records'] ) * 100 ),
 			),
 			'clients' => array(
-			'message' => sprintf( __( 'Importing %s clients from %s WP-Invoice records...', 'sprout-invoices' ), $progress_tally['clients_tally'], $progress_tally['total_records'] ),
+			/* translators: %1$s: number of clients imported, %2$s: total number of WP-Invoice records */
+			'message' => sprintf( __( 'Importing %1$s clients from %2$s WP-Invoice records...', 'sprout-invoices' ), $progress_tally['clients_tally'], $progress_tally['total_records'] ),
 			'progress' => intval( ( $progress_tally['invoices_tally'] / $progress_tally['total_records'] ) * 100 ),
 			),
 			'contacts' => array(
-			'message' => sprintf( __( 'Importing %s contacts from %s WP-Invoice records...', 'sprout-invoices' ), $progress_tally['contacts_tally'], $progress_tally['total_records'] ),
+			/* translators: %1$s: number of contacts imported, %2$s: total number of WP-Invoice records */
+			'message' => sprintf( __( 'Importing %1$s contacts from %2$s WP-Invoice records...', 'sprout-invoices' ), $progress_tally['contacts_tally'], $progress_tally['total_records'] ),
 			'progress' => intval( ( $progress_tally['invoices_tally'] / $progress_tally['total_records'] ) * 100 ),
 			),
 			'estimates' => array(
@@ -280,11 +295,13 @@ class SI_WPInvoice_Import extends SI_Importer {
 			'progress' => intval( ( $progress_tally['invoices_tally'] / $progress_tally['total_records'] ) * 100 ),
 			),
 			'invoices' => array(
-			'message' => sprintf( __( 'Importing %s invoices from %s WP-Invoice records...', 'sprout-invoices' ), $progress_tally['invoices_tally'], $progress_tally['total_records'] ),
+			/* translators: %1$s: number of invoices imported, %2$s: total number of WP-Invoice records */
+			'message' => sprintf( __( 'Importing %1$s invoices from %2$s WP-Invoice records...', 'sprout-invoices' ), $progress_tally['invoices_tally'], $progress_tally['total_records'] ),
 			'progress' => intval( ( $progress_tally['invoices_tally'] / $progress_tally['total_records'] ) * 100 ),
 			),
 			'payments' => array(
-			'message' => sprintf( __( 'Importing %s payments from %s WP-Invoice records...', 'sprout-invoices' ), $progress_tally['payments_tally'], $progress_tally['total_records'] ),
+			/* translators: %1$s: number of payments imported, %2$s: total number of WP-Invoice records */
+			'message' => sprintf( __( 'Importing %1$s payments from %2$s WP-Invoice records...', 'sprout-invoices' ), $progress_tally['payments_tally'], $progress_tally['total_records'] ),
 			'progress' => intval( ( $progress_tally['invoices_tally'] / $progress_tally['total_records'] ) * 100 ),
 			'next_step' => 'invoices',
 			),
@@ -329,7 +346,7 @@ class SI_WPInvoice_Import extends SI_Importer {
 		// Attempt to find matching client
 		if ( isset( $args['company_name'] ) ) {
 			global $wpdb;
-			$client_ids = $wpdb->get_col( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE post_title = %s AND post_type = %s", esc_sql( $args['company_name'] ), SI_Client::POST_TYPE ) );
+			$client_ids = $wpdb->get_col( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE post_title = %s AND post_type = %s", esc_sql( $args['company_name'] ), SI_Client::POST_TYPE ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Import-time client lookup by name, caching would return stale results
 			if ( ! empty( $client_ids ) ) {
 				do_action( 'si_error', 'Client imported already (name match)', $wp_invoice['ID'] );
 				return $client_ids[0];
@@ -428,7 +445,7 @@ class SI_WPInvoice_Import extends SI_Importer {
 		}
 		$invoice->set_issue_date( strtotime( $wp_invoice['due_date_day'].'-'.$wp_invoice['due_date_month'].'-'.$wp_invoice['due_date_year'] ) );
 		// post date
-		$invoice->set_post_date( date( 'Y-m-d H:i:s', strtotime( $wp_invoice['post_date'] ) ) );
+		$invoice->set_post_date( gmdate( 'Y-m-d H:i:s', strtotime( $wp_invoice['post_date'] ) ) );
 
 		// line items
 		$line_items = array();
@@ -501,7 +518,7 @@ class SI_WPInvoice_Import extends SI_Importer {
 			),
 		) );
 		$new_payment = SI_Payment::get_instance( $payment_id );
-		$new_payment->set_post_date( date( 'Y-m-d H:i:s', $payment['time'] ) );
+		$new_payment->set_post_date( gmdate( 'Y-m-d H:i:s', $payment['time'] ) );
 		return $new_payment;
 	}
 
@@ -511,12 +528,12 @@ class SI_WPInvoice_Import extends SI_Importer {
 	 * ------------------------------------------------------------- */
 	public function __clone() {
 		// cannot be cloned
-		trigger_error( __CLASS__.' may not be cloned', E_USER_ERROR );
+		wp_die( esc_html( __CLASS__ . ' may not be cloned' ) );
 	}
 
 	public function __sleep() {
 		// cannot be serialized
-		trigger_error( __CLASS__.' may not be serialized', E_USER_ERROR );
+		wp_die( esc_html( __CLASS__ . ' may not be serialized' ) );
 	}
 
 	public function __construct() {
@@ -549,4 +566,4 @@ class SI_WPInvoice_Import extends SI_Importer {
 		exit();
 	}
 }
-SI_WPInvoice_Import::register();
+add_action( 'init', array( 'SI_WPInvoice_Import', 'register' ), 5 );

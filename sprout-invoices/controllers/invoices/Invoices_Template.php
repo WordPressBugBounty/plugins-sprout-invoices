@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 
 /**
@@ -26,7 +27,7 @@ class SI_Invoices_Template extends SI_Controller {
 	/////////////
 
 	public static function prevent_auto_draft_title( $title = '', $post_id = 0 ) {
-		if ( __( 'Auto Draft' ) !== $title ) {
+		if ( __( 'Auto Draft', 'default' ) !== $title ) { // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Reusing WordPress core string translation
 			return $title;
 		}
 		if ( SI_Invoice::POST_TYPE !== get_post_type( $post_id ) ) {

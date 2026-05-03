@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <div class="wrap">
 	<div id="si-page-container" class="si-page-container">
 		<div id="si-page-top">
@@ -7,14 +8,14 @@
 		<div id="si-page-content">
 			<h2 class="nav-tab-wrapper">
 				<?php
-					$ifactive = ( isset( $_GET['page'] ) && 'sprout-invoices' === $_GET['page'] ) ? 'nav-tab-active' : '';
+					$ifactive = ( isset( $_GET['page'] ) && 'sprout-invoices' === $_GET['page'] ) ? 'nav-tab-active' : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: GET param used for nav tab active state, no state change
 				?>
 				<a class="nav-tab <?php echo esc_attr( $ifactive ); ?>" href="<?php echo esc_attr( admin_url( 'admin.php?page=sprout-invoices' ) ); ?>"><?php esc_html_e( 'Getting Started', 'sprout-invoices' ); ?></a>
 				<?php foreach ( $sub_pages as $slug => $subpage ) : ?>
 					<?php
-						$ifactive = ( isset( $_GET['page'] ) && 'sprout-invoices-' . $slug === $_GET['page'] ) ? 'nav-tab-active' : '';
+						$ifactive = ( isset( $_GET['page'] ) && 'sprout-invoices-' . $slug === $_GET['page'] ) ? 'nav-tab-active' : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 					?>
-					<a class="nav-tab <?php echo esc_attr( $ifactive ); ?>" href="<?php echo esc_attr( admin_url( 'admin.php?page=sprout-invoices-' . $slug ) ); ?>"><?php esc_html_e( $subpage['menu_title'] ); ?></a>
+					<a class="nav-tab <?php echo esc_attr( $ifactive ); ?>" href="<?php echo esc_attr( admin_url( 'admin.php?page=sprout-invoices-' . $slug ) ); ?>"><?php echo esc_html( $subpage['menu_title'] ); ?></a>
 				<?php endforeach ?>
 			</h2>
 			<div id="si_notifications_admin" class="si_settings">
@@ -132,7 +133,7 @@
 											<div id="section_<?php echo esc_attr( $notification_key ); ?>">
 												<div class="si-box-top">
 													<?php echo esc_html( $name ); ?>
-													<a class="page-title-action notification-title-action-primary" href="<?php echo esc_url( get_edit_post_link( $notification_id ) ); ?>"><?php esc_html_e( 'Edit Notification', 'sprout-invoices' ); ?></a>&nbsp;<a class="page-title-action add-new" href="<?php echo esc_url( add_query_arg( array( 'refresh-notification' => $notification_id ) ) ) ?>" aria-label="<?php esc_html_e( 'This will reset the notification to the default template', 'sprout-invoices' ) ?>"><?php esc_html_e( 'Reset', 'sprout-invoices' ) ?></a>
+													<a class="page-title-action notification-title-action-primary" href="<?php echo esc_url( get_edit_post_link( $notification_id ) ); ?>"><?php esc_html_e( 'Edit Notification', 'sprout-invoices' ); ?></a>&nbsp;<a class="page-title-action add-new" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'refresh-notification' => $notification_id ) ), 'si_refresh_notification_' . $notification_id ) ) ?>" aria-label="<?php esc_html_e( 'This will reset the notification to the default template', 'sprout-invoices' ) ?>"><?php esc_html_e( 'Reset', 'sprout-invoices' ) ?></a>
 													<p><?php echo esc_html( $desc ); ?></p>
 												</div>
 												<div id="si-settings-notifications" class="si-box-bottom">
@@ -159,7 +160,7 @@
 											<div id="section_<?php echo esc_attr( $notification_post_id ); ?>">
 												<div class="si-box-top">
 													<?php echo esc_html( $notification->get_title() ); ?>
-													<a class="page-title-action notification-title-action-primary" href="<?php echo esc_url( get_edit_post_link( $notification_post_id ) ); ?>"><?php esc_html_e( 'Edit Notification', 'sprout-invoices' ); ?></a>&nbsp;<?php if ( current_user_can( 'delete_post', $notification_post_id ) ) { ?><a class="page-title-action add-new" aria-label="<?php esc_html_e( 'Delete this unnassigned notification', 'sprout-invoices' ); ?>" href="<?php echo get_delete_post_link( $notification_post_id, null, true ); ?>"><?php esc_html_e( 'Delete', 'sprout-invoices' ); ?></a><?php } ?>
+													<a class="page-title-action notification-title-action-primary" href="<?php echo esc_url( get_edit_post_link( $notification_post_id ) ); ?>"><?php esc_html_e( 'Edit Notification', 'sprout-invoices' ); ?></a>&nbsp;<?php if ( current_user_can( 'delete_post', $notification_post_id ) ) { ?><a class="page-title-action add-new" aria-label="<?php esc_html_e( 'Delete this unnassigned notification', 'sprout-invoices' ); ?>" href="<?php echo get_delete_post_link( $notification_post_id, '', true ); ?>"><?php esc_html_e( 'Delete', 'sprout-invoices' ); ?></a><?php } ?>
 												</div>
 												<div class="si-box-bottom">
 													<div class="description">

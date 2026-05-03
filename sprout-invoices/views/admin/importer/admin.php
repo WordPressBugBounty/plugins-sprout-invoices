@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <div class="wrap">
 	<div id="si-page-container" class="si-page-container">
 		<div id="si-page-top">
@@ -8,14 +9,14 @@
 	<div id="si-page-content">
 		<h2 class="nav-tab-wrapper">
 				<?php
-					$ifactive = ( isset( $_GET['page'] ) && 'sprout-invoices' === $_GET['page'] ) ? 'nav-tab-active' : '';
+					$ifactive = ( isset( $_GET['page'] ) && 'sprout-invoices' === $_GET['page'] ) ? 'nav-tab-active' : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: GET param used for nav tab active state, no state change
 				?>
 				<a class="nav-tab <?php echo esc_attr( $ifactive ); ?>" href="<?php echo esc_attr( admin_url( 'admin.php?page=sprout-invoices' ) ); ?>"><?php esc_html_e( 'Getting Started', 'sprout-invoices' ); ?></a>
 				<?php foreach ( $sub_pages as $slug => $subpage ) : ?>
 					<?php
-						$ifactive = ( isset( $_GET['page'] ) && 'sprout-invoices-' . $slug === $_GET['page'] ) ? 'nav-tab-active' : '';
+						$ifactive = ( isset( $_GET['page'] ) && 'sprout-invoices-' . $slug === $_GET['page'] ) ? 'nav-tab-active' : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 					?>
-					<a class="nav-tab <?php echo esc_attr( $ifactive ); ?>" href="<?php echo esc_attr( admin_url( 'admin.php?page=sprout-invoices-' . $slug ) ); ?>"><?php esc_html_e( $subpage['menu_title'] ); ?></a>
+					<a class="nav-tab <?php echo esc_attr( $ifactive ); ?>" href="<?php echo esc_attr( admin_url( 'admin.php?page=sprout-invoices-' . $slug ) ); ?>"><?php echo esc_html( $subpage['menu_title'] ); ?></a>
 				<?php endforeach ?>
 		</h2>
 		<div id="si_importer_admin" class="si_settings">

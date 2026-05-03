@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Sprout Invoices Payment Model
@@ -44,14 +45,14 @@ class SI_Payment extends SI_Post_Type {
 			'supports' => array( 'title' ),
 		);
 		self::register_post_type( self::POST_TYPE, 'Payment', 'Payments', $post_type_args );
-		self::register_post_statuses();
+		add_action( 'init', array( __CLASS__, 'register_post_statuses' ), 3 );
 	}
 
 	/**
 	 * Post statuses for payments
 	 * @return
 	 */
-	private static function register_post_statuses() {
+	public static function register_post_statuses() {
 		$statuses = array(
 			self::STATUS_AUTHORIZED => __( 'Authorized', 'sprout-invoices' ),
 			self::STATUS_CANCELLED => __( 'Cancelled', 'sprout-invoices' ),
@@ -67,7 +68,7 @@ class SI_Payment extends SI_Post_Type {
 				'exclude_from_search' => false,
 				'show_in_admin_all_list' => true,
 		  		'show_in_admin_status_list' => true,
-		  		'label_count' => _n_noop( $label . ' <span class="count">(%s)</span>', $label . ' <span class="count">(%s)</span>' ),
+		  		'label_count' => _n_noop( $label . ' <span class="count">(%s)</span>', $label . ' <span class="count">(%s)</span>', 'sprout-invoices' ), // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralSingular,WordPress.WP.I18n.NonSingularStringLiteralPlural,WordPress.WP.I18n.MissingArgDomain
 			));
 		}
 	}
@@ -113,6 +114,7 @@ class SI_Payment extends SI_Post_Type {
 		$args = wp_parse_args( $passed_args, $defaults );
 
 		$id = wp_insert_post( array(
+			/* translators: %1$s: value */
 			'post_title' => sprintf( __( 'Payment #%d', 'sprout-invoices' ), $args['transaction_id'] ),
 			'post_status' => $args['status'],
 			'post_type' => self::POST_TYPE,
@@ -123,6 +125,7 @@ class SI_Payment extends SI_Post_Type {
 
 		$payment = self::get_instance( $id );
 
+		/* translators: %1$s: value */
 		$payment->set_title( sprintf( __( 'Payment #%d', 'sprout-invoices' ), $id ) );
 		$payment->set_transaction_id( $args['transaction_id'] );
 		$payment->set_payment_method( $args['payment_method'] );
@@ -167,9 +170,9 @@ class SI_Payment extends SI_Post_Type {
 			'suppress_filters' => $suppress_filters,
 		);
 		if ( $method ) {
-			$args['meta_query'] = array(
+			$args['meta_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Standard WP_Query usage, no alternative without custom table
 				array(
-					'key' => self::$meta_keys['payment_method'],
+					'key' => self::$meta_keys['payment_method'], // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Standard WP_Query usage, no alternative without custom table
 					'value' => $method,
 				),
 			);

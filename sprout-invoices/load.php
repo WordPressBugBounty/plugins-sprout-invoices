@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Load the SI application
@@ -212,9 +213,9 @@ function sprout_invoices_load() {
 	require_once SI_PATH.'/languages/SI_l10n.php';
 	require_once SI_PATH.'/languages/SI_Strings.php';
 
-	// i18n & l10n
-	SI_l10n::init();
-	SI_Strings::load_additional_strings();
+	// i18n & l10n - deferred to init to avoid JIT textdomain warnings (WP 6.7+)
+	add_action( 'init', array( 'SI_l10n', 'load_textdomain' ), 1 );
+	add_action( 'init', array( 'SI_Strings', 'load_additional_strings' ), 2 );
 	SI_Locales::init();
 	SI_Countries_States::init();
 

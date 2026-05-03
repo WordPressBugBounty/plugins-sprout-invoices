@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 /**
  * File: sprout-invoices/controllers/sprout-invoices-field-text.php
  *
@@ -23,10 +24,12 @@ class SI_Field_Error extends SI_Field {
 	 * @since 20.7.0
 	 */
 	public function get_field_markup() {
+		ob_start();
 		?>
 			<div class="si_input_field_wrap si_field_wrap_input_<?php echo esc_attr( $this->field_type ); ?>">
 				<p> <?php echo esc_html( $this->field_type . 'Field Could Not be Rendered' ); ?></p>
 			</div>
 		<?php
+		return ob_get_clean();
 	}
 }

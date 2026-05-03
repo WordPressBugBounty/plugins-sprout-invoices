@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 
 /**
@@ -49,7 +50,7 @@ class SI_Help extends SI_Controller {
 		$sub_pages = apply_filters( 'si_sub_admin_pages', array() );
         uasort( $sub_pages, array(__CLASS__, 'sort_by_weight') );
 
-        $current_page = (isset( $_GET['page'] )) ? str_replace( 'sprout-invoices-', '', sanitize_text_field( wp_unslash( $_GET['page'] ) ) ) : '';
+        $current_page = (isset( $_GET['page'] )) ? str_replace( 'sprout-invoices-', '', sanitize_text_field( wp_unslash( $_GET['page'] ) ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: GET param used to render admin page, no state change
         $args         = array(
             'current_page' => $current_page,
             'sub_pages'    => $sub_pages,
@@ -60,7 +61,8 @@ class SI_Help extends SI_Controller {
 
 	public static function please_rate_si( $footer_text ) {
 		if ( self::is_si_admin() ) {
-			$footer_text = sprintf( __( 'Please support the future of <strong>Sprout Invoices</strong> by rating the free version <a href="%1$s" target="_blank">&#9733;&#9733;&#9733;&#9733;&#9733;</a> on <a href="%1$s" target="_blank">WordPress.org</a>. Have an awesome %2$s!', 'sprout-invoices' ), 'http://wordpress.org/support/view/plugin-reviews/sprout-invoices?filter=5', date_i18n( 'l' ) );
+			/* translators: %1$s: URL to WordPress.org reviews page, %2$s: day of the week */
+			$footer_text = sprintf( __( 'Please support the future of <strong>Sprout Invoices</strong> by rating the free version <a href="%1$s" target="_blank">&#9733;&#9733;&#9733;&#9733;&#9733;</a> on <a href="%1$s" target="_blank">WordPress.org</a>. Have an awesome %2$s!', 'sprout-invoices' ), 'https://wordpress.org/support/plugin/sprout-invoices/reviews/', date_i18n( 'l' ) );
 		}
 		return $footer_text;
 	}
@@ -75,7 +77,7 @@ class SI_Help extends SI_Controller {
 		}
 
 		global $wpdb, $wp;
-		if ( ! isset( $_REQUEST['s'] ) || $wp->query_vars['s'] !== $_REQUEST['s'] ) {
+		if ( ! isset( $_REQUEST['s'] ) || $wp->query_vars['s'] !== $_REQUEST['s'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: search param used to determine if custom meta search applies, no state change
 			return $where;
 		}
 

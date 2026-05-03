@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <dl id="history_list">
 
 	<dt>
@@ -104,7 +105,7 @@
 							<dd><p><?php
 									$term = get_term_by( 'id', $value['value'], SI_Estimate::PROJECT_TAXONOMY );
 							if ( ! is_wp_error( $term ) ) {
-								esc_html_e( $term->name, 'sprout-invoices' );
+								echo esc_html( $term->name );
 							}
 									?></p></dd>
 						<?php else : ?>

@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <article class="type_addon si-card" v-bind:class="{ activated : vm.<?php echo esc_attr( $vm_key ); ?> == true }">
 	<div class="section" v-bind:class="{ activating : isSaving == true }">
 		<div class="si-card-title">

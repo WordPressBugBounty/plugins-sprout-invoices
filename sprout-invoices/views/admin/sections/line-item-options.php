@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <div class="line_item_option_wrap line_item_type_<?php echo esc_attr( $item_data['type'] ); ?>" data-type="<?php echo esc_attr( $item_data['type'] ); ?>">
 	<div class="line_items_header dd-handle">
 		<div class="line_items_header_inner_wrap clearfix">

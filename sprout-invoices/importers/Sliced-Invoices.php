@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Sliced Invoices Importer
@@ -40,6 +41,7 @@ class SI_Sliced_Invoices_Import extends SI_Importer {
 
 		$description = __( 'Use these options before importing all of your sliced invoice records to Sprout Invoices.', 'sprout-invoices' );
 		if ( ! class_exists( 'Sliced_Invoices' ) ) {
+			/* translators: %s: URL to the plugins page */
 			$description = sprintf( '<b>' . __( 'Please <a href="%s">activate Sliced Invoices</a> before proceeding.', 'sprout-invoices' ) . '</b>', admin_url( 'plugins.php' ) );
 		}
 
@@ -74,7 +76,7 @@ class SI_Sliced_Invoices_Import extends SI_Importer {
 	 * @return bool
 	 */
 	public static function delete_slicedinvoices_data() {
-		self::$slicedinvoices_delete = ( isset( $_POST[ self::DELETE_SLICEDINVOICES_DATA ] ) && $_POST[ self::DELETE_SLICEDINVOICES_DATA ] == 'remove' ) ? true : false ;
+		self::$slicedinvoices_delete = ( isset( $_POST[ self::DELETE_SLICEDINVOICES_DATA ] ) && $_POST[ self::DELETE_SLICEDINVOICES_DATA ] == 'remove' ) ? true : false ; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Called from nonce-verified context
 		return self::$slicedinvoices_delete;
 	}
 
@@ -116,14 +118,17 @@ class SI_Sliced_Invoices_Import extends SI_Importer {
 		$total_records = count( $sliced_invoices_ids );
 		self::return_progress( array(
 			'authentication' => array(
+			/* translators: %s: total number of invoices to import */
 			'message' => sprintf( __( 'Preparing to import from %s invoices...', 'sprout-invoices' ), $total_records ),
 			'progress' => 90,
 			),
 			'clients' => array(
+			/* translators: %s: total number of Sliced Invoices records */
 			'message' => sprintf( __( 'Importing clients from %s Sliced Invoices records...', 'sprout-invoices' ), $total_records ),
 			'progress' => 10,
 			),
 			'contacts' => array(
+			/* translators: %s: total number of Sliced Invoices records */
 			'message' => sprintf( __( 'Importing contacts from %s Sliced Invoices records...', 'sprout-invoices' ), $total_records ),
 			'progress' => 10,
 			),
@@ -132,10 +137,12 @@ class SI_Sliced_Invoices_Import extends SI_Importer {
 			'progress' => 0,
 			),
 			'invoices' => array(
+			/* translators: %s: total number of Sliced Invoices records */
 			'message' => sprintf( __( 'Importing invoices from %s Sliced Invoices records...', 'sprout-invoices' ), $total_records ),
 			'progress' => 10,
 			),
 			'payments' => array(
+			/* translators: %s: total number of Sliced Invoices records */
 			'message' => sprintf( __( 'Importing payments from %s Sliced Invoices records...', 'sprout-invoices' ), $total_records ),
 			'progress' => 10,
 			'next_step' => 'invoices',
@@ -154,7 +161,7 @@ class SI_Sliced_Invoices_Import extends SI_Importer {
 		add_filter( 'suppress_notifications', '__return_true' );
 
 		// run script forever
-		set_time_limit( 0 );
+		set_time_limit( 0 ); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- required for long-running import
 
 		$args = array(
 				'post_type' => 'sliced_invoice', // why object? I don't get it either.
@@ -182,15 +189,18 @@ class SI_Sliced_Invoices_Import extends SI_Importer {
 
 			self::return_progress( array(
 				'authentication' => array(
+				/* translators: %s: total number of invoices imported */
 				'message' => sprintf( __( 'Imported %s invoices!', 'sprout-invoices' ), $progress_tally['total_records'] ),
 				'progress' => 100,
 				),
 				'clients' => array(
-				'message' => sprintf( __( 'Importing %s clients from %s Sliced Invoices records...', 'sprout-invoices' ), $progress_tally['clients_tally'], $progress_tally['total_records'] ),
+				/* translators: %1$s: number of clients imported, %2$s: total number of Sliced Invoices records */
+				'message' => sprintf( __( 'Importing %1$s clients from %2$s Sliced Invoices records...', 'sprout-invoices' ), $progress_tally['clients_tally'], $progress_tally['total_records'] ),
 				'progress' => 100,
 				),
 				'contacts' => array(
-				'message' => sprintf( __( 'Importing %s contacts from %s Sliced Invoices records...', 'sprout-invoices' ), $progress_tally['contacts_tally'], $progress_tally['total_records'] ),
+				/* translators: %1$s: number of contacts imported, %2$s: total number of Sliced Invoices records */
+				'message' => sprintf( __( 'Importing %1$s contacts from %2$s Sliced Invoices records...', 'sprout-invoices' ), $progress_tally['contacts_tally'], $progress_tally['total_records'] ),
 				'progress' => 100,
 				),
 				'estimates' => array(
@@ -198,11 +208,13 @@ class SI_Sliced_Invoices_Import extends SI_Importer {
 				'progress' => 100,
 				),
 				'invoices' => array(
-				'message' => sprintf( __( 'Importing %s invoices from %s Sliced Invoices records...', 'sprout-invoices' ), $progress_tally['invoices_tally'], $progress_tally['total_records'] ),
+				/* translators: %1$s: number of invoices imported, %2$s: total number of Sliced Invoices records */
+				'message' => sprintf( __( 'Importing %1$s invoices from %2$s Sliced Invoices records...', 'sprout-invoices' ), $progress_tally['invoices_tally'], $progress_tally['total_records'] ),
 				'progress' => 100,
 				),
 				'payments' => array(
-				'message' => sprintf( __( 'Importing %s payments from %s Sliced Invoices records...', 'sprout-invoices' ), $progress_tally['payments_tally'], $progress_tally['total_records'] ),
+				/* translators: %1$s: number of payments imported, %2$s: total number of Sliced Invoices records */
+				'message' => sprintf( __( 'Importing %1$s payments from %2$s Sliced Invoices records...', 'sprout-invoices' ), $progress_tally['payments_tally'], $progress_tally['total_records'] ),
 				'progress' => 100,
 				'next_step' => 'complete',
 				),
@@ -255,15 +267,18 @@ class SI_Sliced_Invoices_Import extends SI_Importer {
 
 		self::return_progress( array(
 			'authentication' => array(
+			/* translators: %s: total number of invoices to import */
 			'message' => sprintf( __( 'Preparing to import from %s invoices...', 'sprout-invoices' ), $progress_tally['total_records'] ),
 			'progress' => intval( ( $progress_tally['invoices_tally'] / $progress_tally['total_records'] ) * 100 ),
 			),
 			'clients' => array(
-			'message' => sprintf( __( 'Importing %s clients from %s Sliced Invoices records...', 'sprout-invoices' ), $progress_tally['clients_tally'], $progress_tally['total_records'] ),
+			/* translators: %1$s: number of clients imported, %2$s: total number of Sliced Invoices records */
+			'message' => sprintf( __( 'Importing %1$s clients from %2$s Sliced Invoices records...', 'sprout-invoices' ), $progress_tally['clients_tally'], $progress_tally['total_records'] ),
 			'progress' => intval( ( $progress_tally['invoices_tally'] / $progress_tally['total_records'] ) * 100 ),
 			),
 			'contacts' => array(
-			'message' => sprintf( __( 'Importing %s contacts from %s Sliced Invoices records...', 'sprout-invoices' ), $progress_tally['contacts_tally'], $progress_tally['total_records'] ),
+			/* translators: %1$s: number of contacts imported, %2$s: total number of Sliced Invoices records */
+			'message' => sprintf( __( 'Importing %1$s contacts from %2$s Sliced Invoices records...', 'sprout-invoices' ), $progress_tally['contacts_tally'], $progress_tally['total_records'] ),
 			'progress' => intval( ( $progress_tally['invoices_tally'] / $progress_tally['total_records'] ) * 100 ),
 			),
 			'estimates' => array(
@@ -271,11 +286,13 @@ class SI_Sliced_Invoices_Import extends SI_Importer {
 			'progress' => intval( ( $progress_tally['invoices_tally'] / $progress_tally['total_records'] ) * 100 ),
 			),
 			'invoices' => array(
-			'message' => sprintf( __( 'Importing %s invoices from %s Sliced Invoices records...', 'sprout-invoices' ), $progress_tally['invoices_tally'], $progress_tally['total_records'] ),
+			/* translators: %1$s: number of invoices imported, %2$s: total number of Sliced Invoices records */
+			'message' => sprintf( __( 'Importing %1$s invoices from %2$s Sliced Invoices records...', 'sprout-invoices' ), $progress_tally['invoices_tally'], $progress_tally['total_records'] ),
 			'progress' => intval( ( $progress_tally['invoices_tally'] / $progress_tally['total_records'] ) * 100 ),
 			),
 			'payments' => array(
-			'message' => sprintf( __( 'Importing %s payments from %s Sliced Invoices records...', 'sprout-invoices' ), $progress_tally['payments_tally'], $progress_tally['total_records'] ),
+			/* translators: %1$s: number of payments imported, %2$s: total number of Sliced Invoices records */
+			'message' => sprintf( __( 'Importing %1$s payments from %2$s Sliced Invoices records...', 'sprout-invoices' ), $progress_tally['payments_tally'], $progress_tally['total_records'] ),
 			'progress' => intval( ( $progress_tally['invoices_tally'] / $progress_tally['total_records'] ) * 100 ),
 			'next_step' => 'invoices',
 			),
@@ -360,7 +377,7 @@ class SI_Sliced_Invoices_Import extends SI_Importer {
 		$invoice->set_invoice_id( sliced_get_invoice_label( $sliced_invoice_id ) . ' ' . sliced_get_invoice_prefix( $sliced_invoice_id ) . sliced_get_invoice_number( $sliced_invoice_id ) . sliced_get_invoice_suffix( $sliced_invoice_id ) );
 		$invoice->set_po_number( sliced_get_invoice_order_number( $sliced_invoice_id ) );
 		$invoice->set_due_date( sliced_get_invoice_due( $sliced_invoice_id ) );
-		$invoice->set_post_date( date( 'Y-m-d H:i:s', sliced_get_invoice_created( $sliced_invoice_id ) ) );
+		$invoice->set_post_date( gmdate( 'Y-m-d H:i:s', sliced_get_invoice_created( $sliced_invoice_id ) ) );
 
 		switch ( sliced_get_invoice_status( $sliced_invoice_id ) ) {
 			case 'success':
@@ -426,7 +443,7 @@ class SI_Sliced_Invoices_Import extends SI_Importer {
 			),
 		) );
 		$new_payment = SI_Payment::get_instance( $payment_id );
-		$new_payment->set_post_date( date( 'Y-m-d H:i:s', $payment['date'] ) );
+		$new_payment->set_post_date( gmdate( 'Y-m-d H:i:s', $payment['date'] ) );
 		return $new_payment;
 	}
 
@@ -436,12 +453,12 @@ class SI_Sliced_Invoices_Import extends SI_Importer {
 	 * ------------------------------------------------------------- */
 	public function __clone() {
 		// cannot be cloned
-		trigger_error( __CLASS__.' may not be cloned', E_USER_ERROR );
+		wp_die( esc_html( __CLASS__ . ' may not be cloned' ) );
 	}
 
 	public function __sleep() {
 		// cannot be serialized
-		trigger_error( __CLASS__.' may not be serialized', E_USER_ERROR );
+		wp_die( esc_html( __CLASS__ . ' may not be serialized' ) );
 	}
 
 	public function __construct() {
@@ -474,4 +491,4 @@ class SI_Sliced_Invoices_Import extends SI_Importer {
 		exit();
 	}
 }
-SI_Sliced_Invoices_Import::init();
+add_action( 'init', array( 'SI_Sliced_Invoices_Import', 'init' ), 5 );

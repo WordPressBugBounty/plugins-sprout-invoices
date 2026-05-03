@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <ol id="items">
 
 	<?php do_action( 'si_document_line_items' ) ?>

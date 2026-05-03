@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  *
@@ -33,7 +34,7 @@ class SI_Killing_Machine extends SI_Controller {
 		$settings['destroy_everything'] = array(
 			'weight'      => PHP_INT_MAX,
 			'tab'         => 'tools',
-			'title'       => __( 'Rest Sprout Invoices', 'sprout-invoices' ),
+			'title'       => __( 'Reset Sprout Invoices', 'sprout-invoices' ),
 			'description' => __( 'This will delete all posts that are attributed to Sprout Invoices and their meta data.', 'sprout-invoices' ),
 			'settings'    => array(
 				'destroy_everything' => array(
@@ -107,7 +108,8 @@ class SI_Killing_Machine extends SI_Controller {
 		SI_Notifications_Control::clear_notification_cache();
 
 		$response = array(
-				'message' => ( $runagain ) ? sprintf( __( '<p class="ajax_message">Deleted %s records.</p>', 'sprout-invoices' ), $deleted ) : sprintf( __( '<p class="ajax_message">Shredder won! %s records destroyed.</p>', 'sprout-invoices' ), $deleted ),
+				/* translators: %s: number of deleted records */
+				'message' => ( $runagain ) ? '<p class="ajax_message">' . sprintf( __( 'Deleted %s records.', 'sprout-invoices' ), $deleted ) . '</p>' : '<p class="ajax_message">' . sprintf( __( 'Shredder won! %s records destroyed.', 'sprout-invoices' ), $deleted ) . '</p>',
 				'runagain' => $runagain,
 				'deleted' => $deleted,
 			);
@@ -124,8 +126,9 @@ class SI_Killing_Machine extends SI_Controller {
 	 */
 	private static function get_post_ids( $post_type, $limit = 0 ) {
 		global $wpdb;
-		$limit = $limit ? " LIMIT {$limit}" : '';
-		$query = "SELECT p.ID FROM $wpdb->posts AS p WHERE p.post_type IN (%s){$limit}";
-		return $wpdb->get_col( $wpdb->prepare( $query, $post_type ) );
+		if ( $limit ) {
+			return $wpdb->get_col( $wpdb->prepare( "SELECT p.ID FROM {$wpdb->posts} AS p WHERE p.post_type IN (%s) LIMIT %d", $post_type, absint( $limit ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Maintenance/cleanup query, caching not appropriate
+		}
+		return $wpdb->get_col( $wpdb->prepare( "SELECT p.ID FROM {$wpdb->posts} AS p WHERE p.post_type IN (%s)", $post_type ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Maintenance/cleanup query, caching not appropriate
 	}
 }

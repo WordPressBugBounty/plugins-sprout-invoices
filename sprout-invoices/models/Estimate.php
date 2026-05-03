@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Estimate Model
@@ -8,6 +9,10 @@
  * @subpackage Estimate
  */
 class SI_Estimate extends SI_Post_Type {
+
+	public $subtotal = 0;
+	public $calculated_total = 0;
+	public $fees_total = 0;
 
 	const POST_TYPE = 'sa_estimate';
 	const PROJECT_TAXONOMY = 'si_project_types';
@@ -72,15 +77,13 @@ class SI_Estimate extends SI_Post_Type {
 
 		// register category taxonomy
 		// TODO remove since it's now deprecated
-		$singular = 'Task';
-		$plural = 'Tasks';
 		$taxonomy_args = array(
 			'meta_box_cb' => false,
 			'hierarchical' => false,
 		);
-		self::register_taxonomy( self::LINE_ITEM_TAXONOMY, array(), $singular, $plural, $taxonomy_args );
+		self::register_taxonomy( self::LINE_ITEM_TAXONOMY, array(), 'Task', 'Tasks', $taxonomy_args );
 
-		self::register_post_statuses();
+		add_action( 'init', array( __CLASS__, 'register_post_statuses' ), 3 );
 	}
 
 	/**
@@ -117,7 +120,7 @@ class SI_Estimate extends SI_Post_Type {
 	 * Post statuses for payments
 	 * @return
 	 */
-	private static function register_post_statuses() {
+	public static function register_post_statuses() {
 		$statuses = self::get_statuses();
 		foreach ( $statuses as $status => $label ) {
 			register_post_status( $status, array(
@@ -126,7 +129,7 @@ class SI_Estimate extends SI_Post_Type {
 				'exclude_from_search' => false,
 				'show_in_admin_all_list' => true,
 		  		'show_in_admin_status_list' => true,
-		  		'label_count' => _n_noop( $label . ' <span class="count">(%s)</span>', $label . ' <span class="count">(%s)</span>' ),
+		  		'label_count' => _n_noop( $label . ' <span class="count">(%s)</span>', $label . ' <span class="count">(%s)</span>', 'sprout-invoices' ), // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralSingular,WordPress.WP.I18n.NonSingularStringLiteralPlural,WordPress.WP.I18n.MissingArgDomain
 			));
 		}
 	}
@@ -189,6 +192,7 @@ class SI_Estimate extends SI_Post_Type {
 
 	public static function create_estimate( $passed_args, $status = '' ) {
 		$defaults = array(
+			/* translators: %1$s: value */
 			'subject' => sprintf( __( 'New Estimate: %s', 'sprout-invoices' ), date_i18n( get_option( 'date_format' ).' @ '.get_option( 'time_format' ), current_time( 'timestamp' ) ) ),
 			'user_id' => '',
 			'estimate_id' => '',
@@ -358,7 +362,7 @@ class SI_Estimate extends SI_Post_Type {
 
 	public function set_issue_date( $issue_date = 0 ) {
 		if ( is_integer( $issue_date ) ) {
-			$issue_date = date( 'Y-m-d h:i:s', $issue_date );
+			$issue_date = gmdate( 'Y-m-d h:i:s', $issue_date );
 		}
 		$this->post->post_date = $issue_date;
 		$this->save_post();

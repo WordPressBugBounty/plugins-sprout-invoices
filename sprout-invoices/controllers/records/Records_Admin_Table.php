@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 if ( !class_exists( 'WP_List_Table' ) ) {
 	require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
@@ -37,9 +38,10 @@ class SI_Records_Table extends WP_List_Table {
 		$current_user_id = get_current_user_id();
 
 		if ( $this->user_posts_count ) {
-			if ( isset( $_GET['author'] ) && ( $_GET['author'] == $current_user_id ) )
+			if ( isset( $_GET['author'] ) && ( $_GET['author'] == $current_user_id ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$class = ' class="current"';
-			$status_links['mine'] = "<a href='edit.php?post_type=$post_type&author=$current_user_id'$class>" . sprintf( _nx( 'Mine <span class="count">(%s)</span>', 'Mine <span class="count">(%s)</span>', $this->user_posts_count, 'posts' ), number_format_i18n( $this->user_posts_count ) ) . '</a>';
+			/* translators: %1$s: value, %2$s: value */
+			$status_links['mine'] = "<a href='edit.php?post_type=$post_type&author=$current_user_id'$class>" . sprintf( _nx( 'Mine <span class="count">(%s)</span>', 'Mine <span class="count">(%s)</span>', $this->user_posts_count, 'posts', 'sprout-invoices' ), number_format_i18n( $this->user_posts_count ) ) . '</a>';
 			$allposts = '&all_posts=1';
 		}
 
@@ -49,8 +51,9 @@ class SI_Records_Table extends WP_List_Table {
 		foreach ( get_post_stati( array('show_in_admin_all_list' => false) ) as $state )
 			$total_posts -= $num_posts->$state;
 
-		$class = empty( $class ) && empty( $_REQUEST['post_status'] ) && empty( $_REQUEST['show_sticky'] ) ? ' class="current"' : '';
-		$status_links['all'] = "<a href='edit.php?post_type=$post_type{$allposts}'$class>" . sprintf( _nx( 'All <span class="count">(%s)</span>', 'All <span class="count">(%s)</span>', $total_posts, 'posts' ), number_format_i18n( $total_posts ) ) . '</a>';
+		$class = empty( $class ) && empty( $_REQUEST['post_status'] ) && empty( $_REQUEST['show_sticky'] ) ? ' class="current"' : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		/* translators: %1$s: value, %2$s: value */
+		$status_links['all'] = "<a href='edit.php?post_type=$post_type{$allposts}'$class>" . sprintf( _nx( 'All <span class="count">(%s)</span>', 'All <span class="count">(%s)</span>', $total_posts, 'posts', 'sprout-invoices' ), number_format_i18n( $total_posts ) ) . '</a>';
 
 		foreach ( get_post_stati(array('show_in_admin_status_list' => true), 'objects') as $status ) {
 			$class = '';
@@ -63,16 +66,17 @@ class SI_Records_Table extends WP_List_Table {
 			if ( empty( $num_posts->$status_name ) )
 				continue;
 
-			if ( isset($_REQUEST['post_status']) && $status_name == $_REQUEST['post_status'] )
+			if ( isset($_REQUEST['post_status']) && $status_name == $_REQUEST['post_status'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$class = ' class="current"';
 
 			$status_links[$status_name] = "<a href='edit.php?post_status=$status_name&amp;post_type=$post_type'$class>" . sprintf( translate_nooped_plural( $status->label_count, $num_posts->$status_name ), number_format_i18n( $num_posts->$status_name ) ) . '</a>';
 		}
 
 		if ( ! empty( $this->sticky_posts_count ) ) {
-			$class = ! empty( $_REQUEST['show_sticky'] ) ? ' class="current"' : '';
+			$class = ! empty( $_REQUEST['show_sticky'] ) ? ' class="current"' : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
-			$sticky_link = array( 'sticky' => "<a href='edit.php?post_type=$post_type&amp;show_sticky=1'$class>" . sprintf( _nx( 'Sticky <span class="count">(%s)</span>', 'Sticky <span class="count">(%s)</span>', $this->sticky_posts_count, 'posts' ), number_format_i18n( $this->sticky_posts_count ) ) . '</a>' );
+			/* translators: %1$s: value, %2$s: value */
+			$sticky_link = array( 'sticky' => "<a href='edit.php?post_type=$post_type&amp;show_sticky=1'$class>" . sprintf( _nx( 'Sticky <span class="count">(%s)</span>', 'Sticky <span class="count">(%s)</span>', $this->sticky_posts_count, 'posts', 'sprout-invoices' ), number_format_i18n( $this->sticky_posts_count ) ) . '</a>' );
 
 			// Sticky comes after Publish, or if not listed, after All.
 			$split = 1 + array_search( ( isset( $status_links['publish'] ) ? 'publish' : 'all' ), array_keys( $status_links ) );
@@ -93,10 +97,10 @@ class SI_Records_Table extends WP_List_Table {
 			$this->months_dropdown( self::$post_type );
 
 			if ( is_object_in_taxonomy( self::$post_type, SI_Record::TAXONOMY ) ) {
-				$term_id = ( isset( $_GET[SI_Record::TAXONOMY] ) ) ? sanitize_text_field( wp_unslash( $_GET[SI_Record::TAXONOMY] ) ) : 0;
+				$term_id = ( isset( $_GET[SI_Record::TAXONOMY] ) ) ? sanitize_text_field( wp_unslash( $_GET[SI_Record::TAXONOMY] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$dropdown_options = array(
 					'taxonomy' => SI_Record::TAXONOMY,
-					'show_option_all' => __( 'View all types' ),
+					'show_option_all' => __( 'View all types', 'sprout-invoices' ),
 					'hide_empty' => 0,
 					'hierarchical' => 1,
 					'show_count' => 0,
@@ -107,15 +111,15 @@ class SI_Records_Table extends WP_List_Table {
 				wp_dropdown_categories( $dropdown_options );
 			}
 			do_action( 'restrict_manage_posts' );
-			submit_button( __( 'Filter' ), 'secondary', false, false, array( 'id' => 'post-query-submit' ) );
+			submit_button( __( 'Filter', 'sprout-invoices' ), 'secondary', false, false, array( 'id' => 'post-query-submit' ) );
 
 			// Purge
 			if ( count( $this->items ) > 0 ) {
-				if ( isset( $_GET[SI_Record::TAXONOMY] ) && sanitize_text_field( wp_unslash( $_GET[SI_Record::TAXONOMY] ) ) ) {
-					$term = get_term( sanitize_text_field( wp_unslash( $_GET[SI_Record::TAXONOMY] ) ), SI_Record::TAXONOMY );
-					$button_label = __('Purge') . ' ' . $term->name . ' ' . __('Type');
+				if ( isset( $_GET[SI_Record::TAXONOMY] ) && sanitize_text_field( wp_unslash( $_GET[SI_Record::TAXONOMY] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+					$term = get_term( sanitize_text_field( wp_unslash( $_GET[SI_Record::TAXONOMY] ) ), SI_Record::TAXONOMY ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+					$button_label = __( 'Purge', 'sprout-invoices' ) . ' ' . $term->name . ' ' . __( 'Type', 'sprout-invoices' );
 				}
-				$button_label = ( isset( $button_label ) ) ? $button_label : __('Purge All Types') ;
+				$button_label = ( isset( $button_label ) ) ? $button_label : __( 'Purge All Types', 'sprout-invoices' ) ;
 				printf( '<button type="submit" name="purge_records" class="button" value="%s">%s</button>', esc_attr( $term_id ), esc_html( $button_label ) );
 				printf( '<input type="hidden" name="%s" value="%s" />', esc_attr( SI_Internal_Records::RECORD_PURGE_NONCE ), esc_attr( wp_create_nonce( SI_Internal_Records::RECORD_PURGE_NONCE ) ) );
 			}
@@ -181,7 +185,7 @@ class SI_Records_Table extends WP_List_Table {
 			?>
 				<a href="#TB_inline?width=900&height=600&inlineId=data_id_<?php echo esc_attr( $item->ID ); ?>" class="thickbox button" title="<?php echo esc_attr( $item->post_title ); ?> <?php esc_html_e( 'Data', 'sprout-invoices' ) ?>"><?php esc_html_e( 'View Data', 'sprout-invoices' ) ?></a>
 				<?php if ( is_array( $data ) ): ?>
-					<div id="data_id_<?php echo esc_attr( $item->ID ); ?>" style="display:none;"><pre style="white-space:pre-wrap; text-align: left; font: normal normal 11px/1.4 menlo, monaco, monospaced; padding: 5px;"><?php print_r( $data ) ?></pre></div>
+					<div id="data_id_<?php echo esc_attr( $item->ID ); ?>" style="display:none;"><pre style="white-space:pre-wrap; text-align: left; font: normal normal 11px/1.4 menlo, monaco, monospaced; padding: 5px;"><?php echo esc_html( wp_json_encode( $data ) ); ?></pre></div>
 				<?php else: ?>
 					<div id="data_id_<?php echo esc_attr( $item->ID ); ?>" style="display:none;"><?php echo esc_html( apply_filters( 'the_content', $data ) ); ?></div>
 				<?php endif ?>
@@ -273,6 +277,7 @@ class SI_Records_Table extends WP_List_Table {
 			'posts_per_page' => $per_page,
 			'paged' => $this->get_pagenum(),
 		);
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only: standard WP_List_Table GET filtering for display, no state change
 		// Search
 		if ( isset( $_GET['s'] ) && $_GET['s'] != '' ) {
 			$args = array_merge( $args, array( 's' => sanitize_text_field( wp_unslash( $_GET['s'] ) ) ) );
@@ -284,7 +289,7 @@ class SI_Records_Table extends WP_List_Table {
 		// Filter by taxonomy
 		if ( isset( $_GET[SI_Record::TAXONOMY] ) && sanitize_text_field( wp_unslash( $_GET[SI_Record::TAXONOMY] ) ) && sanitize_text_field( wp_unslash( $_GET[SI_Record::TAXONOMY] ) ) != '' ) {
 			$tax_query = array(
-					'tax_query' => array(
+					'tax_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- Standard WP_Query usage, no alternative without custom table
 							array(
 								'taxonomy' => SI_Record::TAXONOMY,
 								'field' => 'id',
@@ -294,6 +299,7 @@ class SI_Records_Table extends WP_List_Table {
 				);
 			$args = array_merge( $args, $tax_query );
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 		$records = new WP_Query( $args );
 
 		/**

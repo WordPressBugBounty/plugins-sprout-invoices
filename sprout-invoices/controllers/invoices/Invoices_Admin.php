@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 
 /**
@@ -117,6 +118,7 @@ class SI_Invoices_Admin extends SI_Invoices {
 			case 'dates':
 
 				printf(
+					/* translators: %1$s: value, %2$s: value */
 					esc_html__( '%1$sIssued: %2$s', 'sprout-invoices' ),
 					'<time>',
 					'<b>' . esc_html( date_i18n( get_option( 'date_format' ), $invoice->get_issue_date() ) ) . '</b></time>'
@@ -125,6 +127,7 @@ class SI_Invoices_Admin extends SI_Invoices {
 				$due_date = $invoice->get_due_date();
 				if ( $due_date ) {
 					printf(
+						/* translators: %1$s: value, %2$s: value */
 						esc_html__( '%1$sDue: %2$s', 'sprout-invoices' ),
 						'<small><time>',
 						'<b>' . esc_html( date_i18n( get_option( 'date_format' ), $due_date ) ) . '</b></time></small>'

@@ -1,9 +1,10 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 /*
- * Plugin Name: Sprout Invoices
+ * Plugin Name: Sprout Invoices - Client Invoicing & Estimates
  * Plugin URI: https://sproutinvoices.com
  * Description: Easily accept estimates, create invoices, and receive invoice payments on your WordPress site. Learn more at <a href="https://sproutinvoices.com">sproutinvoices.com</a>.
- * Version: 20.8.11
+ * Version: 20.8.13
  * Requires at least: 5.1
  * Requires PHP: 7.2.5
  * Author: BoldGrid
@@ -11,7 +12,7 @@
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: sprout-invoices
- * Domain Path: languages
+ * Domain Path: /languages
  *
  * @package Sprout_Invoices
 */

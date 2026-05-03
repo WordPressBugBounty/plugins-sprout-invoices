@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 /**
  * Sprout Invoices Basic Invoice Template
  *
@@ -10,7 +11,7 @@
  */
 
 // Enqueue Roboto font for invoice styling.
-wp_enqueue_style( 'roboto-css', 'https://fonts.googleapis.com/css?family=Roboto:400,500,700,900', false, false );
+wp_enqueue_style( 'roboto-css', 'https://fonts.googleapis.com/css?family=Roboto:400,500,700,900', array(), null ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion,WordPress.WP.EnqueuedResourceParameters.NoExplicitVersion -- External Google Fonts CDN; version is managed by the external URL itself.
 // Action hook before invoice view is rendered. Useful for injecting custom logic or assets.
 do_action( 'pre_si_invoice_view' ); ?>
 <!DOCTYPE html>
@@ -136,11 +137,7 @@ do_action( 'pre_si_invoice_view' ); ?>
 							<div class="company_info">
 								<?php
 								// Display company email if available.
-								printf(
-								// translators: 1: company email
-								esc_html__( '%1$s', 'sprout-invoices' ),
-								esc_html( si_get_company_email() )
-								);
+								echo esc_html( si_get_company_email() );
 								?>
 							</div>
 						<?php endif ?>
@@ -462,6 +459,7 @@ do_action( 'pre_si_invoice_view' ); ?>
 								<span class="posted">
 									<?php
 									// Display type of update (comment, status change, etc.) and when it occurred.
+									/* translators: %s: value */
 									$type = ( 'comment' === $data['status_type'] ) ? sprintf( esc_html__( 'Comment by %1$s ', 'sprout-invoices' ), $data['type'] ) : $data['type'] ;
 									?>
 									<?php if ( 0 === $days_since ) :  ?>

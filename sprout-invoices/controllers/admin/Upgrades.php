@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 /**
  * Upgrade/Migration Controller
  *
@@ -74,7 +75,7 @@ class SI_Upgrades extends SI_Controller {
 	 */
 	private static function upgrade_add_access_hashes() {
 		// Prevent timeout on large databases
-		set_time_limit( 300 ); // 5 minutes
+		set_time_limit( 300 ); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- Required to prevent timeout on large database migrations
 
 		// Generate hashes for invoices
 		$invoices = get_posts( array(

@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Disabled
@@ -47,7 +48,7 @@ class SI_JSON_API extends SI_Controller {
 
 	public static function invoice( $data = array() ) {
 		if ( ! isset( $data['id'] ) ) {
-			$data['id'] = isset( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : 0;
+			$data['id'] = isset( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: GET id param for API data retrieval, no state change
 		}
 		$invoice = SI_Invoice::get_instance( $data['id'] );
 		if ( ! is_a( $invoice, 'SI_Invoice' ) ) {
@@ -58,7 +59,7 @@ class SI_JSON_API extends SI_Controller {
 
 	public static function estimate( $data = array() ) {
 		if ( ! isset( $data['id'] ) ) {
-			$data['id'] =isset( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : 0;
+			$data['id'] =isset( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: GET id param for API data retrieval, no state change
 		}
 		$estimate = SI_Estimate::get_instance( $data['id'] );
 		if ( ! is_a( $estimate, 'SI_Estimate' ) ) {
@@ -69,7 +70,7 @@ class SI_JSON_API extends SI_Controller {
 
 	public static function payment( $data = array() ) {
 		if ( ! isset( $data['id'] ) ) {
-			$data['id'] = isset( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : 0;
+			$data['id'] = isset( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: GET id param for API data retrieval, no state change
 		}
 		$payment = SI_Payment::get_instance( $data['id'] );
 		if ( ! is_a( $payment, 'SI_Payment' ) ) {
@@ -80,7 +81,7 @@ class SI_JSON_API extends SI_Controller {
 
 	public static function client( $data = array() ) {
 		if ( ! isset( $data['id'] ) ) {
-			$data['id'] = isset( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : 0;
+			$data['id'] = isset( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: GET id param for API data retrieval, no state change
 		}
 		$client = SI_Client::get_instance( $data['id'] );
 		if ( ! is_a( $client, 'SI_Client' ) ) {

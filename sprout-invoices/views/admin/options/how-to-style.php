@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <h1><?php esc_html_e( 'Logo & Color Styling', 'sprout-invoices' ); ?></h1>
 <p><?php esc_html_e( 'Styling for Invoice and Estimate templates is done via the WordPress customizer.', 'sprout-invoices' ); ?></p>
 <img src=<?php echo esc_attr( SI_RESOURCES . 'admin/img/customizer-how-to.gif' ); ?> class="si_customizer_how_to">

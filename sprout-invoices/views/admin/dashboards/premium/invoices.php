@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <div class="dashboard_widget inside">
 	<div class="main">
 		<?php
@@ -48,7 +49,7 @@
 			<b><?php esc_html_e( 'Latest Updates', 'sprout-invoices' ) ?></b> 
 			<ul>
 				<?php foreach ( $invoices->posts as $invoice_id ) : ?>
-					<li><a href="<?php echo esc_attr( get_edit_post_link( $invoice_id ) ) ?>"><?php echo esc_html( get_the_title( $invoice_id ) ) ?></a> &mdash; <?php echo esc_html( date( get_option( 'date_format' ), get_post_modified_time( 'U', false, $invoice_id ) ) ) ?></li>
+					<li><a href="<?php echo esc_attr( get_edit_post_link( $invoice_id ) ) ?>"><?php echo esc_html( get_the_title( $invoice_id ) ) ?></a> &mdash; <?php echo esc_html( gmdate( get_option( 'date_format' ), get_post_modified_time( 'U', false, $invoice_id ) ) ) ?></li>
 				<?php endforeach ?>
 			</ul>
 		<?php else : ?>

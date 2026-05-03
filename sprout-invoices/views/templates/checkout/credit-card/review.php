@@ -1,4 +1,6 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <form id="si_checkout_review" action="<?php echo esc_attr( si_get_credit_card_checkout_form_action() ) ?>" method="post">
+	<?php wp_nonce_field( 'si_checkout_action', 'si_checkout_nonce' ); ?>
 	<div class="checkout_block right_form clearfix">
 
 		<div class="paymentform-info">

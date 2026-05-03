@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 /**
  * File: sprout-invoices/controllers/sprout-invoices-field-table-row.php
  *
@@ -25,7 +26,7 @@ class SI_Field_Table_Row extends SI_Field {
 	public function render() {
 		$field_markup = $this->get_field_markup();
 		?>
-		<?php echo $field_markup; ?>
+		<?php echo $field_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Pre-built HTML from trusted internal function ?>
 		<?php
 	}
 

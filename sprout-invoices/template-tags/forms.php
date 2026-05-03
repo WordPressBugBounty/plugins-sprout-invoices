@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Sprout Apps Forms Template Functions
@@ -19,7 +20,7 @@ if ( ! function_exists( 'sa_form_fields' ) ) :
 		foreach ( $fields as $key => $data ) : ?>
 			<div id="si_admin_field_<?php echo esc_attr( $context ) ?>_<?php echo esc_attr( $key ) ?>" class="form-group<?php if ( $data['type'] == 'hidden' ) { echo ' hidden'; } ?>">
 				<?php if ( $data['type'] == 'heading' ) : ?>
-					<legend class="legend form-heading" ><?php esc_html_e( $data['label'], 'sprout-invoices' ); ?></legend>
+					<legend class="legend form-heading" ><?php echo esc_html( $data['label'] ); ?></legend>
 				<?php elseif ( $data['type'] != 'checkbox' ) : ?>
 					<span class="label_wrap"><?php sa_form_label( $key, $data, $context ); ?></span>
 					<div class="input_wrap"><?php sa_form_field( $key, $data, $context ); ?></div>
@@ -29,7 +30,7 @@ if ( ! function_exists( 'sa_form_fields' ) ) :
 							<?php
 								// add class by modifying the attributes.
 								$data['attributes']['class'] = 'checkbox'; ?>
-							<?php sa_form_field( $key, $data, $context ); ?> <?php esc_html_e( $data['label'], 'sprout-invoices' ); ?>
+							<?php sa_form_field( $key, $data, $context ); ?> <?php echo esc_html( $data['label'] ); ?>
 						</label>
 						<?php if ( ! empty( $data['description'] ) ) : ?>
 							<p class="description help_block"><?php echo wp_kses( $data['description'], SI_Settings_API::get_allowed_html() ); ?></p>
@@ -100,9 +101,11 @@ if ( ! function_exists( 'sa_get_form_field' ) ) :
 		if ( ! isset( $data['default'] ) ) {
 			$data['default'] = '';
 		}
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only: REQUEST param used to pre-populate form field default value, no state change
 		if ( empty( $data['default'] ) && isset( $_REQUEST[ 'sa_'.$category.'_'.$key ] ) && $_REQUEST[ 'sa_'.$category.'_'.$key ] != '' ) {
 			$data['default'] = sanitize_text_field( wp_unslash( $_REQUEST[ 'sa_'.$category.'_'.$key ] ) );
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 		if ( ! isset( $data['attributes'] ) || ! is_array( $data['attributes'] ) ) {
 			$data['attributes'] = array();
 		}
@@ -141,7 +144,7 @@ if ( ! function_exists( 'sa_get_form_field' ) ) :
 	<?php elseif ( $data['type'] == 'radios' ) : ?>
 		<?php foreach ( $data['options'] as $option_key => $option_label ) : ?>
 			<span class="sa-form-field-radio">
-				<label for="sa_<?php echo esc_attr( $category ) ?>_<?php echo esc_attr( $key ) ?>_<?php esc_attr_e( $option_key ); ?>"><input type="radio" name="sa_<?php echo esc_attr( $category ) ?>_<?php echo esc_attr( $key ) ?>" id="sa_<?php echo esc_attr( $category ) ?>_<?php echo esc_attr( $key ) ?>_<?php esc_attr_e( $option_key ); ?>" value="<?php esc_attr_e( $option_key ); ?>" <?php checked( $option_key, $data['default'] ) ?> />&nbsp;<?php echo esc_html( $option_label ); ?></label>
+				<label for="sa_<?php echo esc_attr( $category ) ?>_<?php echo esc_attr( $key ) ?>_<?php echo esc_attr( $option_key ); ?>"><input type="radio" name="sa_<?php echo esc_attr( $category ) ?>_<?php echo esc_attr( $key ) ?>" id="sa_<?php echo esc_attr( $category ) ?>_<?php echo esc_attr( $key ) ?>_<?php echo esc_attr( $option_key ); ?>" value="<?php echo esc_attr( $option_key ); ?>" <?php checked( $option_key, $data['default'] ) ?> />&nbsp;<?php echo esc_html( $option_label ); ?></label>
 			</span>
 		<?php endforeach; ?>
 	<?php elseif ( $data['type'] == 'checkbox' ) : ?>
@@ -224,7 +227,7 @@ if ( ! function_exists( 'sa_get_form_label' ) ) :
 			if ( ! isset( $data['label'] ) ) {
 				$data['label'] = '';
 			}
-			$out = '<label for="sa_'.$category.'_'.$key.'">'.__( $data['label'], 'sprout-invoices' ).'</label>';
+			$out = '<label for="sa_'.$category.'_'.$key.'">'.wp_kses( $data['label'], SI_Settings_API::get_allowed_html() ).'</label>';
 			if ( isset( $data['required'] ) && $data['required'] ) {
 				$out .= ' <span class="required">*</span>';
 			}

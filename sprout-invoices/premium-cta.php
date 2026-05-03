@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 /***************
  * Premium CTA *
  ***************/
@@ -8,6 +9,7 @@ function si_premium_cta( $url ) {
     if ( ! is_plugin_active( 'sprout-invoices-pro/sprout-invoices-pro.php' ) ) {
         echo( '<div class="si_premium_cta">' );
             printf(
+                /* translators: %1$s: value, %2$s: value, %3$s: value, %4$s: value */
                 esc_html__( 'You&#39;re using the free version of Sprout Invoices. %1$s%2$s %3$sUpgrade today%4$s to unlock more features. For documentation click %1$s%5$s%3$shere%4$s or if you have a question click %1$s%6$s%3$shere%4$s?' , 'sprout-invoices' ),
 				'<a href="',
                 esc_url( $url ),

@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Payment processor controller
@@ -51,8 +52,8 @@ abstract class SI_Payment_Processors extends SI_Controller {
 	}
 
 	public static function store_format_option() {
-		if ( isset( $_GET['page'] ) && $_GET['page'] == 'sprout-invoices-payments' ) {
-			update_option( self::MONEY_FORMAT_OPTION, sa_get_formatted_money( rand( 11000, 9999999 ) ) );
+		if ( isset( $_GET['page'] ) && $_GET['page'] == 'sprout-invoices-payments' ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only check of admin page URL parameter to trigger option formatting; no user-supplied data is saved.
+			update_option( self::MONEY_FORMAT_OPTION, sa_get_formatted_money( wp_rand( 11000, 9999999 ) ) );
 		}
 	}
 
@@ -158,12 +159,12 @@ abstract class SI_Payment_Processors extends SI_Controller {
 	 * @return SI_Payment_Processors|null
 	 */
 	public static function get_payment_processor() {
-		if ( isset( $_REQUEST[ SI_Checkouts::CHECKOUT_QUERY_VAR ] ) && $_REQUEST[ SI_Checkouts::CHECKOUT_QUERY_VAR ] != '' ) {
+		if ( isset( $_REQUEST[ SI_Checkouts::CHECKOUT_QUERY_VAR ] ) && $_REQUEST[ SI_Checkouts::CHECKOUT_QUERY_VAR ] != '' ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: determines which payment processor to load based on the checkout query var; nonce is verified in SI_Checkouts::handle_action() for any form submissions.
 			// Get the option specifying which payment processor to use
 			self::$active_payment_processors = self::enabled_processors();
 			foreach ( self::$active_payment_processors as $class ) {
 				$payment_processor = self::load_processor( $class );
-				if ( $_REQUEST[ SI_Checkouts::CHECKOUT_QUERY_VAR ] === $payment_processor->get_slug() ) {
+				if ( $_REQUEST[ SI_Checkouts::CHECKOUT_QUERY_VAR ] === $payment_processor->get_slug() ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Same as above; read-only routing parameter.
 					return $payment_processor;
 				}
 			}
@@ -593,7 +594,7 @@ abstract class SI_Payment_Processors extends SI_Controller {
 
 		$sub_pages = apply_filters( 'si_sub_admin_pages', array() );
 		uasort( $sub_pages, array( __CLASS__, 'sort_by_weight' ) );
-		$current_page = ( isset( $_GET['page'] ) ) ? str_replace( 'sprout-invoices-', '', sanitize_text_field( wp_unslash( $_GET['page'] ) ) ) : '';
+		$current_page = ( isset( $_GET['page'] ) ) ? str_replace( 'sprout-invoices-', '', sanitize_text_field( wp_unslash( $_GET['page'] ) ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: admin page URL parameter used for display routing only.
 		$args = array(
 			'current_page' => $current_page,
 			'sub_pages'    => $sub_pages,
@@ -671,7 +672,8 @@ abstract class SI_Payment_Processors extends SI_Controller {
 						'type'        => 'input',
 						'default'     => get_option( self::MONEY_FORMAT_OPTION ),
 						'attributes'  => array( 'class' => 'si_input si_disabled_input si_tooltip', 'disabled' => 'disabled', 'aria-label' => __( 'Tip: currency formatting can be adjusted per client', 'sprout-invoices' ) ),
-						'description' => sprintf( __( 'Default money formatting is based on the local (<code>%s</code>) this WordPress install was configured with during installation. Please <a href="%s">review the Sprout Invoices knowledgebase</a> if this needs to be changed.', 'sprout-invoices' ), get_locale(), 'https://docs.sproutinvoices.com/article/49-troubleshooting-money-currency-issues' ),
+						/* translators: %1$s: locale code, %2$s: URL to knowledgebase article */
+						'description' => sprintf( __( 'Default money formatting is based on the local (<code>%1$s</code>) this WordPress install was configured with during installation. Please <a href="%2$s">review the Sprout Invoices knowledgebase</a> if this needs to be changed.', 'sprout-invoices' ), get_locale(), 'https://docs.sproutinvoices.com/article/49-troubleshooting-money-currency-issues' ),
 					),
 				),
 			),
@@ -685,7 +687,8 @@ abstract class SI_Payment_Processors extends SI_Controller {
 	 * @return string
 	 */
 	public static function get_settings_page( $prefixed = true ) {
-		error_log( 'DEPRECATED: ' . __CLASS__ . '::' . __FUNCTION__ );
+		_deprecated_function( __METHOD__, 'unknown', 'SI_Payment_Processors::SETTINGS_PAGE' );
+		return self::SETTINGS_PAGE;
 	}
 
 	/*
@@ -693,12 +696,12 @@ abstract class SI_Payment_Processors extends SI_Controller {
 	 * ------------------------------------------------------------- */
 	final public function __clone() {
 		// cannot be cloned
-		trigger_error( __CLASS__.' may not be cloned', E_USER_ERROR );
+		wp_die( esc_html( __CLASS__ . ' may not be cloned' ) );
 	}
 
 	final public function __sleep() {
 		// cannot be serialized
-		trigger_error( __CLASS__.' may not be serialized', E_USER_ERROR );
+		wp_die( esc_html( __CLASS__ . ' may not be serialized' ) );
 	}
 
 	public function __construct() {
@@ -1014,7 +1017,7 @@ abstract class SI_Payment_Processors extends SI_Controller {
 	 * @return array
 	 */
 	public static function get_year_options( $number = 10 ) {
-		$this_year = (int) date( 'Y' );
+		$this_year = (int) gmdate( 'Y' );
 		$years = array();
 		for ( $i = 0 ; $i < $number ; $i++ ) {
 			$years[ $this_year + $i ] = $this_year + $i;
@@ -1031,7 +1034,7 @@ abstract class SI_Payment_Processors extends SI_Controller {
 	}
 
 	public static function help_tabs() {
-		if ( isset( $_GET['tab'] ) && $_GET['tab'] == self::SETTINGS_PAGE ) {
+		if ( isset( $_GET['tab'] ) && $_GET['tab'] == self::SETTINGS_PAGE ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: admin URL tab parameter used to conditionally display help content.
 			// get screen and add sections.
 			$screen = get_current_screen();
 

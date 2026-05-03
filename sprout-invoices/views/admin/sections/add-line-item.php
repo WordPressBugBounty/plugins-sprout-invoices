@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <span id="add_link_item">
 	<span class="add_button_wrap button">
 		<a href="javascript:void(0)" class="add_predefined add_button add_button_drop" data-dropdown="#type_selection">&nbsp;<?php esc_html_e( 'Add', 'sprout-invoices' ) ?></a>

@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  *
@@ -224,7 +225,7 @@ class SI_PO extends SI_Offsite_Processors {
 		if ( ! is_a( $checkout->get_processor(), __CLASS__ ) ) {
 			return;
 		}
-		wp_redirect( $checkout->checkout_confirmation_url( self::PAYMENT_SLUG ) );
+		wp_safe_redirect( $checkout->checkout_confirmation_url( self::PAYMENT_SLUG ) );
 		exit();
 	}
 
@@ -377,4 +378,4 @@ class SI_PO extends SI_Offsite_Processors {
 		}
 	}
 }
-SI_PO::register();
+add_action( 'init', array( 'SI_PO', 'register' ) );

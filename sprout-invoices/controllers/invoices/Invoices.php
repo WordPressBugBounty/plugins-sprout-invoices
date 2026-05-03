@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 
 /**
@@ -78,7 +79,7 @@ class SI_Invoices extends SI_Controller {
 		}
 
 		// (Legacy Code) Change every post that has auto-draft.
-		if ( false !== strpos( $slug, __( 'auto-draft' ) ) || SI_Invoice::STATUS_TEMP === $post_status ) {
+		if ( false !== strpos( $slug, __( 'auto-draft', 'default' ) ) || SI_Invoice::STATUS_TEMP === $post_status ) { // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Reusing WordPress core string translation
 			return $hashed_post_slug;
 		}
 
@@ -88,7 +89,7 @@ class SI_Invoices extends SI_Controller {
 		}
 
 		// (Legacy Code) Make sure it's a new post.
-		if ( ( ! isset( $_POST['post_name'] ) || $_POST['post_name'] == '' ) && SI_Invoice::POST_TYPE === $post_type ) {
+		if ( ( ! isset( $_POST['post_name'] ) || $_POST['post_name'] == '' ) && SI_Invoice::POST_TYPE === $post_type ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified by WP core before wp_unique_post_slug filter fires
 			return $hashed_post_slug;
 		}
 

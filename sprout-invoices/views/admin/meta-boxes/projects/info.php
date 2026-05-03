@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <div id="project_fields" class="admin_fields clearfix">
 	<?php sa_admin_fields( $fields ); ?>
 </div>

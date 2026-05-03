@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * CSV Importer
@@ -52,6 +53,7 @@ class SI_CSV_Import extends SI_Importer {
 					'label' => __( 'Clients', 'sprout-invoices' ),
 					'option' => array(
 						'type' => 'file',
+						/* translators: %s: value */
 						'description' => sprintf( __( 'Example CSV <a href="%s" target="_blank">here</a>. To be safe import no more than 100 clients at a time and import all of your clients before importing invoices or payments.', 'sprout-invoices' ), SI_URL . '/importers/csv-examples/clients.csv' ),
 					),
 				),
@@ -59,6 +61,7 @@ class SI_CSV_Import extends SI_Importer {
 					'label' => __( 'Estimates', 'sprout-invoices' ),
 					'option' => array(
 						'type' => 'file',
+						/* translators: %s: value */
 						'description' => sprintf( __( 'Example CSV <a href="%s" target="_blank">here</a>. To be safe import no more than 250 estimates at a time and import all of your clients.', 'sprout-invoices' ), SI_URL . '/importers/csv-examples/estimates.csv' ),
 					),
 				),
@@ -66,6 +69,7 @@ class SI_CSV_Import extends SI_Importer {
 					'label' => __( 'Invoices', 'sprout-invoices' ),
 					'option' => array(
 						'type' => 'file',
+						/* translators: %s: value */
 						'description' => sprintf( __( 'Example CSV <a href="%s" target="_blank">here</a>. To be safe import no more than 250 invoices at a time, import all of your clients, and import before payments.', 'sprout-invoices' ), SI_URL . '/importers/csv-examples/invoices.csv' ),
 					),
 				),
@@ -73,6 +77,7 @@ class SI_CSV_Import extends SI_Importer {
 					'label' => __( 'Payments', 'sprout-invoices' ),
 					'option' => array(
 						'type' => 'file',
+						/* translators: %s: value */
 						'description' => sprintf( __( 'Example CSV <a href="%s" target="_blank">here</a>. To be safe import no more than 100 payments at a time and make sure all your invoices are imported first.', 'sprout-invoices' ), SI_URL . '/importers/csv-examples/payments.csv' ),
 					),
 				),
@@ -101,6 +106,7 @@ class SI_CSV_Import extends SI_Importer {
 			return;
 		}
 
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce verified by process_importer() or maybe_init_import() before this is called
 		// Clear out progress
 		if ( isset( $_POST[ self::DELETE_PROGRESS ] ) && $_POST[ self::DELETE_PROGRESS ] == 'restart' ) {
 			delete_option( self::PROGRESS_OPTION );
@@ -155,6 +161,7 @@ class SI_CSV_Import extends SI_Importer {
 				update_option( self::PAYMENT_FILE_OPTION, $payment_csv['file'] );
 			}
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 	}
 
@@ -226,7 +233,7 @@ class SI_CSV_Import extends SI_Importer {
 	 */
 	public static function import_clients() {
 		// run script forever
-		set_time_limit( 0 );
+		set_time_limit( 0 ); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- required for long-running import
 
 		$csv_file = get_option( self::CLIENT_FILE_OPTION );
 
@@ -278,14 +285,17 @@ class SI_CSV_Import extends SI_Importer {
 		// Completed previously
 		self::return_progress( array(
 			'authentication' => array(
+			/* translators: %s: value */
 			'message' => sprintf( __( 'Successfully imported %s contacts and their clients already, moving on...', 'sprout-invoices' ), $total_records ),
 			'progress' => 25,
 			),
 			'clients' => array(
+			/* translators: %s: value */
 			'message' => sprintf( __( 'Successfully imported %s clients.', 'sprout-invoices' ), $total_records ),
 			'progress' => 100,
 			),
 			'contacts' => array(
+			/* translators: %s: value */
 			'message' => sprintf( __( 'Successfully imported more than %s contacts from their clients.', 'sprout-invoices' ), $total_records ),
 			'progress' => 100,
 			),
@@ -306,7 +316,7 @@ class SI_CSV_Import extends SI_Importer {
 	 */
 	public static function import_estimates() {
 		// run script forever
-		set_time_limit( 0 );
+		set_time_limit( 0 ); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- required for long-running import
 
 		$csv_file = get_option( self::ESTIMATE_FILE_OPTION );
 
@@ -352,10 +362,12 @@ class SI_CSV_Import extends SI_Importer {
 			// Complete
 			self::return_progress( array(
 				'authentication' => array(
+				/* translators: %s: value */
 				'message' => sprintf( __( 'Successfully imported %s estimates...', 'sprout-invoices' ), $total_records ),
 				'progress' => 75,
 				),
 				'estimates' => array(
+				/* translators: %s: value */
 				'message' => sprintf( __( 'Imported %s estimates!', 'sprout-invoices' ), $total_records ),
 				'progress' => 100,
 				),
@@ -370,10 +382,12 @@ class SI_CSV_Import extends SI_Importer {
 		// Completed previously
 		self::return_progress( array(
 			'authentication' => array(
+			/* translators: %s: value */
 			'message' => sprintf( __( 'Successfully imported %s estimates already, moving on...', 'sprout-invoices' ), $total_records ),
 			'progress' => 75,
 			),
 			'estimates' => array(
+			/* translators: %s: value */
 			'message' => sprintf( __( 'Successfully imported %s estimates already.', 'sprout-invoices' ), $total_records ),
 			'progress' => 100,
 			),
@@ -395,7 +409,7 @@ class SI_CSV_Import extends SI_Importer {
 	 */
 	public static function import_invoices() {
 		// run script forever
-		set_time_limit( 0 );
+		set_time_limit( 0 ); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- required for long-running import
 
 		$csv_file = get_option( self::INVOICE_FILE_OPTION );
 		if ( ! $csv_file ) {
@@ -440,10 +454,12 @@ class SI_CSV_Import extends SI_Importer {
 			// Complete
 			self::return_progress( array(
 				'authentication' => array(
+				/* translators: %s: value */
 				'message' => sprintf( __( 'Successfully imported %s invoices...', 'sprout-invoices' ), $total_records ),
 				'progress' => 75,
 				),
 				'invoices' => array(
+				/* translators: %s: value */
 				'message' => sprintf( __( 'Imported %s invoices!', 'sprout-invoices' ), $total_records ),
 				'progress' => 100,
 				),
@@ -458,10 +474,12 @@ class SI_CSV_Import extends SI_Importer {
 		// Completed previously
 		self::return_progress( array(
 			'authentication' => array(
+			/* translators: %s: value */
 			'message' => sprintf( __( 'Successfully imported %s invoices already, moving on...', 'sprout-invoices' ), $total_records ),
 			'progress' => 75,
 			),
 			'invoices' => array(
+			/* translators: %s: value */
 			'message' => sprintf( __( 'Successfully imported %s invoices already.', 'sprout-invoices' ), $total_records ),
 			'progress' => 100,
 			),
@@ -483,7 +501,7 @@ class SI_CSV_Import extends SI_Importer {
 	 */
 	public static function import_payments() {
 		// run script forever
-		set_time_limit( 0 );
+		set_time_limit( 0 ); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- required for long-running import
 
 		$csv_file = get_option( self::PAYMENT_FILE_OPTION );
 
@@ -525,10 +543,12 @@ class SI_CSV_Import extends SI_Importer {
 			// Complete
 			self::return_progress( array(
 				'authentication' => array(
+				/* translators: %s: value */
 				'message' => sprintf( __( 'Successfully imported %s payments...', 'sprout-invoices' ), $total_records ),
 				'progress' => 100,
 				),
 				'payments' => array(
+				/* translators: %s: value */
 				'message' => sprintf( __( 'Imported %s payments!', 'sprout-invoices' ), $total_records ),
 				'progress' => 100,
 				'next_step' => 'complete',
@@ -539,10 +559,12 @@ class SI_CSV_Import extends SI_Importer {
 		// Completed previously
 		self::return_progress( array(
 			'authentication' => array(
+			/* translators: %s: value */
 			'message' => sprintf( __( 'Successfully imported %s estimates already, moving on...', 'sprout-invoices' ), $total_records ),
 			'progress' => 100,
 			),
 			'payments' => array(
+			/* translators: %s: value */
 			'message' => sprintf( __( 'Successfully imported %s payments already.', 'sprout-invoices' ), $total_records ),
 			'progress' => 100,
 			'next_step' => 'complete',
@@ -634,7 +656,7 @@ class SI_CSV_Import extends SI_Importer {
 		// Attempt to find matching client
 		if ( isset( $estimate['Company'] ) ) {
 			global $wpdb;
-			$client_ids = $wpdb->get_col( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE post_title = %s AND post_type = %s", esc_sql( $estimate['Company'] ), SI_Client::POST_TYPE ) );
+			$client_ids = $wpdb->get_col( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE post_title = %s AND post_type = %s", esc_sql( $estimate['Company'] ), SI_Client::POST_TYPE ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Import-time client lookup, caching would return stale results
 			// Get client and confirm it's validity
 			if ( is_array( $client_ids ) && ! empty( $client_ids ) ) {
 				$client = SI_Client::get_instance( $client_ids[0] );
@@ -686,7 +708,7 @@ class SI_CSV_Import extends SI_Importer {
 
 		// post date
 		if ( isset( $estimate['Estimate Date'] ) ) {
-			$est->set_post_date( date( 'Y-m-d H:i:s', strtotime( $estimate['Estimate Date'] ) ) );
+			$est->set_post_date( gmdate( 'Y-m-d H:i:s', strtotime( $estimate['Estimate Date'] ) ) );
 		}
 
 		do_action( 'si_csv_estimate_import', $new_estimate_id, $estimate );
@@ -709,7 +731,7 @@ class SI_CSV_Import extends SI_Importer {
 		// Attempt to find matching client
 		if ( isset( $invoice['Company'] ) ) {
 			global $wpdb;
-			$client_ids = $wpdb->get_col( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE post_title = %s AND post_type = %s", esc_sql( $invoice['Company'] ), SI_Client::POST_TYPE ) );
+			$client_ids = $wpdb->get_col( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE post_title = %s AND post_type = %s", esc_sql( $invoice['Company'] ), SI_Client::POST_TYPE ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Import-time client lookup, caching would return stale results
 			// Get client and confirm it's validity
 			if ( is_array( $client_ids ) && ! empty( $client_ids ) ) {
 				$client = SI_Client::get_instance( $client_ids[0] );
@@ -763,7 +785,7 @@ class SI_CSV_Import extends SI_Importer {
 
 		// post date
 		if ( isset( $invoice['Invoice Date'] ) ) {
-			$inv->set_post_date( date( 'Y-m-d H:i:s', strtotime( $invoice['Invoice Date'] ) ) );
+			$inv->set_post_date( gmdate( 'Y-m-d H:i:s', strtotime( $invoice['Invoice Date'] ) ) );
 		}
 
 		do_action( 'si_csv_invoice_import', $new_invoice_id, $invoice );
@@ -804,7 +826,7 @@ class SI_CSV_Import extends SI_Importer {
 			),
 		) );
 		$new_payment = SI_Payment::get_instance( $payment_id );
-		$new_payment->set_post_date( date( 'Y-m-d H:i:s', strtotime( $payment['Date'] ) ) );
+		$new_payment->set_post_date( gmdate( 'Y-m-d H:i:s', strtotime( $payment['Date'] ) ) );
 		return $new_payment;
 	}
 
@@ -838,12 +860,12 @@ class SI_CSV_Import extends SI_Importer {
 	 * ------------------------------------------------------------- */
 	public function __clone() {
 		// cannot be cloned
-		trigger_error( __CLASS__.' may not be cloned', E_USER_ERROR );
+		wp_die( esc_html( __CLASS__ . ' may not be cloned' ) );
 	}
 
 	public function __sleep() {
 		// cannot be serialized
-		trigger_error( __CLASS__.' may not be serialized', E_USER_ERROR );
+		wp_die( esc_html( __CLASS__ . ' may not be serialized' ) );
 	}
 
 	public function __construct() {
@@ -860,15 +882,15 @@ class SI_CSV_Import extends SI_Importer {
 			$header = null;
 		}
 		$data = array();
-		if ( ( $handle = fopen( $filename, 'r' ) ) !== false ) {
+		if ( ( $handle = fopen( $filename, 'r' ) ) !== false ) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- WP_Filesystem doesn't support streaming CSV row-by-row
 			while ( ( $row = fgetcsv( $handle, 1000, $delimiter ) ) !== false ) {
 				if ( ! $header ) {
 					$header = $row; } else {
 					$data[] = array_combine( $header, $row ); }
 			}
-			fclose( $handle );
+			fclose( $handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- WP_Filesystem doesn't support streaming CSV row-by-row
 		}
 		return $data;
 	}
 }
-SI_CSV_Import::register();
+add_action( 'init', array( 'SI_CSV_Import', 'register' ), 5 );

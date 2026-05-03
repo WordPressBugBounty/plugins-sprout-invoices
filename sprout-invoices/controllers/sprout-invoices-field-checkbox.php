@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 /**
  * File: sprout-invoices/controllers/sprout-invoices-field-checkbox.php
  *
@@ -26,7 +27,7 @@ class SI_Field_Checkbox extends SI_Field {
 	public function get_field_markup() {
 		ob_start();
 		?>
-			<label for="<?php echo esc_attr( $this->field_options['attributes']['id'] ); ?>">
+			<label for="<?php echo esc_attr( $this->field_options['attributes']['id'] ?? '' ); ?>">
 				<?php if ( isset( $this->field_options['vueifs'] ) ) : ?>
 					<?php foreach ( $this->field_options['vueifs'] as $attribute => $value ) : ?>
 						<input

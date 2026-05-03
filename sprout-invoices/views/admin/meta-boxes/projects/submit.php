@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Copy of the post_submit_meta_box function
@@ -13,7 +14,7 @@ $can_publish = current_user_can( $post_type_object->cap->publish_posts );
 
 	<?php // Hidden submit button early on so that the browser chooses the right button when form is submitted with Return key ?>
 	<div style="display:none;">
-		<?php submit_button( __( 'Save' ), 'button', 'save' ); ?>
+		<?php submit_button( __( 'Save', 'sprout-invoices' ), 'button', 'save' ); ?>
 	</div>
 
 	<div id="minor-publishing">
@@ -52,7 +53,7 @@ $can_publish = current_user_can( $post_type_object->cap->publish_posts );
 		<div id="delete-action">
 			<?php
 			if ( current_user_can( 'delete_post', $post->ID ) ) { ?>
-				<a class="submitdelete deletion" href="<?php echo get_delete_post_link( $post->ID, null, true ); ?>"><?php esc_html_e( 'Delete', 'sprout-invoices' ) ?></a><?php
+				<a class="submitdelete deletion" href="<?php echo get_delete_post_link( $post->ID, '', true ); ?>"><?php esc_html_e( 'Delete', 'sprout-invoices' ) ?></a><?php
 			} ?>
 		</div>
 
@@ -60,15 +61,15 @@ $can_publish = current_user_can( $post_type_object->cap->publish_posts );
 			<?php
 			if ( ! in_array( $post->post_status, array('publish', 'future', 'private') ) || 0 == $post->ID ) {
 				if ( $can_publish ) : ?>
-					<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e( 'Publish' ) ?>" />
-					<?php submit_button( esc_html__( 'Create' ), 'primary button-large', 'publish', false, array( 'accesskey' => 'p' ) ); ?>
+					<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e( 'Publish', 'default' ) // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Reusing WordPress core string translation ?>" />
+					<?php submit_button( esc_html__( 'Create', 'sprout-invoices' ), 'primary button-large', 'publish', false, array( 'accesskey' => 'p' ) ); ?>
 				<?php else : ?>
-					<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e( 'Submit for Review' ) ?>" />
-					<?php submit_button( esc_html__( 'Submit for Review' ), 'primary button-large', 'publish', false, array( 'accesskey' => 'p' ) ); ?>
+					<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e( 'Submit for Review', 'default' ) // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Reusing WordPress core string translation ?>" />
+					<?php submit_button( esc_html__( 'Submit for Review', 'sprout-invoices' ), 'primary button-large', 'publish', false, array( 'accesskey' => 'p' ) ); ?>
 				<?php endif;
 			} else { ?>
-					<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e( 'Update' ) ?>" />
-					<input name="save" type="submit" class="button button-primary button-large" id="publish" accesskey="p" value="<?php esc_attr_e( 'Update' ) ?>" />
+					<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e( 'Update', 'default' ) // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Reusing WordPress core string translation ?>" />
+					<input name="save" type="submit" class="button button-primary button-large" id="publish" accesskey="p" value="<?php esc_attr_e( 'Update', 'default' ) // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Reusing WordPress core string translation ?>" />
 			<?php
 			} ?>
 			<span class="spinner"></span>

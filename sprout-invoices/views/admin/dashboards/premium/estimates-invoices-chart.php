@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <div class="dashboard_widget inside">
 
 	<div id="est_inv_totals" class="chart_filter">
@@ -25,7 +26,7 @@
 					est_invoice_chart.destroy();
 				};
 				est_invoice_chart = new Chart(ctx).Bar( est_inv_totals_data, {
-					multiTooltipTemplate: "<%= value %>",
+					multiTooltipTemplate: "<%= value %>", // phpcs:ignore Generic.PHP.DisallowAlternativePHPTags.MaybeASPShortOpenTagFound -- JavaScript template string, not PHP
 				} );
 			}
 

@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Harvest Importer
@@ -127,7 +128,7 @@ class SI_Harvest_Import extends SI_Importer {
 			return;
 		}
 
-
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce verified by process_importer() or maybe_init_import() before this is called
 		if ( isset( $_POST[ self::HARVEST_USER_OPTION ] ) && $_POST[ self::HARVEST_USER_OPTION ] != '' ) {
 			self::$harvest_user = sanitize_text_field( wp_unslash( $_POST[ self::HARVEST_USER_OPTION ] ) );
 			update_option( self::HARVEST_USER_OPTION, self::$harvest_user );
@@ -143,9 +144,10 @@ class SI_Harvest_Import extends SI_Importer {
 		}
 
 		// Clear out progress
-		if ( isset( $_POST[ self::DELETE_PROGRESS ] ) && sanitize_text_field( $_POST[ self::DELETE_PROGRESS ] ) == 'restart' ) {
+		if ( isset( $_POST[ self::DELETE_PROGRESS ] ) && sanitize_text_field( wp_unslash( $_POST[ self::DELETE_PROGRESS ] ) ) == 'restart' ) {
 			delete_option( self::PROGRESS_OPTION );
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 	}
 
 	/**
@@ -153,7 +155,7 @@ class SI_Harvest_Import extends SI_Importer {
 	 * @return bool
 	 */
 	public static function import_archived_data() {
-		self::$importing_archived = ( isset( $_POST[ self::PROCESS_ARCHIVED ] ) && sanitize_text_field( $_POST[ self::PROCESS_ARCHIVED ] ) == 'archived' ) ? true : false ;
+		self::$importing_archived = ( isset( $_POST[ self::PROCESS_ARCHIVED ] ) && sanitize_text_field( wp_unslash( $_POST[ self::PROCESS_ARCHIVED ] ) ) == 'archived' ) ? true : false ; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Called from nonce-verified context
 		return self::$importing_archived;
 	}
 
@@ -265,10 +267,12 @@ class SI_Harvest_Import extends SI_Importer {
 				// Return the progress
 				self::return_progress( array(
 					'authentication' => array(
+					/* translators: %s: value */
 					'message' => sprintf( __( 'Attempting to import %s clients...', 'sprout-invoices' ), $total_records ),
 					'progress' => 10 + $progress[ $progress_key ],
 					),
 					'clients' => array(
+					/* translators: %s: value */
 					'message' => sprintf( __( 'Imported about %s clients so far.', 'sprout-invoices' ), $total_imported ),
 					'progress' => intval( ($progress[ $progress_key ] / $pages) * 100 ),
 					'next_step' => 'clients',
@@ -283,10 +287,12 @@ class SI_Harvest_Import extends SI_Importer {
 			// Complete
 			self::return_progress( array(
 				'authentication' => array(
+				/* translators: %s: value */
 				'message' => sprintf( __( 'Successfully imported %s clients...', 'sprout-invoices' ), $total_records ),
 				'progress' => 50,
 				),
 				'clients' => array(
+				/* translators: %s: value */
 				'message' => sprintf( __( 'Imported %s clients!', 'sprout-invoices' ), $total_records ),
 				'progress' => 100,
 				'next_step' => 'contacts',
@@ -297,11 +303,13 @@ class SI_Harvest_Import extends SI_Importer {
 		// Completed previously
 		self::return_progress( array(
 			'authentication' => array(
+			/* translators: %s: value */
 			'message' => sprintf( __( 'Successfully imported %s clients already, moving on...', 'sprout-invoices' ), $total_records ),
 			'progress' => 50,
 			),
 			'clients' => array(
 			'progress' => 100,
+			/* translators: %s: value */
 			'message' => sprintf( __( 'Successfully imported %s clients already.', 'sprout-invoices' ), $total_records ),
 			'next_step' => 'contacts',
 			),
@@ -367,10 +375,12 @@ class SI_Harvest_Import extends SI_Importer {
 				// Return the progress
 				self::return_progress( array(
 					'authentication' => array(
+					/* translators: %s: value */
 					'message' => sprintf( __( 'Attempting to import %s contacts...', 'sprout-invoices' ), $total_records ),
 					'progress' => 25 + $progress[ $progress_key ],
 					),
 					'contacts' => array(
+					/* translators: %s: value */
 					'message' => sprintf( __( 'Imported about %s contacts so far.', 'sprout-invoices' ), $total_imported ),
 					'progress' => intval( ($progress[ $progress_key ] / $pages) * 100 ),
 					'next_step' => 'contacts',
@@ -385,10 +395,12 @@ class SI_Harvest_Import extends SI_Importer {
 			// Complete
 			self::return_progress( array(
 				'authentication' => array(
+				/* translators: %s: value */
 				'message' => sprintf( __( 'Successfully imported %s contacts...', 'sprout-invoices' ), $total_records ),
 				'progress' => 50,
 				),
 				'contacts' => array(
+				/* translators: %s: value */
 				'message' => sprintf( __( 'Imported %s contacts!', 'sprout-invoices' ), $total_records ),
 				'progress' => 100,
 				'next_step' => 'estimates',
@@ -399,11 +411,13 @@ class SI_Harvest_Import extends SI_Importer {
 		// Completed previously
 		self::return_progress( array(
 			'authentication' => array(
+			/* translators: %s: value */
 			'message' => sprintf( __( 'Successfully imported %s contacts already, moving on...', 'sprout-invoices' ), $total_records ),
 			'progress' => 50,
 			),
 			'contacts' => array(
 			'progress' => 100,
+			/* translators: %s: value */
 			'message' => sprintf( __( 'Successfully imported %s contacts already.', 'sprout-invoices' ), $total_records ),
 			'next_step' => 'estimates',
 			),
@@ -458,7 +472,7 @@ class SI_Harvest_Import extends SI_Importer {
 
 		if ( ! isset( $progress['invoices_complete'] ) ) {
 
-			set_time_limit( 0 ); // run script forever
+			set_time_limit( 0 ); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- required for long-running import
 
 			$progress_key = 'invoices_import_progress';
 			if ( ! isset( $progress[ $progress_key ] ) ) {
@@ -486,6 +500,7 @@ class SI_Harvest_Import extends SI_Importer {
 					'progress' => 60 + $progress[ $progress_key ],
 					),
 					'invoices' => array(
+					/* translators: %s: value */
 					'message' => sprintf( __( 'Currently importing invoices and their payments in increments of %s. Thank you for your patience, this is a very slow process.', 'sprout-invoices' ), 50 ),
 					'progress' => 15 + ($progress[ $progress_key ] * 5),
 					),
@@ -573,14 +588,17 @@ class SI_Harvest_Import extends SI_Importer {
 					// Return the progress
 					self::return_progress( array(
 						'authentication' => array(
+						/* translators: %s: value */
 						'message' => sprintf( __( 'Attempting to import %s new invoices and their payments...', 'sprout-invoices' ), $invoices_imported  ),
 						'progress' => 60 + $progress[ $progress_key ],
 						),
 						'payments' => array(
+						/* translators: %s: value */
 						'message' => sprintf( __( 'Just imported %s more payments.', 'sprout-invoices' ), $payments_imported ),
 						'progress' => 15 + ($progress[ $progress_key ] * 2),
 						),
 						'invoices' => array(
+						/* translators: %s: value */
 						'message' => sprintf( __( 'Importing invoices in increments of %s. Thank you for your patience, this is a very slow process.', 'sprout-invoices' ), apply_filters( 'si_harvest_import_increments_for_invoices', 10 ) ),
 						'progress' => 15 + ($progress[ $progress_key ] * 2),
 						'next_step' => 'invoices',
@@ -722,7 +740,7 @@ class SI_Harvest_Import extends SI_Importer {
 		$inv->set_due_date( strtotime( $invoice->due_at ) );
 		$inv->set_issue_date( strtotime( $invoice->created_at ) );
 		// post date
-		$inv->set_post_date( date( 'Y-m-d H:i:s', strtotime( $invoice->created_at ) ) );
+		$inv->set_post_date( gmdate( 'Y-m-d H:i:s', strtotime( $invoice->created_at ) ) );
 
 		// Record
 		do_action( 'si_new_record',
@@ -792,7 +810,7 @@ class SI_Harvest_Import extends SI_Importer {
 			),
 		) );
 		$new_payment = SI_Payment::get_instance( $payment_id );
-		$new_payment->set_post_date( date( 'Y-m-d H:i:s', strtotime( $payment->created_at ) ) );
+		$new_payment->set_post_date( gmdate( 'Y-m-d H:i:s', strtotime( $payment->created_at ) ) );
 		return $new_payment;
 	}
 
@@ -802,12 +820,12 @@ class SI_Harvest_Import extends SI_Importer {
 	 * ------------------------------------------------------------- */
 	public function __clone() {
 		// cannot be cloned
-		trigger_error( __CLASS__.' may not be cloned', E_USER_ERROR );
+		wp_die( esc_html( __CLASS__ . ' may not be cloned' ) );
 	}
 
 	public function __sleep() {
 		// cannot be serialized
-		trigger_error( __CLASS__.' may not be serialized', E_USER_ERROR );
+		wp_die( esc_html( __CLASS__ . ' may not be serialized' ) );
 	}
 
 	public function __construct() {
@@ -830,4 +848,4 @@ class SI_Harvest_Import extends SI_Importer {
 		return $r;
 	}
 }
-SI_Harvest_Import::register();
+add_action( 'init', array( 'SI_Harvest_Import', 'register' ), 5 );

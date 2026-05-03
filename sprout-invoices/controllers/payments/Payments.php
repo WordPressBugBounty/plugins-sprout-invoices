@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Payments Controller
@@ -53,16 +54,16 @@ class SI_Payments extends SI_Controller {
 	}
 
 	public function modify_views( $views ) {
-		$auth_class = ( isset( $_GET['post_status'] ) && $_GET['post_status'] == SI_Payment::STATUS_AUTHORIZED ) ? 'class="current"' : '';
+		$auth_class = ( isset( $_GET['post_status'] ) && $_GET['post_status'] == SI_Payment::STATUS_AUTHORIZED ) ? 'class="current"' : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$views['authorized_payments'] = '<a href="'.esc_url( add_query_arg( array( 'post_status' => SI_Payment::STATUS_AUTHORIZED ) ) ).'" '.$auth_class.'>'.__( 'Authorized/Temp', 'sprout-invoices' ).'</a>';
 
-		$auth_class = ( isset( $_GET['post_status'] ) && $_GET['post_status'] == SI_Payment::STATUS_PARTIAL ) ? 'class="current"' : '';
+		$auth_class = ( isset( $_GET['post_status'] ) && $_GET['post_status'] == SI_Payment::STATUS_PARTIAL ) ? 'class="current"' : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$views['partial_payments'] = '<a href="'.esc_url( add_query_arg( array( 'post_status' => SI_Payment::STATUS_PARTIAL ) ) ).'" '.$auth_class.'>'.__( 'Partial', 'sprout-invoices' ).'</a>';
 
-		$void_class = ( isset( $_GET['post_status'] ) && $_GET['post_status'] == SI_Payment::STATUS_VOID ) ? 'class="current"' : '';
+		$void_class = ( isset( $_GET['post_status'] ) && $_GET['post_status'] == SI_Payment::STATUS_VOID ) ? 'class="current"' : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$views['voided_payments'] = '<a href="'.esc_url( add_query_arg( array( 'post_status' => SI_Payment::STATUS_VOID ) ) ).'" '.$void_class.'>'.__( 'Voided', 'sprout-invoices' ).'</a>';
 
-		$refund_class = ( isset( $_GET['post_status'] ) && $_GET['post_status'] == SI_Payment::STATUS_REFUND ) ? 'class="current"' : '';
+		$refund_class = ( isset( $_GET['post_status'] ) && $_GET['post_status'] == SI_Payment::STATUS_REFUND ) ? 'class="current"' : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$views['refunded_payments'] = '<a href="'.esc_url( add_query_arg( array( 'post_status' => SI_Payment::STATUS_REFUND ) ) ).'" '.$refund_class.'>'.__( 'Refunded', 'sprout-invoices' ).'</a>';
 		return $views;
 	}
@@ -97,7 +98,8 @@ class SI_Payments extends SI_Controller {
 		$payment->set_status( SI_Payment::STATUS_VOID );
 		$payment->set_payment_method( __( 'Admin Void', 'sprout-invoices' ) );
 		// Merge old data with new updated message
-		$new_data = wp_parse_args( $payment->get_data(), array( 'void_notes' => $new_data, 'updated' => sprintf( __( 'Voided by User #%s on %s', 'sprout-invoices' ), get_current_user_id(), date_i18n( get_option( 'date_format' ) . ' @ ' . get_option( 'time_format' ) ) ) ) );
+		/* translators: %1$s: user ID, %2$s: date and time */
+		$new_data = wp_parse_args( $payment->get_data(), array( 'void_notes' => $new_data, 'updated' => sprintf( __( 'Voided by User #%1$s on %2$s', 'sprout-invoices' ), get_current_user_id(), date_i18n( get_option( 'date_format' ) . ' @ ' . get_option( 'time_format' ) ) ) ) );
 		$payment->set_data( $new_data );
 	}
 
@@ -160,8 +162,10 @@ class SI_Payments extends SI_Controller {
 			<?php $wp_list_table->views() ?>
 			<form id="payments-filter" method="get">
 			<?php
+				// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only: GET params populate hidden form fields for filtering, no state change
 				$page      = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
 				$post_type = isset( $_REQUEST['post_type'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['post_type'] ) ) : '';
+				// phpcs:enable WordPress.Security.NonceVerification.Recommended
 			?>
 				<input type="hidden" name="page" value="<?php echo esc_attr( $page ); ?>" />
 				<input type="hidden" name="post_type" value="<?php echo esc_attr( $post_type ); ?>" />

@@ -4,6 +4,9 @@
 * Addons: Admin purchasing, check for updates, etc.
 *
 */
+
+defined( 'ABSPATH' ) || exit;
+
 class SA_Init_Addon_Processors extends SI_Controller {
 
 	public static function init() {

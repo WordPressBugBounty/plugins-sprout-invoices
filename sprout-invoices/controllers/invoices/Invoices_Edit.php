@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 
 /**
@@ -69,7 +70,8 @@ class SI_Invoices_Edit extends SI_Invoices {
 								'class' => 'medium-text',
 							),
 							'default' => self::$invoices_slug,
-							'description' => sprintf( __( 'Example invoice url: %s/%s/045b41dd14ab8507d80a27b7357630a5/', 'sprout-invoices' ), site_url(), '<strong>'.self::$invoices_slug.'</strong>' ),
+							/* translators: %1$s: site URL, %2$s: invoice slug */
+							'description' => sprintf( __( 'Example invoice url: %1$s/%2$s/045b41dd14ab8507d80a27b7357630a5/', 'sprout-invoices' ), site_url(), '<strong>'.self::$invoices_slug.'</strong>' ),
 						),
 
 					),
@@ -122,8 +124,8 @@ class SI_Invoices_Edit extends SI_Invoices {
 	public static function update_post_data( $data = array(), $post = array() ) {
 		if ( SI_Invoice::POST_TYPE === $post['post_type'] ) {
 			$title = $post['post_title'];
-			if ( isset( $_POST['subject'] ) && $_POST['subject'] != '' ) {
-				$title = sanitize_text_field( wp_unslash( $_POST['subject'] ) );
+			if ( isset( $_POST['subject'] ) && $_POST['subject'] != '' ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified by WP core before wp_insert_post_data fires
+				$title = sanitize_text_field( wp_unslash( $_POST['subject'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			}
 			// modify the post title
 			$data['post_title'] = $title;
@@ -301,13 +303,15 @@ class SI_Invoices_Edit extends SI_Invoices {
 			return;
 		}
 
+		check_admin_referer( 'update-post_' . $post_id, '_wpnonce' );
+
 		$invoice = SI_Invoice::get_instance( $post_id );
 		$line_items = array();
 		// The line_item_key sends the order of each item so they can be linked with the other options
 		foreach ( array_map( 'sanitize_text_field', wp_unslash( $_POST['line_item_key'] ) ) as $key => $order ) {
 			// If description is empty set value to type of line item.
 			if ( isset( $_POST['line_item_desc'][ $key ] ) && '' === $_POST['line_item_desc'][ $key ] ) {
-				$_POST['line_item_desc'] = $_POST['line_item_type'];
+				$_POST['line_item_desc'] = isset( $_POST['line_item_type'] ) ? array_map( 'sanitize_text_field', wp_unslash( (array) $_POST['line_item_type'] ) ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 			}
 			// make sure there's a description, otherwise it's not an item.
 			if ( isset( $_POST['line_item_desc'][ $key ] ) && '' !== $_POST['line_item_desc'][ $key ] ) {
@@ -412,9 +416,12 @@ class SI_Invoices_Edit extends SI_Invoices {
 		 * This function runs on every post save, so we need to check the post type.
 		 * We don't want to save the meta box data for other post types.
 		 */
-		if ( 'sa_invoice' !== $_POST['post_type'] ) {
+		$post_type = isset( $_POST['post_type'] ) ? sanitize_text_field( wp_unslash( $_POST['post_type'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified immediately below via check_admin_referer
+		if ( 'sa_invoice' !== $post_type ) {
 			return;
 		}
+
+		check_admin_referer( 'update-post_' . $post_id, '_wpnonce' );
 
 		$invoice = SI_Invoice::get_instance( $post_id );
 
@@ -454,9 +461,11 @@ class SI_Invoices_Edit extends SI_Invoices {
 			$user = get_userdata( get_current_user_id() );
 
 			do_action( 'si_new_record',
+				/* translators: %s: user display name */
 				sprintf( __( 'Invoice updated by %s.', 'sprout-invoices' ), $user->display_name ),
 				self::HISTORY_UPDATE,
 				$invoice->get_id(),
+				/* translators: %s: invoice ID */
 				sprintf( __( 'Data updated for %s.', 'sprout-invoices' ), $invoice->get_id() ),
 				0,
 			false );
@@ -496,6 +505,8 @@ class SI_Invoices_Edit extends SI_Invoices {
 	 * @return
 	 */
 	public static function save_invoice_note( $post_id, $post, $callback_args, $invoice_id = null ) {
+		check_admin_referer( 'update-post_' . $post_id, '_wpnonce' );
+
 		$invoice = SI_Invoice::get_instance( $post_id );
 
 		$sender_notes = ( isset( $_POST['sender_notes'] ) && $_POST['sender_notes'] !== '' ) ? sanitize_text_field( wp_unslash( $_POST['sender_notes'] ) ) : '' ;
@@ -556,6 +567,8 @@ class SI_Invoices_Edit extends SI_Invoices {
 	 * @return
 	 */
 	public static function save_notes( $post_id, $post, $callback_args, $invoice_id = null ) {
+		check_admin_referer( 'update-post_' . $post_id, '_wpnonce' );
+
 		$invoice = SI_Invoice::get_instance( $post_id );
 
 		$invoice_terms = ( isset( $_POST['invoice_terms'] ) && '' !== $_POST['invoice_terms'] ) ? wp_kses_post( wp_unslash( $_POST['invoice_terms'] ) ) : '';

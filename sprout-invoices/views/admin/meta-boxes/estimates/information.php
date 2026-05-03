@@ -1,7 +1,8 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <!-- issue date -->
 <?php
 global $action;
-$datef = __( 'M j, Y @ G:i' );
+$datef = __( 'M j, Y @ G:i', 'default' ); // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Reusing WordPress core string translation
 if ( 0 != $post->ID ) {
 	// translators: 
 	$stamp = esc_html__( 'Issued on: %1$s', 'sprout-invoices' );
@@ -39,7 +40,7 @@ if ( 0 != $post->ID ) {
 	<div class="misc-pub-section curtime misc-pub-curtime">
 		<span id="timestamp"><?php printf( esc_html( $stamp ), esc_html( $date ) ); ?></span>
 
-		<a href="#edit_timestamp" class="edit-timestamp hide-if-no-js"><span aria-hidden="true"><?php esc_html_e( 'Edit' ); ?></span> <span class="screen-reader-text"><?php esc_html_e( 'Edit date and time' ); ?></span></a>
+		<a href="#edit_timestamp" class="edit-timestamp hide-if-no-js"><span aria-hidden="true"><?php esc_html_e( 'Edit', 'default' ); // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Reusing WordPress core string translation ?></span> <span class="screen-reader-text"><?php esc_html_e( 'Edit date and time', 'default' ); // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Reusing WordPress core string translation ?></span></a>
 		<div id="timestampdiv" class="hide-if-js"><?php touch_time( ( $action == 'edit' ), 1 ); ?></div>
 	</div>
 </div>
@@ -56,20 +57,20 @@ if ( 0 != $post->ID ) {
 	<div id="expiration_date_div" class="control_wrap hide-if-js">
 		<div class="expiration_date-wrap">
 			<select id="exp_mm" name="expiration_mm">
-				<option value="01" <?php selected( date( 'm', $expiration_date ), '01' ) ?>>01-Jan</option>
-				<option value="02" <?php selected( date( 'm', $expiration_date ), '02' ) ?>>02-Feb</option>
-				<option value="03" <?php selected( date( 'm', $expiration_date ), '03' ) ?>>03-Mar</option>
-				<option value="04" <?php selected( date( 'm', $expiration_date ), '04' ) ?>>04-Apr</option>
-				<option value="05" <?php selected( date( 'm', $expiration_date ), '05' ) ?>>05-May</option>
-				<option value="06" <?php selected( date( 'm', $expiration_date ), '06' ) ?>>06-Jun</option>
-				<option value="07" <?php selected( date( 'm', $expiration_date ), '07' ) ?>>07-Jul</option>
-				<option value="08" <?php selected( date( 'm', $expiration_date ), '08' ) ?>>08-Aug</option>
-				<option value="09" <?php selected( date( 'm', $expiration_date ), '09' ) ?>>09-Sep</option>
-				<option value="10" <?php selected( date( 'm', $expiration_date ), '10' ) ?>>10-Oct</option>
-				<option value="11" <?php selected( date( 'm', $expiration_date ), '11' ) ?>>11-Nov</option>
-				<option value="12" <?php selected( date( 'm', $expiration_date ), '12' ) ?>>12-Dec</option>
+				<option value="01" <?php selected( gmdate( 'm', $expiration_date ), '01' ) ?>>01-Jan</option>
+				<option value="02" <?php selected( gmdate( 'm', $expiration_date ), '02' ) ?>>02-Feb</option>
+				<option value="03" <?php selected( gmdate( 'm', $expiration_date ), '03' ) ?>>03-Mar</option>
+				<option value="04" <?php selected( gmdate( 'm', $expiration_date ), '04' ) ?>>04-Apr</option>
+				<option value="05" <?php selected( gmdate( 'm', $expiration_date ), '05' ) ?>>05-May</option>
+				<option value="06" <?php selected( gmdate( 'm', $expiration_date ), '06' ) ?>>06-Jun</option>
+				<option value="07" <?php selected( gmdate( 'm', $expiration_date ), '07' ) ?>>07-Jul</option>
+				<option value="08" <?php selected( gmdate( 'm', $expiration_date ), '08' ) ?>>08-Aug</option>
+				<option value="09" <?php selected( gmdate( 'm', $expiration_date ), '09' ) ?>>09-Sep</option>
+				<option value="10" <?php selected( gmdate( 'm', $expiration_date ), '10' ) ?>>10-Oct</option>
+				<option value="11" <?php selected( gmdate( 'm', $expiration_date ), '11' ) ?>>11-Nov</option>
+				<option value="12" <?php selected( gmdate( 'm', $expiration_date ), '12' ) ?>>12-Dec</option>
 			</select>
- 			<input type="text" id="exp_jj" name="expiration_j" value="<?php echo esc_attr( date( 'j', $expiration_date ) ) ?>" size="2" maxlength="2" autocomplete="off">, <input type="text" id="exp_o" name="expiration_o" value="<?php echo esc_attr( date( 'o', $expiration_date ) ) ?>" size="4" maxlength="4" autocomplete="off">
+ 			<input type="text" id="exp_jj" name="expiration_j" value="<?php echo esc_attr( gmdate( 'j', $expiration_date ) ) ?>" size="2" maxlength="2" autocomplete="off">, <input type="text" id="exp_o" name="expiration_o" value="<?php echo esc_attr( gmdate( 'o', $expiration_date ) ) ?>" size="4" maxlength="4" autocomplete="off">
  		</div>
 		<p>
 			<a href="#edit_expiration_date" class="save_control save-expiration_date hide-if-no-js button"><?php esc_html_e( 'OK', 'sprout-invoices' ) ?></a>
@@ -88,6 +89,7 @@ if ( 0 != $post->ID ) {
 <!-- Client -->
 <div class="misc-pub-section" data-edit-id="client" data-edit-type="select">
 	<?php 
+		/* translators: %1$s: value, %2$s: value */
 		$client_name = ( $client_id ) ? sprintf( '<a href="%s">%s</a>', get_edit_post_link( $client_id ), get_the_title( $client_id ) ) : esc_html__( 'Client N/A', 'sprout-invoices' ) ;
 		$wp_kses_client_name = array( 'a' => array( 'href' => array() ) ) ;
 	?>

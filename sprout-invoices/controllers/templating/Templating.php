@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Templating API
@@ -189,24 +190,24 @@ class SI_Templating_API extends SI_Controller {
 		global $wp_styles;
 
 		if ( ! $v2_theme ) {
-			wp_enqueue_style( 'open-sans-css', '//fonts.googleapis.com/css?family=Open+Sans%3A300italic%2C400italic%2C600italic%2C300%2C400%2C600&amp;subset=latin%2Clatin-ext', array(), false );
-			wp_enqueue_style( 'dashicons-css', includes_url( 'css/dashicons.min.css' ), array(), false );
-			wp_enqueue_style( 'qtip-css', SI_RESOURCES . 'admin/plugins/qtip/jquery.qtip.min.css', array(), false );
-			wp_enqueue_style( 'dropdown-css', SI_RESOURCES . 'admin/plugins/dropdown/jquery.dropdown.css', array(), false );
-			wp_enqueue_style( 'sprout_doc_style-css', SI_RESOURCES . 'deprecated-front-end/css/sprout-invoices.style.css', array(), false );
+			wp_enqueue_style( 'open-sans-css', '//fonts.googleapis.com/css?family=Open+Sans%3A300italic%2C400italic%2C600italic%2C300%2C400%2C600&amp;subset=latin%2Clatin-ext', array(), self::SI_VERSION );
+			wp_enqueue_style( 'dashicons-css', includes_url( 'css/dashicons.min.css' ), array(), self::SI_VERSION );
+			wp_enqueue_style( 'qtip-css', SI_RESOURCES . 'admin/plugins/qtip/jquery.qtip.min.css', array(), self::SI_VERSION );
+			wp_enqueue_style( 'dropdown-css', SI_RESOURCES . 'admin/plugins/dropdown/jquery.dropdown.css', array(), self::SI_VERSION );
+			wp_enqueue_style( 'sprout_doc_style-css', SI_RESOURCES . 'deprecated-front-end/css/sprout-invoices.style.css', array(), self::SI_VERSION );
 
-			wp_enqueue_script( 'jquery' );
-			wp_enqueue_script( 'dropdown', SI_RESOURCES . 'admin/plugins/dropdown/jquery.dropdown.min.js', array(), false );
-			wp_enqueue_script( 'jquery-qtip', SI_RESOURCES . 'admin/plugins/qtip/jquery.qtip.min.js', array( 'jquery' ), false, true );
-			wp_enqueue_script( 'jquery-ui-droppable' );
-			wp_enqueue_script( 'deprecated-front-end', SI_RESOURCES . 'deprecated-front-end/js/sprout-invoices.js', array( 'jquery', 'jquery-ui-droppable', 'jquery-qtip' ), false, true );
+			wp_enqueue_script( 'jquery' ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.NoExplicitVersion,WordPress.WP.EnqueuedResourceParameters.NotInFooter -- jQuery is a WP bundled script loaded in header by design.
+			wp_enqueue_script( 'dropdown', SI_RESOURCES . 'admin/plugins/dropdown/jquery.dropdown.min.js', array(), self::SI_VERSION, false ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.NotInFooter -- Must load in header for legacy template compatibility.
+			wp_enqueue_script( 'jquery-qtip', SI_RESOURCES . 'admin/plugins/qtip/jquery.qtip.min.js', array( 'jquery' ), self::SI_VERSION, true );
+			wp_enqueue_script( 'jquery-ui-droppable' ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.NoExplicitVersion,WordPress.WP.EnqueuedResourceParameters.NotInFooter -- WP bundled script, version managed by WordPress core.
+			wp_enqueue_script( 'deprecated-front-end', SI_RESOURCES . 'deprecated-front-end/js/sprout-invoices.js', array( 'jquery', 'jquery-ui-droppable', 'jquery-qtip' ), self::SI_VERSION, true );
 		}
 
 		self::load_custom_stylesheet();
 		self::load_custom_js();
 
 		// Adds inline JS to header.
-		wp_register_script( 'si-localized', '' );
+		wp_register_script( 'si-localized', '', array(), self::SI_VERSION, false ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.NotInFooter -- Inline JS object must be in header for template scripts to access it.
 		wp_enqueue_script( 'si-localized' );
 		wp_add_inline_script( 'si-localized', 'var si_js_object = ' . wp_json_encode( SI_Controller::get_localized_js() ) . ';' );
 
@@ -215,7 +216,14 @@ class SI_Templating_API extends SI_Controller {
 		 * Invoice and Estimate templates, the css and js files
 		 * are not enqueued or printed in the normal way, so we have to call
 		 * wp_print_scripts and wp_print_styles here manually.
+		 *
+		 * wp_enqueue_emoji_styles() is normally called via wp_enqueue_scripts (triggered by
+		 * wp_head), which removes the deprecated print_emoji_styles hook from wp_print_styles.
+		 * Since we bypass wp_head entirely, we must call it here to prevent the deprecation.
 		 */
+		if ( function_exists( 'wp_enqueue_emoji_styles' ) ) {
+			wp_enqueue_emoji_styles();
+		}
 		echo '<!--SI Scripts-->';
 		wp_print_scripts();
 		echo '<!--SI Styles-->';
@@ -237,7 +245,7 @@ class SI_Templating_API extends SI_Controller {
 
 		if ( $base_stylesheet_path ) {
 			$stylesheet_url = _convert_content_file_path_to_url( $base_stylesheet_path );
-			wp_enqueue_style( 'sprout_doc_style-' . $theme_option . '-css', $stylesheet_url, array(), false );
+			wp_enqueue_style( 'sprout_doc_style-' . $theme_option . '-css', $stylesheet_url, array(), self::SI_VERSION );
 		}
 
 		$context_stylesheet_path = self::locate_template( array(
@@ -248,7 +256,7 @@ class SI_Templating_API extends SI_Controller {
 
 		if ( $context_stylesheet_path ) {
 			$stylesheet_url = _convert_content_file_path_to_url( $context_stylesheet_path );
-			wp_enqueue_style( 'sprout_doc_style-' . $context . '-css', $stylesheet_url, array(), false );
+			wp_enqueue_style( 'sprout_doc_style-' . $context . '-css', $stylesheet_url, array(), self::SI_VERSION );
 		}
 
 		$stylesheet_path = self::locate_template( array(
@@ -257,7 +265,7 @@ class SI_Templating_API extends SI_Controller {
 
 		if ( $stylesheet_path ) {
 			$general_stylesheet_url = _convert_content_file_path_to_url( $stylesheet_path );
-			wp_enqueue_style( 'sprout_doc_style-general-css', $general_stylesheet_url, array(), false );
+			wp_enqueue_style( 'sprout_doc_style-general-css', $general_stylesheet_url, array(), self::SI_VERSION );
 		}
 	}
 
@@ -278,7 +286,7 @@ class SI_Templating_API extends SI_Controller {
 
 		if ( $base_js_path ) {
 			$js_url = _convert_content_file_path_to_url( $base_js_path );
-			wp_enqueue_script( 'sprout_doc_style-' . $theme_option . '-css', $js_url, array( 'jquery' ), false, false );
+			wp_enqueue_script( 'sprout_doc_style-' . $theme_option . '-css', $js_url, array( 'jquery' ), self::SI_VERSION, true );
 		}
 
 		$context_js_path = self::locate_template( array(
@@ -289,7 +297,7 @@ class SI_Templating_API extends SI_Controller {
 
 		if ( $context_js_path ) {
 			$js_url = _convert_content_file_path_to_url( $context_js_path );
-			wp_enqueue_script( 'sprout_doc_style-' . $context . '-css', $js_url, array( 'jquery' ), false, false );
+			wp_enqueue_script( 'sprout_doc_style-' . $context . '-css', $js_url, array( 'jquery' ), self::SI_VERSION, true );
 		}
 
 		$js_path = self::locate_template( array(
@@ -298,7 +306,7 @@ class SI_Templating_API extends SI_Controller {
 
 		if ( $js_path ) {
 			$general_js_url = _convert_content_file_path_to_url( $js_path );
-			wp_enqueue_script( 'sprout_doc_style-general-css', $general_js_url, array( 'jquery' ), false, false );
+			wp_enqueue_script( 'sprout_doc_style-general-css', $general_js_url, array( 'jquery' ), self::SI_VERSION, true );
 		}
 	}
 
@@ -315,7 +323,7 @@ class SI_Templating_API extends SI_Controller {
 			wp_enqueue_script( 'underscore' );
 			wp_enqueue_script( 'customize-base' );
 			wp_enqueue_script( 'customize-preview' );
-			wp_enqueue_script( 'si-customizer', SI_RESOURCES . 'admin/js/customizer.js', array( 'customize-preview' ), false, true );
+			wp_enqueue_script( 'si-customizer', SI_RESOURCES . 'admin/js/customizer.js', array( 'customize-preview' ), self::SI_VERSION, true );
 		}
 
 		/*
@@ -613,7 +621,7 @@ class SI_Templating_API extends SI_Controller {
 		$template = self::get_doc_current_template( $doc->get_id() ); ?>
 		<div class="misc-pub-section" data-edit-id="template" data-edit-type="select">
 			<span id="template" class="wp-media-buttons-icon"><b><?php echo esc_html( $template_options[ $template ] ); ?></b>
-			<span title="<?php printf( esc_html__( 'Select a custom %s template.', 'sprout-invoices' ), esc_html( $doc_type_name ) ); ?>" class="helptip"></span></span>
+			<span title="<?php /* translators: %1$s: doc type (invoice or estimate) */ printf( esc_html__( 'Select a custom %s template.', 'sprout-invoices' ), esc_html( $doc_type_name ) ); ?>" class="helptip"></span></span>
 
 				<a href="#edit_template" class="edit-template hide-if-no-js edit_control" >
 					<span aria-hidden="true"><?php esc_html_e( 'Edit', 'sprout-invoices' ); ?></span> <span class="screen-reader-text"><?php esc_html_e( 'Select different template', 'sprout-invoices' ); ?></span>
@@ -638,6 +646,7 @@ class SI_Templating_API extends SI_Controller {
 							<span>
 								<?php
 								printf(
+									/* translators: %1$s: value, %2$s: value */
 									esc_html__( 'No %1$sCustom Templates%2$s Found', 'sprout-invoices' ),
 									'<a href="https://sproutinvoices.com/support/knowledgebase/sprout-invoices/customizing-templates/" target="_blank">',
 									'</a>'
@@ -685,7 +694,7 @@ class SI_Templating_API extends SI_Controller {
 	 * @return
 	 */
 	public static function save_doc_template_selection( $post_id = 0 ) {
-		$doc_template = ( isset( $_POST['doc_template'] ) ) ? sanitize_text_field( wp_unslash( $_POST['doc_template'] ) ) : '' ;
+		$doc_template = ( isset( $_POST['doc_template'] ) ) ? sanitize_text_field( wp_unslash( $_POST['doc_template'] ) ) : '' ; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce is verified by the calling hook (si_save_line_items_meta_box) in Invoices_Edit::save_line_items() and Estimates_Edit::save_line_items().
 
 		// Security: Validate template against whitelist to prevent path traversal attacks
 		if ( '' !== $doc_template ) {
@@ -721,7 +730,7 @@ class SI_Templating_API extends SI_Controller {
 	 * @return
 	 */
 	public static function save_client_options( $post_id = 0 ) {
-		$doc_template_invoice = ( isset( $_POST['doc_template_invoice'] ) ) ? sanitize_text_field( wp_unslash( $_POST['doc_template_invoice'] ) ) : '';
+		$doc_template_invoice = ( isset( $_POST['doc_template_invoice'] ) ) ? sanitize_text_field( wp_unslash( $_POST['doc_template_invoice'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce is verified by the calling hook (SI_Clients::save_meta_box_client_adv_information) before this action is fired.
 
 		// Security: Validate invoice template against whitelist
 		if ( '' !== $doc_template_invoice ) {
@@ -740,7 +749,7 @@ class SI_Templating_API extends SI_Controller {
 
 		self::save_client_invoice_template( $post_id, $doc_template_invoice );
 
-		$doc_template_estimate = ( isset( $_POST['doc_template_estimate'] ) ) ? sanitize_text_field( wp_unslash( $_POST['doc_template_estimate'] ) ) : '';
+		$doc_template_estimate = ( isset( $_POST['doc_template_estimate'] ) ) ? sanitize_text_field( wp_unslash( $_POST['doc_template_estimate'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified by the calling hook, same as above.
 
 		// Security: Validate estimate template against whitelist
 		if ( '' !== $doc_template_estimate ) {
@@ -776,8 +785,7 @@ class SI_Templating_API extends SI_Controller {
 		$doc_type_name = ( $type != 'estimate' ) ? __( 'invoice', 'sprout-invoices' ) : __( 'estimate', 'sprout-invoices' );
 		$template = ( $type != 'estimate' ) ? self::get_client_invoice_template( $client_id ) : self::get_client_estimate_template( $client_id ); ?>
 		<div class="misc-pub-section" data-edit-id="template" data-edit-type="select">
-			<span id="template" class="wp-media-buttons-icon"><b><?php echo esc_html( $template_options[ $template ] ); ?></b> <span title="
-			<?php printf( esc_html__( 'Select a custom %s template.', 'sprout-invoices' ), esc_html( $doc_type_name ) ); ?>" class="helptip"></span></span>
+			<span id="template" class="wp-media-buttons-icon"><b><?php echo esc_html( $template_options[ $template ] ); ?></b> <span title="<?php /* translators: %1$s: doc type (invoice or estimate) */ printf( esc_html__( 'Select a custom %s template.', 'sprout-invoices' ), esc_html( $doc_type_name ) ); ?>" class="helptip"></span></span>
 
 			<a href="#edit_template" class="edit-template hide-if-no-js edit_control" >
 				<span aria-hidden="true"><?php esc_html_e( 'Edit', 'sprout-invoices' ) ?></span> <span class="screen-reader-text"><?php esc_html_e( 'Select different template', 'sprout-invoices' ) ?></span>
@@ -795,6 +803,7 @@ class SI_Templating_API extends SI_Controller {
 						<span>
 							<?php
 							printf(
+								/* translators: %1$s: value, %2$s: value */
 								esc_html__( 'No %1$sCustom Templates%2$s Found', 'sprout-invoices' ),
 								'<a href="https://sproutinvoices.com/support/knowledgebase/sprout-invoices/customizing-templates/" target="_blank">',
 								'</a>'
@@ -854,7 +863,7 @@ class SI_Templating_API extends SI_Controller {
 			foreach ( $files as $file => $full_path ) {
 				if ( ! preg_match( '|SA Template Name:(.*)$|mi', file_get_contents( $full_path ), $header ) ) {
 					continue; }
-				$doc_templates[ $file ] = _cleanup_header_comment( $header[1] );
+				$doc_templates[ $file ] = trim( $header[1] );
 			}
 
 			// add cache

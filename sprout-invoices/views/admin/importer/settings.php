@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <div id="importer_admin">
 	<div id="col-container" class="wp-clearfix">
 		<div id="col-left">

@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Notification Model
@@ -66,7 +67,7 @@ class SI_Dev_Logs extends SI_Controller {
 	}
 
 	public static function save_log_option() {
-		$log_option = isset( $_POST[ self::LOG_OPTION ] ) ? sanitize_text_field( wp_unslash( $_POST[ self::LOG_OPTION ] ) ) : 0;
+		$log_option = isset( $_POST[ self::LOG_OPTION ] ) ? sanitize_text_field( wp_unslash( $_POST[ self::LOG_OPTION ] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified by WP Settings API before this callback fires
 		$dolog = 'true' === $log_option ? 1 : 0;
 		update_option( self::LOG_OPTION, $dolog );
 	}
@@ -82,11 +83,11 @@ class SI_Dev_Logs extends SI_Controller {
 	public static function log( $subject = '', $data = array() ) {
 
 		if ( self::DEBUG ) {
-			error_log( '+++' . $subject . ' +++++++++++++++++++++' );
+			error_log( '+++' . $subject . ' +++++++++++++++++++++' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Intentional: DEBUG-gated logging in dedicated Logs class
 			if ( ! empty( $data ) ) {
-				error_log( print_r( $data, true ) );
-				error_log( 'backtrace: ' . print_r( wp_debug_backtrace_summary( null, 0, false ), true ) );
-				error_log( '--------------------- ' . $subject . ' END ---------------------' );
+				error_log( wp_json_encode( $data ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+				error_log( 'backtrace: ' . wp_json_encode( wp_debug_backtrace_summary( null, 0, false ) ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log, WordPress.PHP.DevelopmentFunctions.error_log_wp_debug_backtrace_summary
+				error_log( '--------------------- ' . $subject . ' END ---------------------' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			}
 		}
 
@@ -110,9 +111,9 @@ class SI_Dev_Logs extends SI_Controller {
 	public static function error( $subject = '', $data = array(), $record_error = true ) {
 
 		if ( self::DEBUG ) {
-			error_log( '--- ' . $subject . ' ---------------------' );
+			error_log( '--- ' . $subject . ' ---------------------' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Intentional: DEBUG-gated logging in dedicated Logs class
 			if ( ! empty( $data ) ) {
-				error_log( print_r( $data, true ) );
+				error_log( wp_json_encode( $data ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 				// error_log( '--------------------- ' . $subject . ' END ---------------------' );
 			}
 		}
@@ -179,7 +180,7 @@ class SI_Dev_Logs extends SI_Controller {
 			'post_status' => 'any',
 			'posts_per_page' => -1,
 			'fields' => 'ids',
-				'tax_query' => array(
+				'tax_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- Standard WP_Query usage, no alternative without custom table
 					array(
 						'taxonomy' => SI_Record::TAXONOMY,
 						'field'    => 'slug',

@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <div id="send_doc_options_wrap" class="admin_fields clearfix">
 	<?php sa_admin_fields( $fields, 'send_metabox' ); ?>
 	<div id="quick_send_option" class="form-group">

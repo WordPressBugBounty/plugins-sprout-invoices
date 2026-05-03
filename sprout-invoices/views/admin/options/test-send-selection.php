@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <div id="test_send_selection">
 	<span id="notification_type_wrap">
 		<select name="notification_type" id="notification_type">

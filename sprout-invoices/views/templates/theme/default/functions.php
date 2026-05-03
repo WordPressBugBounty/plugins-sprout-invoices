@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 function si_payment_options_view() {
 	SI_Controller::load_view( 'invoice/payment-options', array(), true );

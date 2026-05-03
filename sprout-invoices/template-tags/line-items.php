@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Get the line item columns
@@ -158,7 +159,7 @@ function si_get_front_end_line_item( $item_data = array(), $position = 0, $prev_
 				} ?>
 
 				<div class="column column_<?php echo esc_attr( $column_slug ) ?>">
-					<?php echo wp_kses_post( apply_filters( 'si_format_front_end_line_item_value', $value, $column_slug, $item_data ) ); ?>
+					<?php echo wp_kses_post( (string) apply_filters( 'si_format_front_end_line_item_value', $value, $column_slug, $item_data ) ); ?>
 				</div>
 				<!-- <?php echo esc_attr( $column_slug ) ?> -->
 
@@ -322,7 +323,7 @@ function si_get_front_end_line_item_columns( $item_data = array(), $position = 0
 
 
 				<div class="content">
-					<?php echo wp_kses_post( apply_filters( 'si_format_front_end_line_item_value', $value, $column_slug, $item_data ) ); ?>
+					<?php echo wp_kses_post( (string) apply_filters( 'si_format_front_end_line_item_value', $value, $column_slug, $item_data ) ); ?>
 				</div>
 			</div><!-- <?php echo esc_attr( $column_slug ); ?> -->
 

@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Controller
@@ -51,7 +52,7 @@ class SI_Customizer extends SI_Controller {
 			array(
 				'priority'       => 300,
 				'theme_supports' => '',
-				'title'          => esc_html__( 'Sprout invoices', 'woocommerce' ),
+				'title'          => esc_html__( 'Sprout invoices', 'sprout-invoices' ),
 			)
 		);
 

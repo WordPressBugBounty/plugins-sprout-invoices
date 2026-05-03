@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <div class="quick_status_update" style="position:relative">
 	<?php do_action( 'si_start_status_change_drop', $id ) ?>
 	<span id="status_<?php echo(int) $id ?>">
@@ -148,7 +149,7 @@
 			<?php endif ?>
 			<?php
 			if ( current_user_can( 'delete_post', $id ) ) {
-				printf( '<li><a class="doc_status_delete delete" title="%s" href="%s">%s</a></li>', esc_html__( 'Delete Invoice', 'sprout-invoices' ), get_delete_post_link( $id, '' ), esc_html__( '<b>Delete:</b> Trash Invoice', 'sprout-invoices' ) );
+				printf( '<li><a class="doc_status_delete delete" title="%s" href="%s">%s</a></li>', esc_html__( 'Delete Invoice', 'sprout-invoices' ), get_delete_post_link( $id, '' ), esc_html__( 'Delete: Trash Invoice', 'sprout-invoices' ) );
 			} ?>
 		</ul>
 	</div>

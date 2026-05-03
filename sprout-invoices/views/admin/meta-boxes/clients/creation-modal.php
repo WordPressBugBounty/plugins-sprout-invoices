@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <!-- Create Client Form -->
 <div id="client_creation_modal" style="display:none;">
 	<div id="client_create_form" class="clearfix">

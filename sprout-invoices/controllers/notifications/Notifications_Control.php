@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Send notifications, apply shortcodes and create management screen.
@@ -147,7 +148,7 @@ class SI_Notifications_Control extends SI_Controller {
 		$notification_posts = get_posts( $qargs );
 		$sub_pages = apply_filters( 'si_sub_admin_pages', array() );
         uasort( $sub_pages, array(__CLASS__, 'sort_by_weight') );
-        $current_page = (isset( $_GET['page'] )) ? str_replace( 'sprout-invoices-', '', sanitize_text_field( wp_unslash( $_GET['page'] ) ) ) : '';
+        $current_page = (isset( $_GET['page'] )) ? str_replace( 'sprout-invoices-', '', sanitize_text_field( wp_unslash( $_GET['page'] ) ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$settings = self::notification_settings();
 		uasort( $settings, array( __CLASS__, 'sort_by_weight' ) );
 		$args = array(
@@ -277,7 +278,7 @@ class SI_Notifications_Control extends SI_Controller {
 		$screen = get_current_screen();
 		$screen_post_type = str_replace( 'edit-', '', $screen->id );
 		if ( $screen_post_type == SI_Notification::POST_TYPE ) {
-			wp_register_script( 'si_admin_notifications', SI_URL . '/resources/admin/js/notification.js', array( 'jquery' ), self::SI_VERSION );
+			wp_register_script( 'si_admin_notifications', SI_URL . '/resources/admin/js/notification.js', array( 'jquery' ), self::SI_VERSION, true );
 			wp_enqueue_script( 'si_admin_notifications' );
 		}
 	}
@@ -290,7 +291,7 @@ class SI_Notifications_Control extends SI_Controller {
 		// notification specific
 		$args = array(
 				'si_notification_submit' => array(
-					'title' => 'Update',
+					'title' => __( 'Update', 'sprout-invoices' ),
 					'show_callback' => array( __CLASS__, 'show_submit_meta_box' ),
 					'save_callback' => array( __CLASS__, 'save_meta_box_notification_submit' ),
 					'context' => 'side',
@@ -301,6 +302,7 @@ class SI_Notifications_Control extends SI_Controller {
 		foreach ( self::$notifications as $notification => $data ) {
 			$name = ( isset( $data['name'] ) ) ? $data['name'] : __( 'N/A', 'sprout-invoices' );
 			$args[ self::META_BOX_PREFIX . $notification ] = array(
+					/* translators: %1$s: value */
 					'title' => sprintf( __( '%s Shortcodes', 'sprout-invoices' ), $name ),
 					'show_callback' => array( __CLASS__, 'show_shortcode_meta_box' ),
 				);
@@ -363,17 +365,25 @@ class SI_Notifications_Control extends SI_Controller {
 
 		self::clear_notification_cache();
 
-		if ( null === $notification_type && isset( $_POST['notification_type'] ) ) {
+		// Track whether this was called programmatically (e.g. create_missing_notification) vs. via form submission.
+		$called_programmatically = ( null !== $notification_type );
+
+		if ( null === $notification_type && isset( $_POST['notification_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified below via check_admin_referer when called from form submission
 			$notification_type = sanitize_text_field( wp_unslash( $_POST['notification_type'] ) );
 		}
 
 		if ( is_null( $post_id ) ) {
-			if ( isset( $_POST['ID'] ) ) {
+			if ( isset( $_POST['ID'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified below via check_admin_referer when called from form submission
 				$post_id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : 0;;
 			}
 		}
 		if ( get_post_type( $post_id ) != SI_Notification::POST_TYPE ) {
 			return;
+		}
+
+		// Only verify nonce for form submissions; programmatic calls (e.g. create_missing_notification) have no nonce context.
+		if ( ! $called_programmatically ) {
+			check_admin_referer( 'update-post_' . $post_id, '_wpnonce' );
 		}
 
 		// Remove any existing notification types that point to the post currently being saved
@@ -397,8 +407,8 @@ class SI_Notifications_Control extends SI_Controller {
 
 		$notification = SI_Notification::get_instance( $post_id );
 
-		// Mark as disabled or not.
-		if ( isset( $_POST['notification_type_disabled'] ) && $_POST['notification_type_disabled'] == 'TRUE' ) {
+		// Mark as disabled or not (only applicable during form submissions).
+		if ( isset( $_POST['notification_type_disabled'] ) && $_POST['notification_type_disabled'] == 'TRUE' ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified above; only set during form submissions
 			$notification->set_disabled( 'TRUE' );
 		} else {
 			$notification->set_disabled( 0 );
@@ -661,6 +671,7 @@ class SI_Notifications_Control extends SI_Controller {
 			$content, // content
 			self::RECORD, // type slug
 			$associated_record, // post id
+			/* translators: %1$s: value */
 			sprintf( __( 'Notification sent to %s.', 'sprout-invoices' ), esc_html( $to ) ), // title
 			0, // user id
 			false // don't encode
@@ -860,11 +871,11 @@ class SI_Notifications_Control extends SI_Controller {
 	////////////
 
 	public static function maybe_redirect_away_from_notification_admin_table( $current_screen ) {
-		if ( isset( $_GET['noredirect'] ) ) {
+		if ( isset( $_GET['noredirect'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return;
 		}
 		if ( SI_Notification::POST_TYPE == $current_screen->post_type && 'edit' == $current_screen->base ) {
-			wp_redirect( admin_url( 'admin.php?page=sprout-invoices-notifications' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=sprout-invoices-notifications' ) );
 			exit();
 		}
 	}
@@ -881,11 +892,11 @@ class SI_Notifications_Control extends SI_Controller {
 
 	public static function help_tabs() {
 		$post_type = '';
-		if ( isset( $_GET['tab'] ) && $_GET['tab'] == self::SETTINGS_PAGE ) {
+		if ( isset( $_GET['tab'] ) && $_GET['tab'] == self::SETTINGS_PAGE ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$post_type = SI_Notification::POST_TYPE;
 		}
-		if ( $post_type == '' && isset( $_GET['post'] ) ) {
-			$post_type = get_post_type( sanitize_text_field( wp_unslash( $_GET['post'] ) ) );
+		if ( $post_type == '' && isset( $_GET['post'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: admin URL parameter used to look up post type for help tab display.
+			$post_type = get_post_type( sanitize_text_field( wp_unslash( $_GET['post'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: same as above.
 		}
 		if ( $post_type == SI_Notification::POST_TYPE ) {
 			// get screen and add sections.
@@ -974,6 +985,8 @@ class SI_Notifications_Control extends SI_Controller {
 
 			$notification_id = sanitize_text_field( wp_unslash( $_GET['refresh-notification'] ) );
 
+			check_admin_referer( 'si_refresh_notification_' . $notification_id );
+
 			$notification_ids = array_flip( wp_list_pluck( self::$notifications, 'post_id' ) );
 			$notification_key = $notification_ids[ $notification_id ];
 
@@ -989,7 +1002,7 @@ class SI_Notifications_Control extends SI_Controller {
 
 			self::clear_notification_cache();
 
-			wp_redirect( remove_query_arg( 'refresh-notification' ) );
+			wp_safe_redirect( remove_query_arg( 'refresh-notification' ) );
 			exit();
 		}
 	}
@@ -1030,9 +1043,9 @@ class SI_Notifications_Control extends SI_Controller {
 		if ( ! current_user_can( 'delete_sprout_invoices' ) ) {
 			return;
 		}
-		if ( isset( $_GET['show-notification'] ) && sanitize_text_field( wp_unslash( $_GET['show-notification'] ) ) ) { // If dev than don't cache.
+		if ( isset( $_GET['show-notification'] ) && sanitize_text_field( wp_unslash( $_GET['show-notification'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: admin URL parameter for previewing a notification; access restricted by current_user_can() check above.
 
-			$id = sanitize_text_field( wp_unslash( $_GET['show-notification'] ) );
+			$id = sanitize_text_field( wp_unslash( $_GET['show-notification'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: same as above; access restricted to privileged users.
 			$si_notification = SI_Notification::get_instance( $id );
 
 			if ( ! is_a( $si_notification, 'SI_Notification' ) ) {

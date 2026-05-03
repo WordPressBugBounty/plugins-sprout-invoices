@@ -44,7 +44,7 @@ jQuery(document).ready(function($){
 
 		$send_button.after(si_js_object.inline_spinner);
 
-		jQuery.post( ajaxurl, { action: test_notification.action, notification: notification_type, record_selected: record_selected  },
+		jQuery.post( ajaxurl, { action: test_notification.action, nonce: test_notification.nonce, notification: notification_type, record_selected: record_selected  },
 			function( response ) {
 				if ( response.error ) {
 					$send_button.after( response.message );

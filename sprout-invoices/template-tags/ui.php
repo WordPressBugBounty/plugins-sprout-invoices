@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 if ( ! function_exists( 'si_doc_header_logo' ) ) :
 	/**
@@ -176,7 +177,7 @@ if ( ! function_exists( 'si_doc_address' ) ) :
  * @return string
  */
 	function si_doc_address() {
-		echo wp_kses( apply_filters( 'si_doc_address', si_address( si_get_doc_address() ) ), SI_Settings_API::get_allowed_html() );
+		echo wp_kses( (string) apply_filters( 'si_doc_address', si_address( si_get_doc_address() ) ), SI_Settings_API::get_allowed_html() );
 	}
 endif;
 
@@ -188,7 +189,10 @@ endif;
 
 if ( ! function_exists( 'si_display_messages' ) ) :
 	function si_display_messages( $type = '' ) {
-		print wp_kses( SI_Controller::display_messages( $type ), SI_Settings_API::get_allowed_html() );
+		$messages = SI_Controller::display_messages( $type );
+		if ( null !== $messages && false !== $messages ) {
+			echo wp_kses( (string) $messages, SI_Settings_API::get_allowed_html() );
+		}
 	}
 endif;
 
@@ -203,9 +207,9 @@ if ( ! function_exists( 'wp_editor_styleless' ) ) :
  * @return wp_editor()
  */
 	function wp_editor_styleless( $content, $editor_id, $settings = array() ) {
-		add_filter( 'mce_css', '__return_null' );
+		add_filter( 'mce_css', '__return_empty_string' );
 		$return = wp_editor( $content, $editor_id, $settings );
-		remove_filter( 'mce_css', '__return_null' );
+		remove_filter( 'mce_css', '__return_empty_string' );
 		return $return;
 	}
 endif;

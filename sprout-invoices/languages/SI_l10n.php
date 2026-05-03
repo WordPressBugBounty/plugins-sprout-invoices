@@ -6,6 +6,9 @@
  * @package Sprout_Invoice
  * @subpackage l18n
  */
+
+defined( 'ABSPATH' ) || exit;
+
 class SI_l10n extends SI_Controller {
 	public static $language_loaded;
 
@@ -105,7 +108,8 @@ class SI_l10n extends SI_Controller {
 				$( "#si_language_detect_nag_dismiss" ).on( "click", ".notice-dismiss", function() {
 					var data = {
 						action : 'si_language_nag_dismiss',
-						language : '<?php echo esc_js( $language ) ?>'
+						language : '<?php echo esc_js( $language ) ?>',
+						nonce : '<?php echo esc_js( wp_create_nonce( 'si_language_nag_dismiss' ) ) ?>'
 					};
 					$.post(
 						ajaxurl,
@@ -118,6 +122,7 @@ class SI_l10n extends SI_Controller {
 	}
 
 	public static function language_detector_dismiss_callback() {
+		check_ajax_referer( 'si_language_nag_dismiss', 'nonce' );
 		$language = '';
 		if ( isset( $_REQUEST['language'] ) && '' !== $_REQUEST['language'] ) {
 			$language = sanitize_text_field( wp_unslash( $_REQUEST['language'] ) );

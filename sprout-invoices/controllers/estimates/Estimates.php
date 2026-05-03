@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Estimates Controller
@@ -98,7 +99,7 @@ class SI_Estimates extends SI_Controller {
 		}
 
 		// (Legacy Code) Change every post that has auto-draft or temp status.
-		if ( false !== strpos( $slug, __( 'auto-draft' ) ) || SI_Estimate::STATUS_TEMP === $post_status ) {
+		if ( false !== strpos( $slug, __( 'auto-draft', 'default' ) ) || SI_Estimate::STATUS_TEMP === $post_status ) { // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Reusing WordPress core string translation
 			return $hashed_post_slug; // add microtime to be unique
 		}
 
@@ -108,7 +109,7 @@ class SI_Estimates extends SI_Controller {
 		}
 
 		// (Legacy Code) Make sure it's a new post.
-		if ( ( ! isset( $_POST['post_name'] ) || $_POST['post_name'] == '' ) && SI_Estimate::POST_TYPE === $post_type ) {
+		if ( ( ! isset( $_POST['post_name'] ) || $_POST['post_name'] == '' ) && SI_Estimate::POST_TYPE === $post_type ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified by WP core before wp_unique_post_slug filter fires
 			return $hashed_post_slug; // add microtime to be unique
 		}
 		return $slug;

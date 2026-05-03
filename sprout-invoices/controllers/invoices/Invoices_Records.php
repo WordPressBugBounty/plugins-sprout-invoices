@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 
 /**
@@ -28,9 +29,11 @@ class SI_Invoices_Records extends SI_Invoices {
 	 */
 	public static function maybe_create_status_update_record( SI_Invoice $invoice, $status = '', $original_status = '' ) {
 		do_action( 'si_new_record',
-			sprintf( __( 'Status changed: %s to <b>%s</b>.', 'sprout-invoices' ), $invoice->get_status_label( $original_status ), $invoice->get_status_label( $status ) ),
+			/* translators: %1$s: original status label, %2$s: new status label */
+			sprintf( __( 'Status changed: %1$s to <b>%2$s</b>.', 'sprout-invoices' ), $invoice->get_status_label( $original_status ), $invoice->get_status_label( $status ) ),
 			self::HISTORY_STATUS_UPDATE,
 			$invoice->get_id(),
+			/* translators: %s: invoice ID */
 			sprintf( __( 'Status update for %s.', 'sprout-invoices' ), $invoice->get_id() ),
 			0,
 		false );

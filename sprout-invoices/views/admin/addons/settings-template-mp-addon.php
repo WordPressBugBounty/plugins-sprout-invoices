@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <article class="type_addon si-card">
 	<div class="section">
 		<div class="si-card-title">

@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Doc Comments Controller
@@ -62,7 +63,7 @@ class SI_Line_Items extends SI_Controller {
 		$columns = array(
 			'_id' => array(
 				'type'   => 'hidden',
-				'value'  => mt_rand(),
+				'value'  => wp_rand(),
 				'weight' => 0,
 			),
 		);
@@ -261,7 +262,7 @@ class SI_Line_Items extends SI_Controller {
 				$value = sa_get_formatted_money( $value );
 				break;
 			case 'desc':
-				$value = apply_filters( 'the_content', $value );
+				$value = (string) apply_filters( 'the_content', (string) $value );
 				break;
 			case 'rate':
 				$value = sa_get_formatted_money( $value );
@@ -434,7 +435,7 @@ class SI_Line_Items extends SI_Controller {
 	 */
 	public static function register_resources() {
 		// admin js
-		wp_register_script( 'si_line_items', SI_URL . '/resources/admin/js/line_items.js', array( 'jquery' ), self::SI_VERSION );
+		wp_register_script( 'si_line_items', SI_URL . '/resources/admin/js/line_items.js', array( 'jquery' ), self::SI_VERSION, true );
 	}
 
 	public static function admin_enqueue() {
@@ -443,6 +444,9 @@ class SI_Line_Items extends SI_Controller {
 		$screen_post_type = str_replace( 'edit-', '', $screen->id );
 		if ( in_array( $screen_post_type, array( SI_Estimate::POST_TYPE, SI_Invoice::POST_TYPE ) ) ) {
 			wp_enqueue_script( 'si_line_items' );
+			wp_localize_script( 'si_line_items', 'si_line_items_nonce', array(
+				'nonce' => wp_create_nonce( self::NONCE ),
+			) );
 		}
 	}
 
@@ -526,6 +530,12 @@ class SI_Line_Items extends SI_Controller {
 		if ( ! current_user_can( 'publish_sprout_invoices' ) ) {
 			self::ajax_fail( 'User cannot create an item!' );
 		}
+
+		$nonce = isset( $_REQUEST['nonce'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ) : '';
+		if ( ! wp_verify_nonce( $nonce, self::NONCE ) ) {
+			wp_send_json_error( array( 'message' => __( 'Security check failed.', 'sprout-invoices' ) ), 403 );
+		}
+
 		$item_type = '';
 		if ( isset( $_REQUEST['item_type'] ) ) {
 			$item_type = sanitize_text_field( wp_unslash( $_REQUEST['item_type'] ) );

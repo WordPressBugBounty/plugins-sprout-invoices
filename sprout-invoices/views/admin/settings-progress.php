@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 $complete = array();
 foreach ( $progress as $key => $progress_item ) {
 	if ( $progress_item['status'] ) {

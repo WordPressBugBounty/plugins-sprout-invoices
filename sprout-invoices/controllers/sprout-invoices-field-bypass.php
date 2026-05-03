@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 /**
  * File: sprout-invoices/controllers/sprout-invoices-bypass.php
  *
@@ -36,7 +37,7 @@ class SI_Field_Bypass extends SI_Field {
 			<label for="<?php echo esc_attr( $this->field_name ); ?>" class="si_input_label"><?php echo esc_html( $label ); ?></label>
 			<div>
 			<?php
-				echo $content;
+				echo $content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Pre-built HTML from trusted internal function
 			?>
 			</div>
 			<span class="input_desc help_block">

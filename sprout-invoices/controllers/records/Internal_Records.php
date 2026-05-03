@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 if ( class_exists( 'SI_Internal_Records' ) ) {
 	return;
@@ -73,7 +74,7 @@ class SI_Internal_Records extends SI_Controller {
 			$record->set_data( $data, $encoded );
 			$record->set_associate_id( $associate_id );
 			$record->set_type( $type );
-			$record->set_post_date( date( 'Y-m-d H:i:s', $post_date ) );
+			$record->set_post_date( gmdate( 'Y-m-d H:i:s', $post_date ) );
 			$record->activate();
 		}
 		do_action( 'si_record_created', $record );
@@ -94,7 +95,7 @@ class SI_Internal_Records extends SI_Controller {
 	public static function purge_records_display( $type = 0 ) {
 
 		ignore_user_abort( 1 ); // run script in background
-		set_time_limit( 0 ); // run script forever
+		set_time_limit( 0 ); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- required for long-running import
 
 		echo '<div id="deletion_progress" style="width:100%;border:1px solid #ccc;"></div> <div id="deletion_information">'. esc_html__( 'Preparing purge...', 'sprout-invoices' ) . '</div>';
 
@@ -106,7 +107,7 @@ class SI_Internal_Records extends SI_Controller {
 		);
 		if ( $type ) {
 			$tax_query = array(
-					'tax_query' => array(
+					'tax_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- Standard WP_Query usage, no alternative without custom table
 							array(
 								'taxonomy' => SI_Record::TAXONOMY,
 								'field' => 'id',
@@ -136,7 +137,8 @@ class SI_Internal_Records extends SI_Controller {
 			// delete the post
 			wp_delete_post( $record_id, true );
 		}
-		echo '<script language="javascript">document.getElementById("deletion_information").innerHTML="' . sprintf( esc_html__( 'Complete. %o deleted.', 'sprout-invoices' ), esc_html( $total ) ) . '"</script>';
+		/* translators: %d: number of records deleted */
+		echo '<script language="javascript">document.getElementById("deletion_information").innerHTML="' . sprintf( esc_html__( 'Complete. %d deleted.', 'sprout-invoices' ), absint( $total ) ) . '"</script>';
 	}
 
 	/**
@@ -148,7 +150,7 @@ class SI_Internal_Records extends SI_Controller {
 		// prevent looping and checking if a record has a record associated with it.
 		if ( get_post_type( $post_id ) !== SI_Record::POST_TYPE ) {
 			global $wpdb;
-			$record_ids = $wpdb->get_col( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE post_parent = %d AND post_type = '%s'", $post_id, SI_Record::POST_TYPE ) );
+			$record_ids = $wpdb->get_col( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE post_parent = %d AND post_type = %s", $post_id, SI_Record::POST_TYPE ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Associated records lookup, caching would return stale results after deletion
 
 			foreach ( $record_ids as $record_id ) {
 				wp_delete_post( $record_id, true );
@@ -161,11 +163,11 @@ class SI_Internal_Records extends SI_Controller {
 	 * ------------------------------------------------------------- */
 	public function __clone() {
 		// cannot be cloned
-		trigger_error( __CLASS__.' may not be cloned', E_USER_ERROR );
+		wp_die( esc_html( __CLASS__ . ' may not be cloned' ) );
 	}
 	public function __sleep() {
 		// cannot be serialized
-		trigger_error( __CLASS__.' may not be serialized', E_USER_ERROR );
+		wp_die( esc_html( __CLASS__ . ' may not be serialized' ) );
 	}
 	public static function get_instance() {
 		if ( ! ( self::$instance && is_a( self::$instance, __CLASS__ ) ) ) {
@@ -205,10 +207,10 @@ class SI_Internal_Records extends SI_Controller {
 		if ( ! current_user_can( 'edit_sprout_invoices' ) ) {
 			self::ajax_fail( 'User cannot create new posts!' );
 		}
-		if ( ! isset( $_REQUEST['note_id'] ) ) {
+		if ( ! isset( $_REQUEST['note_id'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			self::ajax_fail( 'No id given!' );
 		}
-		$record_id = sanitize_text_field( wp_unslash( $_REQUEST['note_id'] ) );
+		$record_id = sanitize_text_field( wp_unslash( $_REQUEST['note_id'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$record = SI_Record::get_instance( $record_id );
 		$record_post = $record->get_post();
 		$fields = array();
@@ -273,7 +275,7 @@ class SI_Internal_Records extends SI_Controller {
 		</h2>
 		<?php self::maybe_purge_records(); ?>
 		<form id="records-filter" method="get">
-			<?php $page = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : ''; ?>
+			<?php $page = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
 			<input type="hidden" name="page" value="<?php echo esc_attr( $page ); ?>" />
 			<?php $wp_list_table->display() ?>
 		</form>

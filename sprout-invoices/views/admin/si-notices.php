@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 	$enabled = SI_Payment_Processors::enabled_processors();
 ?>
 <?php if ( SA_Addons::is_enabled( 'sprout-invoices-add-on-recurring-invoices' ) && SA_Addons::is_enabled( 'sprout-invoices-add-on-recurring-aka-subscription-payments' ) ) : ?>

@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <section id="header_attachments_info" class="clearfix">
 	<div class="attachments_info">
 		<h2><?php esc_html_e( 'Attachments', 'sprout-invoices' ) ?></h2>
@@ -10,7 +11,7 @@
 					?>
 				<li>
 					<a href="<?php echo esc_url( wp_get_attachment_url( $media_id ) ) ?>" download>
-						<img src="<?php echo esc_url_raw( $icon ) ?>" title="<?php echo esc_attr( get_the_title( $media_id ) ) ?>" class="doc_attachment attachment_type_<?php echo esc_attr( $filetype['ext'] ) ?>"></a><br/><span class="attachment_title"><?php echo esc_html( get_the_title( $media_id ) ) ?></span>
+						<img src="<?php echo esc_url( $icon ) ?>" title="<?php echo esc_attr( get_the_title( $media_id ) ) ?>" class="doc_attachment attachment_type_<?php echo esc_attr( $filetype['ext'] ) ?>"></a><br/><span class="attachment_title"><?php echo esc_html( get_the_title( $media_id ) ) ?></span>
 					</a>
 				</li>
 			<?php endforeach ?>

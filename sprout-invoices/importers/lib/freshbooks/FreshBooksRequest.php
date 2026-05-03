@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 require_once 'XmlDomConstruct.php';
 /**
  * A simple PHP API wrapper for the FreshBooks API.

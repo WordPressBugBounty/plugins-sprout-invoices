@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <div id="section_<?php echo esc_attr( $class_name ) ?>">
 	<div class="si-box-top">
 		<?php echo esc_html( $label ) ?>

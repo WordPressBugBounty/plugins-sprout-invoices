@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <dl id="history_list">
 
 	<dt>
@@ -81,12 +82,12 @@
 <div id="private_note_wrap">
 	<p>
 		<textarea id="private_note" name="private_note" class="clearfix" disabled="disabled" style="height:40px;"></textarea>
-		<?php if (  apply_filters( 'show_upgrade_messaging', true ) ) {
+		<?php if ( apply_filters( 'show_upgrade_messaging', true ) ) {
 			printf(
-			// translators: 1: span tags
-			esc_html__( '%1$s', 'sprout-invoices' ),
-			'<span class="helptip" title="Upgrade for Private Notes"></span>',
-			esc_html( si_get_purchase_link() )
+				// translators: %1$s: tooltip text for upgrade helptip
+				'<a href="%2$s"><span class="helptip" title="%1$s"></span></a>',
+				esc_attr__( 'Upgrade for Private Notes', 'sprout-invoices' ),
+				esc_url( si_get_purchase_link() )
 			);
 		} ?>
 	</p>

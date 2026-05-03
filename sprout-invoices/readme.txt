@@ -1,11 +1,11 @@
-=== Client Invoicing by Sprout Invoices - Easy Estimates and Invoices for WordPress ===
+=== Sprout Invoices - Client Invoicing & Estimates ===
 Contributors: boldgrid, joemoto, dancameron, sproutapps, elanasparkle
 Donate link: https://sproutinvoices.com/?utm_medium=link&utm_campaign=free&utm_source=wordpress.org
-Tags: invoice, invoicing, billing, estimates, quote, quotes, payments, billings, paypal, online payment, send invoice, bill clients, credit cards, Stripe, freshbooks, Harvest, sliced, wp-invoice
+Tags: invoice, invoicing, billing, estimates, payments
 Requires at least: 5.1
 Tested up to: 6.9
 Requires PHP: 7.2.5
-Stable tag: 20.8.11
+Stable tag: 20.8.13
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,7 +21,7 @@ Sprout Invoices allows you to create beautiful estimates and invoices for your c
 
 Even though our goal is to make getting paid easy, providing fast and reliable support is a priority. We don't want any user to feel alone.
 
-Trust the <a href="https://wordpress.org/support/plugin/sprout-invoices/reviews/?filter=5" rel="friend" title="Sprout Invoices WordPress.org Reviews">reviews</a> and join an <a href="https://sproutinvoices.com/reviews/?utm_medium=link&utm_campaign=free&utm_source=wordpress.org" rel="friend" title="Sprout Invoices Reviews">awesome community</a> of happy users.
+Trust the <a href="https://wordpress.org/support/plugin/sprout-invoices/reviews/" rel="friend" title="Sprout Invoices WordPress.org Reviews">reviews</a> and join an <a href="https://sproutinvoices.com/reviews/?utm_medium=link&utm_campaign=free&utm_source=wordpress.org" rel="friend" title="Sprout Invoices Reviews">awesome community</a> of happy users.
 
 > <strong>Sprout Invoices Pro</strong><br />
 > This plugin is the lite version of the Sprout Invoices Pro plugin that comes with all the invoicing features you will ever need including recurring invoices, recurring payments, pre-defined line items, client dashboards, Stripe and many other payment processors, advanced reporting, hundreds of integrations (including Zapier) and a ton more. <a href="https://sproutinvoices.com?utm_medium=link&utm_campaign=free&utm_source=wordpress.org" rel="friend" title="Sprout Invoices">Click here to learn more about the best Invoicing plugin for WordPress now!</a>
@@ -140,6 +140,20 @@ For more detailed look, checkout the full featured [demo](https://sproutinvoices
 Form integrations for everyone!
 
 == Changelog ==
+
+= 20.8.13 =
+* **Fix:** Partial payment and deposits calculation error
+* **Fix:** WordPress plugin review compliance — nonce verification, input sanitization, direct file access guards, code quality, and internationalization improvements
+
+= 20.8.12 =
+* **Fix:** Updated plugin display name for WordPress.org compliance
+* **Fix:** Reviews link now points to full reviews page instead of filtered 5-star view
+* **Fix:** Replaced deprecated `null` parameter in `get_delete_post_link()` calls
+* **Fix:** Nonce values properly sanitized with `wp_unslash()` and `sanitize_text_field()` before verification
+* **Fix:** Replaced `esc_url_raw()` with `esc_url()` in all HTML output contexts
+* **Fix:** Sanitized `$_REQUEST` values passed to `add_query_arg()`
+* **Fix:** Resolved 131+ internationalization violations — dynamic values no longer passed directly to gettext functions
+* **Fix:** Update checker excluded from free build via `filter-free`
 
 = 20.8.11 =
 * **Security Fix:** Fixed vulnerability with document hash being exposed in rendered HTML for invoices and estimates

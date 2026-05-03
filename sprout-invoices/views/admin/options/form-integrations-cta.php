@@ -1,9 +1,10 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <div class="single_addon_wrap">
 	<article class="type_addon marketplace_addon">
 		<div class="section">
 			<div class="img_wrap">
 				<span class="bundled_addon"><?php esc_html_e( 'Free Download!', 'sprout-invoices' ) ?></span>
-				<a href="<?php esc_url( sa_link( 'https://sproutinvoices.com/marketplace/advanced-form-integration-gravity-ninja-forms/' ) ) ?>" class="si-button" target="_blank"><img src="<?php echo esc_url( SI_RESOURCES . 'admin/img/gravity-ninja-formidible-wpforms.png' ) ?>" /></a>
+				<a href="<?php sa_link( 'https://sproutinvoices.com/marketplace/advanced-form-integration-gravity-ninja-forms/' ) ?>" class="si-button" target="_blank"><img src="<?php echo esc_url( SI_RESOURCES . 'admin/img/gravity-ninja-formidible-wpforms.png' ) ?>" /></a>
 			</div>
 			<div class="info">
 				<strong><?php esc_html_e( 'Advanced Form Integrations', 'sprout-invoices' ) ?></strong>

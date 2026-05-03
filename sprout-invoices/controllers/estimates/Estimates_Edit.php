@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 
 /**
@@ -74,7 +75,8 @@ class SI_Estimates_Edit extends SI_Estimates {
 								'class' => 'medium-text',
 							),
 							'default' => self::$estimates_slug,
-							'description' => sprintf( __( 'Example estimate url: %s/%s/045b41dd14ab8507d80a27b7357630a5/', 'sprout-invoices' ), site_url(), '<strong>'.self::$estimates_slug.'</strong>' ),
+							/* translators: %1$s: site URL, %2$s: estimate slug */
+							'description' => sprintf( __( 'Example estimate url: %1$s/%2$s/045b41dd14ab8507d80a27b7357630a5/', 'sprout-invoices' ), site_url(), '<strong>'.self::$estimates_slug.'</strong>' ),
 						),
 
 					),
@@ -124,8 +126,8 @@ class SI_Estimates_Edit extends SI_Estimates {
 	public static function update_post_data( $data = array(), $post = array() ) {
 		if ( $post['post_type'] == SI_Estimate::POST_TYPE ) {
 			$title = $post['post_title'];
-			if ( isset( $_POST['subject'] ) && $_POST['subject'] != '' ) {
-				$title = sanitize_text_field( wp_unslash( $_POST['subject'] ) );
+			if ( isset( $_POST['subject'] ) && $_POST['subject'] != '' ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified by WP core before wp_insert_post_data fires
+				$title = sanitize_text_field( wp_unslash( $_POST['subject'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			}
 			// modify the post title
 			$data['post_title'] = $title;
@@ -300,6 +302,8 @@ class SI_Estimates_Edit extends SI_Estimates {
 		if ( ! isset( $_POST['line_item_key'] ) ) {
 			return; }
 
+		check_admin_referer( 'update-post_' . $post_id, '_wpnonce' );
+
 		$estimate = SI_Estimate::get_instance( $post_id );
 		$line_items = array();
 		// The line_item_key sends the order of each item so they can be linked with the other options
@@ -394,6 +398,8 @@ class SI_Estimates_Edit extends SI_Estimates {
 	 * @return
 	 */
 	public static function save_meta_box_estimate_information( $post_id, $post, $callback_args, $estimate_id = null ) {
+		check_admin_referer( 'update-post_' . $post_id, '_wpnonce' );
+
 		$estimate = SI_Estimate::get_instance( $post_id );
 
 		$status       = ( isset( $_POST['status'] ) && $_POST['status'] != '' ) ? sanitize_text_field( wp_unslash( $_POST['status'] ) ) : '' ;
@@ -432,9 +438,11 @@ class SI_Estimates_Edit extends SI_Estimates {
 			$user = get_userdata( get_current_user_id() );
 
 			do_action( 'si_new_record',
+				/* translators: %s: user display name */
 				sprintf( __( 'Estimate updated by %s.', 'sprout-invoices' ), $user->display_name ),
 				self::HISTORY_UPDATE,
 				$estimate->get_id(),
+				/* translators: %s: estimate ID */
 				sprintf( __( 'Data updated for %s.', 'sprout-invoices' ), $estimate->get_id() ),
 				0,
 			false );
@@ -474,10 +482,12 @@ class SI_Estimates_Edit extends SI_Estimates {
 	 * @return
 	 */
 	public static function save_estimate_note( $post_id, $post, $callback_args, $estimate_id = null ) {
+		check_admin_referer( 'update-post_' . $post_id, '_wpnonce' );
+
 		$estimate = SI_Estimate::get_instance( $post_id );
 
-		$recipients = array(); 
-		
+		$recipients = array();
+
 		$sender_notes = ( isset( $_POST['sender_notes'] ) && $_POST['sender_notes'] !== '' ) ? sanitize_text_field( wp_unslash( $_POST['sender_notes'] ) ) : '' ;
 		if ( $sender_notes === '' ) { // check to make sure the sender note option wasn't updated for the send.
 			$sender_notes = ( isset( $_POST['sa_send_metabox_sender_note'] ) && $_POST['sa_send_metabox_sender_note'] !== '' ) ? sanitize_text_field( wp_unslash( $_POST['sa_send_metabox_sender_note'] ) ) : '' ;
@@ -564,6 +574,8 @@ class SI_Estimates_Edit extends SI_Estimates {
 	 * @return
 	 */
 	public static function save_notes( $post_id, $post, $callback_args, $estimate_id = null ) {
+		check_admin_referer( 'update-post_' . $post_id, '_wpnonce' );
+
 		$estimate = SI_Estimate::get_instance( $post_id );
 
 		$estimate_terms = ( isset( $_POST['estimate_terms'] ) && $_POST['estimate_terms'] != '' ) ? wp_kses_post( wp_unslash( $_POST['estimate_terms'] ) ) : '' ;

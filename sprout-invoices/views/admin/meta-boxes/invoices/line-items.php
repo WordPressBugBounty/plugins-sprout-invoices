@@ -1,4 +1,6 @@
-<?php do_action( 'sprout_settings_messages' ); ?>
+<?php
+if ( ! defined( 'ABSPATH' ) ) exit;
+do_action( 'sprout_settings_messages' ); ?>
 
 <div id="line_item_types_wrap">
 	<div id="nestable" class="nestable dd">
@@ -38,15 +40,15 @@
 					$can_publish = current_user_can( $post_type_object->cap->publish_posts );
 					if ( 0 == $post->ID || $status == 'auto-draft' ) {
 						if ( $can_publish ) : ?>
-							<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e( 'Publish' ) ?>" />
-							<?php submit_button( esc_html__( 'Save' ), 'primary', 'save', false, array( 'accesskey' => 'p' ) ); ?>
+							<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e( 'Publish', 'default' ) // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Reusing WordPress core string translation ?>" />
+							<?php submit_button( esc_html__( 'Save', 'sprout-invoices' ), 'primary', 'save', false, array( 'accesskey' => 'p' ) ); ?>
 						<?php else : ?>
-							<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e( 'Submit for Review' ) ?>" />
-							<?php submit_button( esc_html__( 'Submit for Review' ), 'primary', 'publish', false, array( 'accesskey' => 'p' ) ); ?>
+							<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e( 'Submit for Review', 'default' ) // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Reusing WordPress core string translation ?>" />
+							<?php submit_button( esc_html__( 'Submit for Review', 'sprout-invoices' ), 'primary', 'publish', false, array( 'accesskey' => 'p' ) ); ?>
 						<?php endif;
 					} else { ?>
-							<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e( 'Update' ) ?>" />
-							<input name="save" type="submit" class="button button-primary" id="save" accesskey="p" value="<?php esc_attr_e( 'Save' ) ?>" />
+							<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e( 'Update', 'default' ) // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Reusing WordPress core string translation ?>" />
+							<input name="save" type="submit" class="button button-primary" id="save" accesskey="p" value="<?php esc_attr_e( 'Save', 'default' ) // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Reusing WordPress core string translation ?>" />
 					<?php
 					} ?>
 				<span class="spinner"></span>
@@ -80,21 +82,17 @@
 		$message_src   = SI_RESOURCES . 'admin/img/sprout/yipee.png';
 		$message_style = 'float: left;margin-top: 0px;margin-right: 8px;z-index: auto;padding: 0 10px;';
 		$message       = sprintf(
-							// translators: 1: image source and style, 2:style, 3: total posts, 4: closing strong tag, 5: upgrade link, 6: closing a tag, 7: opening a tag, 8: closing a tag with break, 9: closing small tag.
-							esc_html__(
-								'%1$s%2$sCongrats on your %3$s Invoice!%4$s Please consider supporting the future of Sprout Invoices by purchasing a %5$sdiscounted pro license%6$s' .
-								'and/or writing a %7$spositive 5 &#9733; review%8$sSprout Invoices Team%9$s',
-								'sprout-invoices'
-							),
-							'<img class="header_sa_logo" src=" ' . esc_attr( $message_src ) . '" height="64" width="auto" style="' . esc_attr( $message_style ) . '"/>',
-							'<strong style="font-size: 1.3em;margin-bottom: 5px;display: block;">',
-							esc_html( self::number_ordinal_suffix( $total_posts ) ),
-							'</strong>',
-							'<a href="' . esc_url( si_get_purchase_link() ) . '%s">',
-							'</a>',
-							'<a href="http://wordpress.org/support/view/plugin-reviews/sprout-invoices?filter=5">',
-							'</a>.<br/><small>',
-							' </small>'
+							// translators: 1: image tag, 2: congrats text with invoice count, 3: supporting text, 4: purchase URL, 5: discounted pro license text, 6: review intro text, 7: review link text, 8: team name.
+							'%1$s<strong style="font-size: 1.3em;margin-bottom: 5px;display: block;">%2$s</strong> %3$s<a href="%4$s">%5$s</a> %6$s<a href="https://wordpress.org/support/plugin/sprout-invoices/reviews/">%7$s</a>.<br/><small>%8$s</small>',
+							'<img class="header_sa_logo" src="' . esc_attr( $message_src ) . '" height="64" width="auto" style="' . esc_attr( $message_style ) . '"/>',
+							/* translators: %s: ordinal invoice count, e.g. "10th" */
+							sprintf( esc_html__( 'Congrats on your %s Invoice!', 'sprout-invoices' ), esc_html( self::number_ordinal_suffix( $total_posts ) ) ),
+							esc_html__( 'Please consider supporting the future of Sprout Invoices by purchasing a', 'sprout-invoices' ),
+							esc_url( si_get_purchase_link() ),
+							esc_html__( 'discounted pro license', 'sprout-invoices' ),
+							esc_html__( 'and/or writing a', 'sprout-invoices' ),
+							esc_html__( 'positive 5 &#9733; review', 'sprout-invoices' ),
+							esc_html__( 'Sprout Invoices Team', 'sprout-invoices' )
 						);
 		printf( '<div class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), wp_kses_post( $message ) );
 	}

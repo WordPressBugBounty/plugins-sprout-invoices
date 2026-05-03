@@ -1,4 +1,5 @@
-<?php do_action( 'sprout_settings_header' ); ?>
+<?php if ( ! defined( 'ABSPATH' ) ) exit;
+do_action( 'sprout_settings_header' ); ?>
 
 <div id="si_dashboard" class="si_settings sprout_apps_dash wrap about-wrap">
 
@@ -36,12 +37,12 @@
 					<p><?php esc_html_e( 'Could not connect to SIserver for updates.', 'sprout-invoices' ); ?></p>
 				<?php else : ?>
 					<?php foreach ( $rss_items as $item ) :
-						$excerpt = sa_get_truncate( strip_tags( $item->get_content() ), 30 );
+						$excerpt = sa_get_truncate( wp_strip_all_tags( $item->get_content() ), 30 );
 						?>
 						<div>
 							<h4><a href="<?php echo esc_url( $item->get_permalink() ); ?>" title="<?php echo esc_html( $item->get_title() ); ?>"><?php echo esc_html( $item->get_title() ); ?></a></h4>
 							<span class="rss_date"><?php echo esc_html( $item->get_date( 'j F Y' ) ); ?></span>
-							<p><?php esc_html_e( $excerpt, 'sprout-invoices' ); ?></p>
+							<p><?php echo esc_html( $excerpt ); ?></p>
 						</div>
 					<?php endforeach; ?>
 				<?php endif; ?>

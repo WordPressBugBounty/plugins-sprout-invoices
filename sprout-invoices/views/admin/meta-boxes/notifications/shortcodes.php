@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <p>
 	<?php esc_html_e( 'Use the following shortcodes to customize the email sent.', 'sprout-invoices' ); ?>
 </p>

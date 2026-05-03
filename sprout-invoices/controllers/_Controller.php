@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * A base class from which all other controllers should be derived
@@ -159,22 +160,22 @@ abstract class SI_Controller extends Sprout_Invoices {
 
 	public static function register_resources() {
 		// admin js
-		wp_register_script( 'si_admin', SI_URL . '/resources/admin/js/sprout_invoice.js', array( 'jquery', 'qtip' ), self::SI_VERSION );
+		wp_register_script( 'si_admin', SI_URL . '/resources/admin/js/sprout_invoice.js', array( 'jquery', 'qtip' ), self::SI_VERSION, true );
 
 		// Item management
-		wp_register_script( 'nestable', SI_URL . '/resources/admin/js/nestable.js', array( 'jquery' ), self::SI_VERSION );
-		wp_register_script( 'sticky', SI_URL . '/resources/admin/js/sticky.js', array( 'jquery' ), self::SI_VERSION );
-		wp_register_script( 'si_admin_est_and_invoices', SI_URL . '/resources/admin/js/est_and_invoices.js', array( 'jquery', 'nestable', 'sticky', 'select2_4.0' ), self::SI_VERSION );
+		wp_register_script( 'nestable', SI_URL . '/resources/admin/js/nestable.js', array( 'jquery' ), self::SI_VERSION, true );
+		wp_register_script( 'sticky', SI_URL . '/resources/admin/js/sticky.js', array( 'jquery' ), self::SI_VERSION, true );
+		wp_register_script( 'si_admin_est_and_invoices', SI_URL . '/resources/admin/js/est_and_invoices.js', array( 'jquery', 'nestable', 'sticky', 'select2_4.0' ), self::SI_VERSION, true );
 		wp_register_style( 'sprout_invoice_admin_css', SI_URL . '/resources/admin/css/sprout-invoice.css', array(), self::SI_VERSION );
 
 		// Redactor
 		if ( ! SI_FREE_TEST && file_exists( SI_PATH . '/resources/admin/plugins/redactor/redactor.min.js' ) ) {
-			wp_register_script( 'redactor', SI_URL . '/resources/admin/plugins/redactor/redactor.min.js', array( 'jquery' ), self::SI_VERSION );
+			wp_register_script( 'redactor', SI_URL . '/resources/admin/plugins/redactor/redactor.min.js', array( 'jquery' ), self::SI_VERSION, true );
 			wp_register_style( 'redactor', SI_URL . '/resources/admin/plugins/redactor/redactor.min.css', array(), self::SI_VERSION );
 		}
 
 		// Select2
-		wp_register_script( 'select2_4.0', SI_URL . '/resources/admin/plugins/select2/js/select2.min.js', array( 'jquery' ), self::SI_VERSION );
+		wp_register_script( 'select2_4.0', SI_URL . '/resources/admin/plugins/select2/js/select2.min.js', array( 'jquery' ), self::SI_VERSION, true );
 		wp_register_style( 'select2_4.0_css', SI_URL . '/resources/admin/plugins/select2/css/select2.min.css', null, self::SI_VERSION );
 
 		// qtip plugin
@@ -186,7 +187,7 @@ abstract class SI_Controller extends Sprout_Invoices {
 		wp_register_script( 'dropdown', SI_URL . '/resources/admin/plugins/dropdown/jquery.dropdown.min.js', array( 'jquery' ), self::SI_VERSION, true );
 
 		// Templates
-		wp_register_script( 'sprout_doc_scripts', SI_URL . '/resources/front-end/js/sprout-invoices.js', array( 'jquery', 'qtip' ), self::SI_VERSION );
+		wp_register_script( 'sprout_doc_scripts', SI_URL . '/resources/front-end/js/sprout-invoices.js', array( 'jquery', 'qtip' ), self::SI_VERSION, true );
 		wp_register_style( 'sprout_doc_style', SI_URL . '/resources/front-end/css/sprout-invoices.style.css', array( 'open-sans', 'dashicons', 'qtip' ), self::SI_VERSION );
 
 	}
@@ -329,15 +330,15 @@ abstract class SI_Controller extends Sprout_Invoices {
 	public static function si_cron_schedule( $schedules ) {
 		$schedules['minute'] = array(
 			'interval' => 60,
-			'display' => __( 'Once a Minute' ),
+			'display' => __( 'Once a Minute', 'sprout-invoices' ),
 		);
 		$schedules['quarterhour'] = array(
 			'interval' => 900,
-			'display' => __( '15 Minutes' ),
+			'display' => __( '15 Minutes', 'sprout-invoices' ),
 		);
 		$schedules['halfhour'] = array(
 			'interval' => 1800,
-			'display' => __( 'Twice Hourly' ),
+			'display' => __( 'Twice Hourly', 'sprout-invoices' ),
 		);
 		return $schedules;
 	}
@@ -538,7 +539,6 @@ abstract class SI_Controller extends Sprout_Invoices {
 			self::load_messages();
 		}
 
-		$message = __( $message, 'sprout-invoices' );
 		if ( ! isset( self::$messages[ $status ] ) ) {
 			self::$messages[ $status ] = array();
 		}
@@ -594,7 +594,7 @@ abstract class SI_Controller extends Sprout_Invoices {
 	}
 
 	public static function display_messages( $type = null ) {
-		$type = ( isset( $_REQUEST['si_message_type'] ) ) ? sanitize_text_field( wp_unslash( $_REQUEST['si_message_type'] ) ) : $type ;
+		$type = ( isset( $_REQUEST['si_message_type'] ) ) ? sanitize_text_field( wp_unslash( $_REQUEST['si_message_type'] ) ) : $type ; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$statuses = array();
 		if ( $type == null ) {
 			if ( isset( self::$messages[ self::MESSAGE_STATUS_INFO ] ) ) {
@@ -633,12 +633,18 @@ abstract class SI_Controller extends Sprout_Invoices {
 			if ( ! $redirect && self::using_permalinks() ) {
 				$schema = is_ssl() ? 'https://' : 'http://';
 				$redirect = $schema.$_SERVER['SERVER_NAME'].htmlspecialchars( $_SERVER['REQUEST_URI'] ); // phpcs:ignore
-				if ( isset( $_REQUEST ) ) {
-					$redirect = urlencode( add_query_arg( $_REQUEST, $redirect ) );
+				if ( ! empty( $_REQUEST ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+					$safe_args = array();
+					foreach ( wp_unslash( $_REQUEST ) as $key => $value ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+						if ( is_scalar( $value ) ) {
+							$safe_args[ sanitize_key( $key ) ] = sanitize_text_field( $value );
+						}
+					}
+					$redirect = urlencode( add_query_arg( $safe_args, $redirect ) );
 				}
 			}
 
-			wp_redirect( wp_login_url( $redirect ) );
+			wp_safe_redirect( wp_login_url( $redirect ) );
 			exit();
 		}
 
@@ -834,7 +840,7 @@ abstract class SI_Controller extends Sprout_Invoices {
 
 				do_action( 'si_cloned_post_before_redirect', $cloned_post_id );
 
-				wp_redirect( add_query_arg( array( 'post' => $cloned_post_id, 'action' => 'edit' ), admin_url( 'post.php' ) ) );
+				wp_safe_redirect( add_query_arg( array( 'post' => $cloned_post_id, 'action' => 'edit' ), admin_url( 'post.php' ) ) );
 				exit();
 			}
 		}
@@ -958,8 +964,12 @@ abstract class SI_Controller extends Sprout_Invoices {
 			self::ajax_fail( 'Forget something?' );
 		}
 
-		if ( ! empty( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['security'] ) ), self::NONCE ) ) ) { // phpcs:ignore
-			self::ajax_fail( 'We couldn’t process that request. Please contact system adminstrator.' );
+		if ( ! isset( $_REQUEST['security'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['security'] ) ), self::NONCE ) ) {
+			self::ajax_fail( 'We could not process that request. Please contact system administrator.' );
+		}
+
+		if ( ! current_user_can( 'edit_sprout_invoices' ) ) {
+			self::ajax_fail( 'You do not have permission.' );
 		}
 
 		$number = sanitize_text_field( wp_unslash( $_REQUEST['number'] ) );
@@ -1162,12 +1172,12 @@ abstract class SI_Controller extends Sprout_Invoices {
 			return $bool;
 		}
 
-		if ( isset( $_GET['page'] ) && strpos( sanitize_text_field( wp_unslash( $_GET['page'] ) ), self::TEXT_DOMAIN ) !== false ) {
+		if ( isset( $_GET['page'] ) && strpos( sanitize_text_field( wp_unslash( $_GET['page'] ) ), self::TEXT_DOMAIN ) !== false ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: admin URL parameter used to detect if we're on a Sprout Invoices admin page.
 			$bool = true;
 		}
 
 		// Options
-		if ( isset( $_GET['page'] ) && strpos( sanitize_text_field( wp_unslash( $_GET['page'] ) ), self::APP_DOMAIN ) !== false ) {
+		if ( isset( $_GET['page'] ) && strpos( sanitize_text_field( wp_unslash( $_GET['page'] ) ), self::APP_DOMAIN ) !== false ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: admin URL parameter used to detect if we're on a Sprout Invoices admin page.
 			$bool = true;
 		}
 
@@ -1183,11 +1193,11 @@ abstract class SI_Controller extends Sprout_Invoices {
 				$post_type = $current_screen->post_type;
 			} else {
 				// Trying hard to figure out the post type if not yet set.
-				$post_id = isset( $_GET['post'] ) ? (int) $_GET['post'] : false;
+				$post_id = isset( $_GET['post'] ) ? (int) $_GET['post'] : false; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: post ID from URL used only to look up post type for display routing.
 				if ( $post_id ) {
 					$post_type = get_post_type( $post_id );
 				} else {
-					$post_type = ( isset( $_REQUEST['post_type'] ) ) ? sanitize_text_field( wp_unslash( $_REQUEST['post_type'] ) ) : false ;
+					$post_type = ( isset( $_REQUEST['post_type'] ) ) ? sanitize_text_field( wp_unslash( $_REQUEST['post_type'] ) ) : false ; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: post type from URL used only for display routing.
 				}
 			}
 			if ( $post_type ) {
@@ -1301,10 +1311,10 @@ abstract class SI_Controller extends Sprout_Invoices {
 	protected static function ssl_required() {
 		if ( ! is_ssl() ) {
 			if ( 0 === strpos( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '', 'http' ) ) {
-				wp_redirect( preg_replace( '|^http://|', 'https://', sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) ) );
+				wp_safe_redirect( preg_replace( '|^http://|', 'https://', sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) ) );
 				exit();
 			} else {
-				wp_redirect( 'https://' . sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) . sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) ); //phpcs:ignore
+				wp_safe_redirect( 'https://' . sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) . sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) ); //phpcs:ignore
 				exit();
 			}
 		}
@@ -1313,10 +1323,10 @@ abstract class SI_Controller extends Sprout_Invoices {
 	protected static function no_ssl() {
 		if ( is_ssl() && strpos( self::si_get_home_url_option(), 'https' ) === false && apply_filters( 'si_no_ssl_redirect', false ) ) {
 			if ( 0 === strpos( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' , 'https' ) ) {
-				wp_redirect( preg_replace( '|^https://|', 'http://', sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) ) );
+				wp_safe_redirect( preg_replace( '|^https://|', 'http://', sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) ) );
 				exit();
 			} else {
-				wp_redirect( 'http://' . sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) . sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) ); //phpcs:ignore
+				wp_safe_redirect( 'http://' . sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) . sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) ); //phpcs:ignore
 				exit();
 			}
 		}

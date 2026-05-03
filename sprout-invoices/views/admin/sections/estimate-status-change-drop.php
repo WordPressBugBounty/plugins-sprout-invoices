@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <div class="quick_status_update" style="position:relative">
 	<?php do_action( 'si_start_status_change_drop', $id ) ?>
 	<span id="status_<?php echo (int) $id ?>">

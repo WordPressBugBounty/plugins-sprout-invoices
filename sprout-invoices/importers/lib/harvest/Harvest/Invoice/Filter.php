@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 /*
  * copyright (c) 2009 MDBitz - Matthew John Denton - mdbitz.com
  *
@@ -134,7 +135,7 @@ class Harvest_Invoice_Filter {
 				return $this->_updated_since;
 			break;
 			default:
-				throw new Harvest_Exception( sprintf('Unknown method %s::%s', get_class($this), $method));
+				throw new Harvest_Exception( sprintf('Unknown method %s::%s', get_class($this), $method)); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Third-party library, exceptions are not user-facing output
 			break;
         }
     }
@@ -176,7 +177,7 @@ class Harvest_Invoice_Filter {
 				$this->_updated_since = $value;
 			break;
 			default:
-				throw new Harvest_Exception( sprintf('Unknown method %s::%s', get_class($this), $method));
+				throw new Harvest_Exception( sprintf('Unknown method %s::%s', get_class($this), $method)); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Third-party library, exceptions are not user-facing output
 			break;
 		}
 	}
@@ -196,7 +197,7 @@ class Harvest_Invoice_Filter {
 			return $this->set( $method, $arguments[0] );
 		}
 		
-		throw new Harvest_Exception( sprintf('Unknown method %s::%s', get_class($this), $method));
+		throw new Harvest_Exception( sprintf('Unknown method %s::%s', get_class($this), $method)); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Third-party library, exceptions are not user-facing output
     }
 
     /**

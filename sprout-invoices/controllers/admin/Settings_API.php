@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Admin settings pages and meta controller.
@@ -131,8 +132,10 @@ class SI_Settings_API extends SI_Controller {
 
 		uasort( $sub_pages, array( __CLASS__, 'sort_by_weight' ) );
 
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only: GET param selects which settings page to render, no state change
 		$current_page = ( isset( $_GET['page'] ) ) ?
 			str_replace( 'sprout-invoices-', '', sanitize_text_field( wp_unslash( $_GET['page'] ) ) ) : '';
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 		$args = array(
 			'allsettings'  => self::get_si_settings(),
@@ -187,7 +190,7 @@ class SI_Settings_API extends SI_Controller {
 	 * @return void|null if no page is not set.
 	 */
 	public static function sprout_settings_header() {
-		if ( ! isset( $_GET['page'] ) ) {
+		if ( ! isset( $_GET['page'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: display condition for header, no state change
 			return;
 		}
 
@@ -289,14 +292,14 @@ class SI_Settings_API extends SI_Controller {
 			array(
 				'label'      => __( 'Create an Estimate', 'sprout-invoices' ),
 				'aria-label' =>
-					__( 'Create your first estimate' ),
+					__( 'Create your first estimate', 'sprout-invoices' ),
 				'link'       => admin_url( 'post-new.php?post_type=sa_estimate' ),
 				'status'     => ( $total_estimates > 0 ) ? true : false,
 			),
 			array(
 				'label'      => __( 'Create an Invoice', 'sprout-invoices' ),
 				'aria-label' =>
-					__( 'Create an invoice, or accept the estimate to create one automatically' ),
+					__( 'Create an invoice, or accept the estimate to create one automatically', 'sprout-invoices' ),
 				'link'       => admin_url( 'post-new.php?post_type=sa_invoice' ),
 				'status'     => ( $total_invoices > 0 ) ? true : false,
 			),
@@ -408,11 +411,11 @@ class SI_Settings_API extends SI_Controller {
 			wp_die( 'Unauthorized', 403 );
 		}
 
-		if ( ! wp_verify_nonce( $_POST['nonce'], self::NONCE ) ) {
+		if ( empty( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), self::NONCE ) ) {
 			wp_die( 'Nonce verification failed', 403 );
 		}
 		if ( isset( $_POST['data']['si_stripe_option'] ) ) {
-			update_option( 'si_stripe_option', $_POST['data']['si_stripe_option'] );
+			update_option( 'si_stripe_option', sanitize_text_field( wp_unslash( $_POST['data']['si_stripe_option'] ) ) );
 		}
 		wp_send_json_success();
 	}
@@ -430,11 +433,11 @@ class SI_Settings_API extends SI_Controller {
 			wp_die( 'Unauthorized', 403 );
 		}
 
-		if ( ! wp_verify_nonce( $_POST['nonce'], self::NONCE ) ) {
+		if ( empty( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), self::NONCE ) ) {
 			wp_die( 'Nonce verification failed', 403 );
 		}
 		if ( isset( $_POST['data']['gtag_option'] ) ) {
-			update_option( 'si_gtag_option', $_POST['data']['gtag_option'] );
+			update_option( 'si_gtag_option', sanitize_text_field( wp_unslash( $_POST['data']['gtag_option'] ) ) );
 		}
 		wp_send_json_success();
 	}
@@ -668,7 +671,7 @@ class SI_Settings_API extends SI_Controller {
 					return current_user_can( 'manage_sprout_invoices_options' );
 				},
 				'callback' => function () {
-
+					// phpcs:disable WordPress.Security.NonceVerification.Missing -- WordPress REST API validates authentication via X-WP-Nonce header; permission_callback enforces capability
 					$_POST = stripslashes_deep( $_POST );
 
 					if ( isset( $_POST['activate'] ) ) {
@@ -679,6 +682,7 @@ class SI_Settings_API extends SI_Controller {
 						SA_Addons::deactivate_addon( sanitize_text_field( wp_unslash( $_POST['deactivate'] ) ) );
 
 					}
+					// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 					do_action( 'si_addons_managed' );
 
@@ -696,7 +700,7 @@ class SI_Settings_API extends SI_Controller {
 					return current_user_can( 'manage_sprout_invoices_options' );
 				},
 				'callback' => function () {
-
+					// phpcs:disable WordPress.Security.NonceVerification.Missing -- WordPress REST API validates authentication via X-WP-Nonce header; permission_callback enforces capability
 					$_POST = stripslashes_deep( $_POST );
 
 					$update_cc = (isset( $_POST['update_cc'] ) && sanitize_text_field( wp_unslash( $_POST['update_cc'] ) ) ) ? true : false;
@@ -707,6 +711,7 @@ class SI_Settings_API extends SI_Controller {
 					if ( isset( $_POST['deactivate'] ) ) {
 						$active_pp = SI_Payment_Processors::deactivate_pp( sanitize_text_field( wp_unslash( $_POST['deactivate'] ) ) );
 					}
+					// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 					do_action( 'si_pps_managed' );
 
@@ -1203,10 +1208,10 @@ class SI_Settings_API extends SI_Controller {
 		?>
 		<label for="<?php echo esc_attr( $key ); ?>" class="si_input_label"><?php echo esc_html( $field['label'] ); ?></label>
 		<?php foreach ( $field['option']['options'] as $option_key => $option_label ) : ?>
-			<label for="<?php echo esc_attr( $key ); ?>_<?php esc_attr_e( $option_key ); ?>" class="si_radio_label">
+			<label for="<?php echo esc_attr( $key ); ?>_<?php echo esc_attr( $option_key ); ?>" class="si_radio_label">
 				<input type="radio" name="<?php echo esc_attr( $key ); ?>"
-					id="<?php echo esc_attr( $key ); ?>_<?php esc_attr_e( $option_key ); ?>"
-					value="<?php esc_attr_e( $option_key ); ?>"
+					id="<?php echo esc_attr( $key ); ?>_<?php echo esc_attr( $option_key ); ?>"
+					value="<?php echo esc_attr( $option_key ); ?>"
 					<?php checked( $option_key, $default ); ?>
 					<?php echo $attributes; //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				/>

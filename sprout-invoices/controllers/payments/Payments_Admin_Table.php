@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 if ( ! class_exists( 'WP_List_Table' ) ) {
 	require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
@@ -30,8 +31,9 @@ class SI_Payments_Table extends WP_List_Table {
 		foreach ( get_post_stati( array( 'show_in_admin_all_list' => false ) ) as $state ) {
 			$total_posts -= $num_posts->$state; }
 
-		$class = empty( $_REQUEST['post_status'] ) ? ' class="current"' : '';
-		$status_links['all'] = "<a href='edit.php?post_type=sa_invoice&page=sprout-apps/invoice_payments{$allposts}'$class>" . sprintf( _nx( 'All <span class="count">(%s)</span>', 'All <span class="count">(%s)</span>', $total_posts, 'posts' ), number_format_i18n( $total_posts ) ) . '</a>';
+		$class = empty( $_REQUEST['post_status'] ) ? ' class="current"' : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		/* translators: %s: number of posts */
+		$status_links['all'] = "<a href='edit.php?post_type=sa_invoice&page=sprout-apps/invoice_payments{$allposts}'$class>" . sprintf( _nx( 'All <span class="count">(%s)</span>', 'All <span class="count">(%s)</span>', $total_posts, 'posts', 'sprout-invoices' ), number_format_i18n( $total_posts ) ) . '</a>';
 
 		foreach ( get_post_stati( array( 'show_in_admin_status_list' => true ), 'objects' ) as $status ) {
 			$class = '';
@@ -41,7 +43,7 @@ class SI_Payments_Table extends WP_List_Table {
 			if ( empty( $num_posts->$status_name ) ) {
 				continue; }
 
-			if ( isset( $_REQUEST['post_status'] ) && $status_name == $_REQUEST['post_status'] ) {
+			if ( isset( $_REQUEST['post_status'] ) && $status_name == $_REQUEST['post_status'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$class = ' class="current"'; }
 
 			// replace "Published" with "Complete".
@@ -59,7 +61,7 @@ class SI_Payments_Table extends WP_List_Table {
 
 			$this->months_dropdown( self::$post_type );
 
-			submit_button( __( 'Filter' ), 'secondary', false, false, array( 'id' => 'post-query-submit' ) );
+			submit_button( __( 'Filter', 'sprout-invoices' ), 'secondary', false, false, array( 'id' => 'post-query-submit' ) );
 		} ?>
 		</div>
 		<?php
@@ -201,7 +203,7 @@ class SI_Payments_Table extends WP_List_Table {
 		if ( is_array( $data ) ) {
 			foreach ( $data as $key => $value ) {
 				if ( is_array( $value ) ) {
-					$value = sprintf( '<pre id="payment_detail_%s" style="width="500px"; white-space:pre-wrap; text-align: left; font: normal normal 11px/1.4 menlo, monaco, monospaced; padding: 5px;">%s</pre>', $payment_id, print_r( $value, true ) );
+					$value = sprintf( '<pre id="payment_detail_%s" style="width="500px"; white-space:pre-wrap; text-align: left; font: normal normal 11px/1.4 menlo, monaco, monospaced; padding: 5px;">%s</pre>', $payment_id, esc_html( wp_json_encode( $value ) ) );
 				}
 				if ( is_string( $value ) ) {
 					$detail .= '<dl>
@@ -326,8 +328,8 @@ class SI_Payments_Table extends WP_List_Table {
 		 */
 		$this->_column_headers = array( $columns, $hidden, $sortable );
 
-		$filter = ( isset( $_REQUEST['post_status'] ) ) ?
-			sanitize_text_field( wp_unslash( $_REQUEST['post_status'] ) ) :
+		$filter = ( isset( $_REQUEST['post_status'] ) ) ? // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			sanitize_text_field( wp_unslash( $_REQUEST['post_status'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			array(
 				SI_Payment::STATUS_PENDING,
 				SI_Payment::STATUS_AUTHORIZED,
@@ -344,8 +346,8 @@ class SI_Payments_Table extends WP_List_Table {
 			'paged' => $this->get_pagenum(),
 		);
 		// Check based on post_type id
-		if ( isset( $_REQUEST['s'] ) && is_numeric( $_REQUEST['s'] ) ) {
-			$post_id = sanitize_text_field( wp_unslash( $_REQUEST['s'] ) );
+		if ( isset( $_REQUEST['s'] ) && is_numeric( $_REQUEST['s'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$post_id = sanitize_text_field( wp_unslash( $_REQUEST['s'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			switch ( get_post_type( $post_id ) ) {
 				case SI_Payment::POST_TYPE :
 					$payment_ids = array( $post_id );
@@ -372,12 +374,12 @@ class SI_Payments_Table extends WP_List_Table {
 				$args = array_merge( $args, $meta_query );
 			}
 		} // Search
-		elseif ( isset( $_GET['s'] ) && $_GET['s'] != '' ) {
-			$args = array_merge( $args, array( 's' => sanitize_text_field( wp_unslash( $_GET['s'] ) ) ) );
+		elseif ( isset( $_GET['s'] ) && $_GET['s'] != '' ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$args = array_merge( $args, array( 's' => sanitize_text_field( wp_unslash( $_GET['s'] ) ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		}
 		// Filter by date
-		if ( isset( $_GET['m'] ) && $_GET['m'] != '' ) {
-			$args = array_merge( $args, array( 'm' => sanitize_text_field( wp_unslash( $_GET['m'] ) ) ) );
+		if ( isset( $_GET['m'] ) && $_GET['m'] != '' ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$args = array_merge( $args, array( 'm' => sanitize_text_field( wp_unslash( $_GET['m'] ) ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		}
 
 		$payments = new WP_Query( $args );

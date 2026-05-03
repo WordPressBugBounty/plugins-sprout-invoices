@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Freshbooks Importer
@@ -110,10 +111,10 @@ class SI_Freshbooks_Import extends SI_Importer {
 
 	public static function save_options() {
 		if ( ! current_user_can( 'manage_sprout_invoices_importer' ) ) {
-			error_log( 'failed user can' . print_r( false, true ) );
 			return;
 		}
 
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce verified by process_importer() or maybe_init_import() before this is called
 		if ( isset( $_POST[ self::FRESHBOOKS_TOKEN_OPTION ] ) && $_POST[ self::FRESHBOOKS_TOKEN_OPTION ] != '' ) {
 			self::$freshbooks_token = sanitize_text_field( wp_unslash( $_POST[ self::FRESHBOOKS_TOKEN_OPTION ] ) );
 			update_option( self::FRESHBOOKS_TOKEN_OPTION, self::$freshbooks_token );
@@ -127,6 +128,7 @@ class SI_Freshbooks_Import extends SI_Importer {
 		if ( isset( $_POST[ self::DELETE_PROGRESS ] ) && $_POST[ self::DELETE_PROGRESS ] == 'restart' ) {
 			delete_option( self::PROGRESS_OPTION );
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 	}
 
 	/**
@@ -134,7 +136,7 @@ class SI_Freshbooks_Import extends SI_Importer {
 	 * @return bool
 	 */
 	public static function import_archived_data() {
-		self::$importing_archived = ( isset( $_POST[ self::PROCESS_ARCHIVED ] ) && $_POST[ self::PROCESS_ARCHIVED ] == 'archived' ) ? true : false ;
+		self::$importing_archived = ( isset( $_POST[ self::PROCESS_ARCHIVED ] ) && $_POST[ self::PROCESS_ARCHIVED ] == 'archived' ) ? true : false ; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Called from nonce-verified context
 		return self::$importing_archived;
 	}
 
@@ -246,14 +248,17 @@ class SI_Freshbooks_Import extends SI_Importer {
 				// Return the progress
 				self::return_progress( array(
 					'authentication' => array(
+					/* translators: %s: value */
 					'message' => sprintf( __( 'Attempting to import %s contacts and their clients...', 'sprout-invoices' ), $total_records ),
 					'progress' => 20 + $progress[ $progress_key ],
 					),
 					'clients' => array(
+					/* translators: %s: value */
 					'message' => sprintf( __( 'Imported about %s clients so far.', 'sprout-invoices' ), $total_imported ),
 					'progress' => intval( ($progress[ $progress_key ] / $pages) * 100 ),
 					),
 					'contacts' => array(
+					/* translators: %s: value */
 					'message' => sprintf( __( 'Imported more than %s contacts from imported clients.', 'sprout-invoices' ), $total_imported ),
 					'progress' => intval( ($progress[ $progress_key ] / $pages) * 100 ),
 					'next_step' => 'clients',
@@ -268,14 +273,17 @@ class SI_Freshbooks_Import extends SI_Importer {
 			// Complete
 			self::return_progress( array(
 				'authentication' => array(
+				/* translators: %s: value */
 				'message' => sprintf( __( 'Successfully imported %s contacts and their clients...', 'sprout-invoices' ), $total_records ),
 				'progress' => 25,
 				),
 				'clients' => array(
+				/* translators: %s: value */
 				'message' => sprintf( __( 'Imported more than %s clients!', 'sprout-invoices' ), $total_imported ),
 				'progress' => 100,
 				),
 				'contacts' => array(
+				/* translators: %s: value */
 				'message' => sprintf( __( 'More than %s contacts were added and assigned to their clients!', 'sprout-invoices' ), $total_imported ),
 				'progress' => 100,
 				'next_step' => 'estimates',
@@ -286,14 +294,17 @@ class SI_Freshbooks_Import extends SI_Importer {
 		// Completed previously
 		self::return_progress( array(
 			'authentication' => array(
+			/* translators: %s: value */
 			'message' => sprintf( __( 'Successfully imported %s contacts and their clients already, moving on...', 'sprout-invoices' ), $total_records ),
 			'progress' => 25,
 			),
 			'clients' => array(
+			/* translators: %s: value */
 			'message' => sprintf( __( 'Successfully imported %s clients already.', 'sprout-invoices' ), $total_records ),
 			'progress' => 100,
 			),
 			'contacts' => array(
+			/* translators: %s: value */
 			'message' => sprintf( __( 'Successfully imported more than %s contacts from their clients already.', 'sprout-invoices' ), $total_records ),
 			'progress' => 100,
 			'next_step' => 'estimates',
@@ -360,10 +371,12 @@ class SI_Freshbooks_Import extends SI_Importer {
 				// Return the progress
 				self::return_progress( array(
 					'authentication' => array(
+					/* translators: %s: value */
 					'message' => sprintf( __( 'Attempting to import %s estimates...', 'sprout-invoices' ), $total_records ),
 					'progress' => 25 + $progress[ $progress_key ],
 					),
 					'estimates' => array(
+					/* translators: %s: value */
 					'message' => sprintf( __( 'Imported about %s estimates so far.', 'sprout-invoices' ), $total_imported ),
 					'progress' => intval( ($progress[ $progress_key ] / $pages) * 100 ),
 					'next_step' => 'estimates',
@@ -378,10 +391,12 @@ class SI_Freshbooks_Import extends SI_Importer {
 			// Complete
 			self::return_progress( array(
 				'authentication' => array(
+				/* translators: %s: value */
 				'message' => sprintf( __( 'Successfully imported %s estimates...', 'sprout-invoices' ), $total_records ),
 				'progress' => 50,
 				),
 				'estimates' => array(
+				/* translators: %s: value */
 				'message' => sprintf( __( 'Imported %s estimates!', 'sprout-invoices' ), $total_records ),
 				'progress' => 100,
 				'next_step' => 'invoices',
@@ -392,11 +407,13 @@ class SI_Freshbooks_Import extends SI_Importer {
 		// Completed previously
 		self::return_progress( array(
 			'authentication' => array(
+			/* translators: %s: value */
 			'message' => sprintf( __( 'Successfully imported %s estimates already, moving on...', 'sprout-invoices' ), $total_records ),
 			'progress' => 50,
 			),
 			'estimates' => array(
 			'progress' => 100,
+			/* translators: %s: value */
 			'message' => sprintf( __( 'Successfully imported %s estimates already.', 'sprout-invoices' ), $total_records ),
 			'next_step' => 'invoices',
 			),
@@ -462,10 +479,12 @@ class SI_Freshbooks_Import extends SI_Importer {
 				// Return the progress
 				self::return_progress( array(
 					'authentication' => array(
+					/* translators: %s: value */
 					'message' => sprintf( __( 'Attempting to import %s invoices...', 'sprout-invoices' ), $total_records ),
 					'progress' => 50 + $progress[ $progress_key ],
 					),
 					'invoices' => array(
+					/* translators: %s: value */
 					'message' => sprintf( __( 'Imported about %s invoices so far.', 'sprout-invoices' ), $total_imported ),
 					'progress' => intval( ($progress[ $progress_key ] / $pages) * 100 ),
 					'next_step' => 'invoices',
@@ -480,10 +499,12 @@ class SI_Freshbooks_Import extends SI_Importer {
 			// Complete
 			self::return_progress( array(
 				'authentication' => array(
+				/* translators: %s: value */
 				'message' => sprintf( __( 'Successfully imported %s invoices...', 'sprout-invoices' ), $total_records ),
 				'progress' => 75,
 				),
 				'invoices' => array(
+				/* translators: %s: value */
 				'message' => sprintf( __( 'Imported %s invoices!', 'sprout-invoices' ), $total_records ),
 				'progress' => 100,
 				'next_step' => 'payments',
@@ -494,10 +515,12 @@ class SI_Freshbooks_Import extends SI_Importer {
 		// Completed previously
 		self::return_progress( array(
 			'authentication' => array(
+			/* translators: %s: value */
 			'message' => sprintf( __( 'Successfully imported %s invoices already, moving on...', 'sprout-invoices' ), $total_records ),
 			'progress' => 75,
 			),
 			'invoices' => array(
+			/* translators: %s: value */
 			'message' => sprintf( __( 'Successfully imported %s invoices already.', 'sprout-invoices' ), $total_records ),
 			'progress' => 100,
 			'next_step' => 'payments',
@@ -564,10 +587,12 @@ class SI_Freshbooks_Import extends SI_Importer {
 				// Return the progress
 				self::return_progress( array(
 					'authentication' => array(
+					/* translators: %s: value */
 					'message' => sprintf( __( 'Attempting to import %s payments...', 'sprout-invoices' ), $total_records ),
 					'progress' => 75 + $progress[ $progress_key ],
 					),
 					'payments' => array(
+					/* translators: %s: value */
 					'message' => sprintf( __( 'Imported about %s payments so far.', 'sprout-invoices' ), $total_imported ),
 					'progress' => intval( ($progress[ $progress_key ] / $pages) * 100 ),
 					'next_step' => 'payments',
@@ -582,10 +607,12 @@ class SI_Freshbooks_Import extends SI_Importer {
 			// Complete
 			self::return_progress( array(
 				'authentication' => array(
+				/* translators: %s: value */
 				'message' => sprintf( __( 'Successfully imported %s payments...', 'sprout-invoices' ), $total_records ),
 				'progress' => 100,
 				),
 				'payments' => array(
+				/* translators: %s: value */
 				'message' => sprintf( __( 'Imported %s payments!', 'sprout-invoices' ), $total_records ),
 				'progress' => 100,
 				'next_step' => 'complete',
@@ -596,10 +623,12 @@ class SI_Freshbooks_Import extends SI_Importer {
 		// Completed previously
 		self::return_progress( array(
 			'authentication' => array(
+			/* translators: %s: value */
 			'message' => sprintf( __( 'Successfully imported %s estimates already, moving on...', 'sprout-invoices' ), $total_records ),
 			'progress' => 100,
 			),
 			'payments' => array(
+			/* translators: %s: value */
 			'message' => sprintf( __( 'Successfully imported %s payments already.', 'sprout-invoices' ), $total_records ),
 			'progress' => 100,
 			'next_step' => 'complete',
@@ -757,7 +786,7 @@ class SI_Freshbooks_Import extends SI_Importer {
 		}
 		$est->set_issue_date( strtotime( $estimate['date'] ) );
 		// post date
-		$est->set_post_date( date( 'Y-m-d H:i:s', strtotime( $estimate['date'] ) ) );
+		$est->set_post_date( gmdate( 'Y-m-d H:i:s', strtotime( $estimate['date'] ) ) );
 		// line items
 		$line_items = array();
 		if ( isset( $estimate['lines']['line'] ) && ! empty( $estimate['lines']['line'] ) ) {
@@ -840,7 +869,7 @@ class SI_Freshbooks_Import extends SI_Importer {
 		}
 		$inv->set_issue_date( strtotime( $invoice['date'] ) );
 		// post date
-		$inv->set_post_date( date( 'Y-m-d H:i:s', strtotime( $invoice['date'] ) ) );
+		$inv->set_post_date( gmdate( 'Y-m-d H:i:s', strtotime( $invoice['date'] ) ) );
 		// line items
 		$line_items = array();
 		if ( isset( $invoice['lines']['line'] ) && ! empty( $invoice['lines']['line'] ) ) {
@@ -909,7 +938,7 @@ class SI_Freshbooks_Import extends SI_Importer {
 			),
 		) );
 		$new_payment = SI_Payment::get_instance( $payment_id );
-		$new_payment->set_post_date( date( 'Y-m-d H:i:s', strtotime( $payment['date'] ) ) );
+		$new_payment->set_post_date( gmdate( 'Y-m-d H:i:s', strtotime( $payment['date'] ) ) );
 		return $new_payment;
 	}
 
@@ -919,12 +948,12 @@ class SI_Freshbooks_Import extends SI_Importer {
 	 * ------------------------------------------------------------- */
 	public function __clone() {
 		// cannot be cloned
-		trigger_error( __CLASS__.' may not be cloned', E_USER_ERROR );
+		wp_die( esc_html( __CLASS__ . ' may not be cloned' ) );
 	}
 
 	public function __sleep() {
 		// cannot be serialized
-		trigger_error( __CLASS__.' may not be serialized', E_USER_ERROR );
+		wp_die( esc_html( __CLASS__ . ' may not be serialized' ) );
 	}
 
 	public function __construct() {
@@ -947,4 +976,4 @@ class SI_Freshbooks_Import extends SI_Importer {
 		return $r;
 	}
 }
-SI_Freshbooks_Import::register();
+add_action( 'init', array( 'SI_Freshbooks_Import', 'register' ), 5 );

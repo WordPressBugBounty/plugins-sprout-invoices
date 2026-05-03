@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 
 /**
@@ -274,8 +275,8 @@ class SI_Reporting extends SI_Dashboard {
 
 		$frames = self::walk_back_x_span( $span, $segment );
 		$date_format = self::get_segment_date_format( $segment );
-		$year = date( 'Y', strtotime( $span . ' ' . $segment . ' ago' ) );
-		$start_date = date( 'Y-m-d', strtotime( $span . ' ' . $segment . ' ago' ) );
+		$year = gmdate( 'Y', strtotime( $span . ' ' . $segment . ' ago' ) );
+		$start_date = gmdate( 'Y-m-d', strtotime( $span . ' ' . $segment . ' ago' ) );
 
 		// Build data array, without a explicit build segments without posts will not show.
 		$data = array();
@@ -318,10 +319,10 @@ class SI_Reporting extends SI_Dashboard {
 
 			$data[ $frame ]['invoices']  += 1;
 			$data[ $frame ]['payments']  += count( $invoice->get_payments() );
-			$data[ $frame ]['totals']    += si_get_invoice_calculated_total( $invoice_id );
-			$data[ $frame ]['subtotals'] += si_get_invoice_subtotal( $invoice_id );
-			$data[ $frame ]['paid']      += si_get_invoice_payments_total( $invoice_id );
-			$data[ $frame ]['balance']   += si_get_invoice_balance( $invoice_id );
+			$data[ $frame ]['totals']    += (float) si_get_invoice_calculated_total( $invoice_id );
+			$data[ $frame ]['subtotals'] += (float) si_get_invoice_subtotal( $invoice_id );
+			$data[ $frame ]['paid']      += (float) si_get_invoice_payments_total( $invoice_id );
+			$data[ $frame ]['balance']   += (float) si_get_invoice_balance( $invoice_id );
 
 			switch ( get_post_status( $invoice_id ) ) {
 				case 'draft':
@@ -386,10 +387,10 @@ class SI_Reporting extends SI_Dashboard {
 			$invoice = SI_Invoice::get_instance( $invoice_id );
 			$data['invoices'] += 1;
 			$data['payments'] += count( $invoice->get_payments() );
-			$data['totals'] += si_get_invoice_calculated_total( $invoice_id );
-			$data['subtotals'] += si_get_invoice_subtotal( $invoice_id );
-			$data['paid'] += si_get_invoice_payments_total( $invoice_id );
-			$data['balance'] += si_get_invoice_balance( $invoice_id );
+			$data['totals'] += (float) si_get_invoice_calculated_total( $invoice_id );
+			$data['subtotals'] += (float) si_get_invoice_subtotal( $invoice_id );
+			$data['paid'] += (float) si_get_invoice_payments_total( $invoice_id );
+			$data['balance'] += (float) si_get_invoice_balance( $invoice_id );
 			switch ( get_post_status( $invoice_id ) ) {
 				case 'draft':
 				case SI_Invoice::STATUS_TEMP:
@@ -425,8 +426,8 @@ class SI_Reporting extends SI_Dashboard {
 
 		$frames = self::walk_back_x_span( $span, $segment );
 		$date_format = self::get_segment_date_format( $segment );
-		$year = date( 'Y', strtotime( $span . ' ' . $segment . ' ago' ) );
-		$start_date = date( 'Y-m-d', strtotime( $span . ' ' . $segment . ' ago' ) );
+		$year = gmdate( 'Y', strtotime( $span . ' ' . $segment . ' ago' ) );
+		$start_date = gmdate( 'Y-m-d', strtotime( $span . ' ' . $segment . ' ago' ) );
 
 		// Build data array, without a explicit build segments without posts will not show.
 		$data = array();
@@ -460,8 +461,8 @@ class SI_Reporting extends SI_Dashboard {
 		foreach ( $estimates->posts as $estimate_id ) {
 			$frame = get_the_time( $date_format, $estimate_id );
 			$data[ $frame ]['estimates'] += 1;
-			$data[ $frame ]['totals'] += si_get_estimate_total( $estimate_id );
-			$data[ $frame ]['subtotals'] += si_get_estimate_subtotal( $estimate_id );
+			$data[ $frame ]['totals'] += (float) si_get_estimate_total( $estimate_id );
+			$data[ $frame ]['subtotals'] += (float) si_get_estimate_subtotal( $estimate_id );
 			if ( si_get_estimate_invoice_id( $estimate_id ) ) {
 				$data[ $frame ]['invoices_generated'] += 1;
 			}
@@ -558,8 +559,8 @@ class SI_Reporting extends SI_Dashboard {
 			case 'week':
 				$args['date_query'] = array(
 					array(
-						'week' => date( 'W', strtotime( 'this week' ) ),
-						'year' => date( 'o', strtotime( 'this week' ) ),
+						'week' => gmdate( 'W', strtotime( 'this week' ) ),
+						'year' => gmdate( 'o', strtotime( 'this week' ) ),
 						'inclusive' => true,
 					),
 				);
@@ -568,8 +569,8 @@ class SI_Reporting extends SI_Dashboard {
 			case 'lastweek':
 				$args['date_query'] = array(
 					array(
-						'week' => date( 'W', strtotime( '-1 week' ) ),
-						'year' => date( 'o', strtotime( '-1 week' ) ),
+						'week' => gmdate( 'W', strtotime( '-1 week' ) ),
+						'year' => gmdate( 'o', strtotime( '-1 week' ) ),
 						'inclusive' => true,
 					),
 				);
@@ -578,8 +579,8 @@ class SI_Reporting extends SI_Dashboard {
 			case 'month':
 				$args['date_query'] = array(
 					array(
-						'month' => date( 'm', strtotime( 'first day of this month' ) ),
-						'year' => date( 'o', current_time( 'timestamp' ) ),
+						'month' => gmdate( 'm', strtotime( 'first day of this month' ) ),
+						'year' => gmdate( 'o', current_time( 'timestamp' ) ),
 						'inclusive' => true,
 					),
 				);
@@ -588,8 +589,8 @@ class SI_Reporting extends SI_Dashboard {
 			case 'lastmonth':
 				$args['date_query'] = array(
 					array(
-						'month' => date( 'm', strtotime( '-1 month' ) ),
-						'year' => date( 'o', strtotime( '-1 month' ) ),
+						'month' => gmdate( 'm', strtotime( '-1 month' ) ),
+						'year' => gmdate( 'o', strtotime( '-1 month' ) ),
 						'inclusive' => true,
 					),
 				);
@@ -598,7 +599,7 @@ class SI_Reporting extends SI_Dashboard {
 			case 'year':
 				$args['date_query'] = array(
 					array(
-						'year' => date( 'Y', current_time( 'timestamp' ) ),
+						'year' => gmdate( 'Y', current_time( 'timestamp' ) ),
 						'inclusive' => true,
 					),
 				);
@@ -607,7 +608,7 @@ class SI_Reporting extends SI_Dashboard {
 			case 'lastyear':
 				$args['date_query'] = array(
 					array(
-						'year' => date( 'Y', strtotime( 'first day of previous year' ) ),
+						'year' => gmdate( 'Y', strtotime( 'first day of previous year' ) ),
 						'inclusive' => true,
 					),
 				);
@@ -631,7 +632,7 @@ class SI_Reporting extends SI_Dashboard {
 
 		// FUTURE charts should be dynamic based on selected segment.
 		$weeks = self::walk_back_x_span( $span, $segment );
-		$year = date( 'Y', strtotime( $span . ' weeks ago' ) );
+		$year = gmdate( 'Y', strtotime( $span . ' weeks ago' ) );
 
 		// Build data array, without a explicit build segments without posts will not show.
 		$data = array();
@@ -654,7 +655,7 @@ class SI_Reporting extends SI_Dashboard {
 			'fields' => 'ids',
 			'date_query' => array(
 					array(
-						'after'     => date( 'Y-m-d', strtotime( $year . 'W' . array_shift( $weeks ) ) ),
+						'after'     => gmdate( 'Y-m-d', strtotime( $year . 'W' . array_shift( $weeks ) ) ),
 						'inclusive' => true,
 					),
 				),
@@ -697,14 +698,14 @@ class SI_Reporting extends SI_Dashboard {
 
 	public static function maybe_refresh_cache( $js_object = array() ) {
 		$js_object['reports_refresh_cache'] = false;
-		if ( isset( $_GET['reports_refresh_cache'] ) ) {
+		if ( isset( $_GET['reports_refresh_cache'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: controls cache refresh flag, no state change
 			$js_object['reports_refresh_cache'] = true;
 		}
 		return $js_object;
 	}
 
 	public static function get_cache( $data_name = '' ) {
-		if ( self::DEBUG || isset( $_REQUEST['reports_refresh_cache'] ) ) { // If dev than don't cache.
+		if ( self::DEBUG || isset( $_REQUEST['reports_refresh_cache'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: cache bypass check, no state change
 			return false;
 		}
 
@@ -750,9 +751,13 @@ class SI_Reporting extends SI_Dashboard {
 
 	public static function clear_report_cache() {
 		global $wpdb;
-		$sql = "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s";
-		$sql = $wpdb->prepare( $sql, $wpdb->esc_like( '_transient_' . self::CACHE_KEY_PREFIX ) . '%', $wpdb->esc_like( '_transient_timeout_' . self::CACHE_KEY_PREFIX ) . '%' );
-		$result = $wpdb->query( $sql );
+		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Maintenance query to delete transients, caching not appropriate
+			$wpdb->prepare(
+				"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s", // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Table name is a trusted WP global, not user input
+				$wpdb->esc_like( '_transient_' . self::CACHE_KEY_PREFIX ) . '%',
+				$wpdb->esc_like( '_transient_timeout_' . self::CACHE_KEY_PREFIX ) . '%'
+			)
+		);
 	}
 
 	//////////////
@@ -761,18 +766,18 @@ class SI_Reporting extends SI_Dashboard {
 
 	public static function walk_back_x_span( $x = 6, $span = 'months' ) {
 		$date_format = self::get_segment_date_format( $span );
-		$stretch = array( date( $date_format ) );
+		$stretch = array( gmdate( $date_format ) );
 
 		for ( $i = 1; $i <= $x; $i++ ) {
 			switch ( $span ) {
 				case 'months':
-					$stretch[] = date( $date_format, strtotime( date( 'Y-m-01' ) . " -$i " . $span ) );
+					$stretch[] = gmdate( $date_format, strtotime( gmdate( 'Y-m-01' ) . " -$i " . $span ) );
 					break;
 				case 'weeks':
-					$stretch[] = date( $date_format, strtotime( "-$i week" ) );
+					$stretch[] = gmdate( $date_format, strtotime( "-$i week" ) );
 					break;
 				case 'days':
-					$stretch[] = date( $date_format, strtotime( date( 'Y-m-d' ) . " -$i " . $span ) );
+					$stretch[] = gmdate( $date_format, strtotime( gmdate( 'Y-m-d' ) . " -$i " . $span ) );
 					break;
 
 				default:
@@ -812,16 +817,16 @@ class SI_Reporting extends SI_Dashboard {
 				break;
 			case 'months':
 				$format = 'M y';
-				$current_segment_time = strtotime( date( 'Y' ) . 'M' . $current_segment );
+				$current_segment_time = strtotime( gmdate( 'Y' ) . 'M' . $current_segment );
 				break;
 			case 'weeks':
 				$format = 'M d';
-				$current_segment_time = strtotime( date( 'Y' ) . 'W' . $current_segment );
+				$current_segment_time = strtotime( gmdate( 'Y' ) . 'W' . $current_segment );
 				break;
 			case 'days':
 			default:
 				$format = 'M d';
-				$current_segment_time = strtotime( date( 'Y' ) . 'd' . $current_segment );
+				$current_segment_time = strtotime( gmdate( 'Y' ) . 'd' . $current_segment );
 				break;
 		}
 
@@ -862,7 +867,7 @@ class SI_Reporting extends SI_Dashboard {
 			'content' => sprintf( '<p>%s</p><p>%s</p><p>%s</p>', __( '<b>Date filtering</b> is available and can be used to retrieve data between two dates, after a date, or before a date.', 'sprout-invoices' ), __( '<b>Export</b> the table, filtered or not, to many formats, including CSV, Excel, PDF or your computers clipboard.', 'sprout-invoices' ), __( 'Records are <em>limited to 2,500 items</em>. If you want to return more use the ‘si_reports_show_records’ filter.', 'sprout-invoices' ) ),
 		) );
 
-		if ( ! isset( $_GET['report'] ) ) {
+		if ( ! isset( $_GET['report'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: display condition for help tab
 			$screen->add_help_tab( array(
 				'id' => 'reports-refresh',
 				'title' => __( 'Dashboard Refresh', 'sprout-invoices' ),

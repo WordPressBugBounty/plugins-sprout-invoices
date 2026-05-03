@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <div id="si-page-container" class="si-page-container">
 	<div id="si-page-top">
 		<?php do_action( 'sprout_settings_header' ); ?>

@@ -1,3 +1,4 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <div class="reports_widget inside">
 	<div class="main">
 		<?php
@@ -14,7 +15,7 @@
 			<b><?php esc_html_e( 'Latest Updates', 'sprout-invoices' ) ?></b> 
 			<ul>
 				<?php foreach ( $estimates->posts as $estimate_id ) :  ?>
-					<li><a href="<?php echo esc_attr( get_edit_post_link( $estimate_id ) ) ?>"><?php echo esc_html( get_the_title( $estimate_id ) ) ?></a> &mdash; <?php echo esc_html( date( get_option( 'date_format' ), get_post_modified_time( 'U', false, $estimate_id ) ) ) ?></li>
+					<li><a href="<?php echo esc_attr( get_edit_post_link( $estimate_id ) ) ?>"><?php echo esc_html( get_the_title( $estimate_id ) ) ?></a> &mdash; <?php echo esc_html( gmdate( get_option( 'date_format' ), get_post_modified_time( 'U', false, $estimate_id ) ) ) ?></li>
 				<?php endforeach ?>
 			</ul>
 		<?php else : ?>
@@ -37,7 +38,7 @@
 			<b><?php esc_html_e( 'Recent Requests', 'sprout-invoices' ) ?></b> 
 			<ul>
 				<?php foreach ( $estimates->posts as $estimate_id ) :  ?>
-					<li><a href="<?php echo esc_attr( get_edit_post_link( $estimate_id ) ) ?>"><?php echo esc_html( get_the_title( $estimate_id ) )?></a> &mdash; <?php echo esc_html( date( get_option( 'date_format' ), get_post_time( 'U', false, $estimate_id ) ) )?></li>
+					<li><a href="<?php echo esc_attr( get_edit_post_link( $estimate_id ) ) ?>"><?php echo esc_html( get_the_title( $estimate_id ) )?></a> &mdash; <?php echo esc_html( gmdate( get_option( 'date_format' ), get_post_time( 'U', false, $estimate_id ) ) )?></li>
 				<?php endforeach ?>
 			</ul>
 		<?php else : ?>
@@ -61,7 +62,7 @@
 			<b><?php esc_html_e( 'Recent Declined', 'sprout-invoices' ) ?></b> 
 			<ul>
 				<?php foreach ( $estimates->posts as $estimate_id ) :  ?>
-					<li><a href="<?php echo esc_attr( get_edit_post_link( $estimate_id ) ) ?>"><?php echo esc_html( get_the_title( $estimate_id ) ) ?></a> &mdash; <?php echo esc_html( date( get_option( 'date_format' ), get_post_time( 'U', false, $estimate_id ) ) )?></li>
+					<li><a href="<?php echo esc_attr( get_edit_post_link( $estimate_id ) ) ?>"><?php echo esc_html( get_the_title( $estimate_id ) ) ?></a> &mdash; <?php echo esc_html( gmdate( get_option( 'date_format' ), get_post_time( 'U', false, $estimate_id ) ) )?></li>
 				<?php endforeach ?>
 			</ul>
 		<?php else : ?>
@@ -77,9 +78,9 @@
 				'post_status' => array( SI_Estimate::STATUS_PENDING ),
 				'posts_per_page' => 3,
 				'fields' => 'ids',
-				'meta_query' => array(
+				'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Standard WP_Query usage, no alternative without custom table
 						array(
-							'meta_key' => '_expiration_date',
+							'meta_key' => '_expiration_date', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Standard WP_Query usage, no alternative without custom table
 							'value' => array( 0, current_time( 'timestamp' ) ),
 							'compare' => 'BETWEEN',
 							),

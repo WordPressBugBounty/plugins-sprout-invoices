@@ -1,6 +1,8 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <div id="bacs_info_checkout_wrap">
 	<p class="description"><?php echo wp_kses_post( $bacs_info ); ?></p>
 	<form action="<?php echo esc_attr( si_get_payment_link( get_the_ID(), $type ) ); ?>" method="post" accept-charset="utf-8" class="sa-form sa-form-aligned">
+		<?php wp_nonce_field( 'si_checkout_action', 'si_checkout_nonce' ); ?>
 		<fieldset id="bacs_fields" class="sa-fieldset">
 			<?php sa_form_fields( $bacs_fields, 'bacs' ); ?>
 		</fieldset>

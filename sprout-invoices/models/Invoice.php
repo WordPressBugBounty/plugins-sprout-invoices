@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Invoice Model
@@ -133,7 +134,7 @@ class SI_Invoice extends SI_Post_Type {
 		);
 		self::register_post_type( self::POST_TYPE, 'Invoice', 'Invoices', $post_type_args );
 
-		self::register_post_statuses();
+		add_action( 'init', array( __CLASS__, 'register_post_statuses' ), 3 );
 
 		// Generate access hash on invoice save
 		add_action( 'save_post_' . self::POST_TYPE, array( __CLASS__, 'maybe_generate_access_hash' ), 10, 1 );
@@ -173,7 +174,7 @@ class SI_Invoice extends SI_Post_Type {
 	 * Post statuses for payments
 	 * @return
 	 */
-	private static function register_post_statuses() {
+	public static function register_post_statuses() {
 		$statuses = self::get_statuses();
 		foreach ( $statuses as $status => $label ) {
 			register_post_status(
@@ -184,7 +185,7 @@ class SI_Invoice extends SI_Post_Type {
 					'exclude_from_search'       => false,
 					'show_in_admin_all_list'    => true,
 					'show_in_admin_status_list' => true,
-					'label_count'               => _n_noop( $label . ' <span class="count">(%s)</span>', $label . ' <span class="count">(%s)</span>' ),
+					'label_count'               => _n_noop( $label . ' <span class="count">(%s)</span>', $label . ' <span class="count">(%s)</span>', 'sprout-invoices' ), // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralSingular,WordPress.WP.I18n.NonSingularStringLiteralPlural,WordPress.WP.I18n.MissingArgDomain
 				)
 			);
 		}
@@ -248,6 +249,7 @@ class SI_Invoice extends SI_Post_Type {
 
 	public static function create_invoice( $passed_args, $status = '' ) {
 		$defaults = array(
+			/* translators: %1$s: value */
 			'subject' => sprintf( __( 'New Invoice: %s', 'sprout-invoices' ), date_i18n( get_option( 'date_format' ).' @ '.get_option( 'time_format' ), current_time( 'timestamp' ) ) ),
 			'user_id' => '',
 			'invoice_id' => '',
@@ -470,7 +472,7 @@ class SI_Invoice extends SI_Post_Type {
 
 	public function set_issue_date( $issue_date = 0 ) {
 		if ( is_integer( $issue_date ) ) {
-			$issue_date = date( 'Y-m-d h:i:s', $issue_date );
+			$issue_date = gmdate( 'Y-m-d h:i:s', $issue_date );
 		}
 		$this->post->post_date = $issue_date;
 		$this->save_post();
@@ -1124,9 +1126,9 @@ class SI_Invoice extends SI_Post_Type {
 				'post_status' => array( self::STATUS_PENDING, self::STATUS_PARTIAL ),
 				'posts_per_page' => -1,
 				'fields' => 'ids',
-				'meta_query' => array(
+				'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Standard WP_Query usage, no alternative without custom table
 					array(
-						'key' => self::$meta_keys['due_date'],
+						'key' => self::$meta_keys['due_date'], // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Standard WP_Query usage, no alternative without custom table
 						'value' => array(
 							$after,
 							$before,

@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Projects Controller
@@ -89,7 +90,7 @@ class SI_Projects extends SI_Controller {
 				'save_priority' => 0,
 			),
 			'si_project_submit' => array(
-				'title' => 'Update',
+				'title' => __( 'Update', 'sprout-invoices' ),
 				'show_callback' => array( __CLASS__, 'show_submit_meta_box' ),
 				'save_callback' => array( __CLASS__, 'save_submit_meta_box' ),
 				'context' => 'side',
@@ -103,7 +104,7 @@ class SI_Projects extends SI_Controller {
 				'priority' => 'low',
 			),
 			'psp_project_info' => array(
-				'title' => 'Project Panorama',
+				'title' => __( 'Project Panorama', 'sprout-invoices' ),
 				'show_callback' => array( __CLASS__, 'show_psp_meta_box' ),
 				'save_callback' => array( __CLASS__, '_save_null' ),
 				'context' => 'side',
@@ -203,6 +204,8 @@ class SI_Projects extends SI_Controller {
 	 * @return
 	 */
 	public static function save_meta_box_project_information( $post_id, $post, $callback_args, $estimate_id = null ) {
+		check_admin_referer( 'update-post_' . $post_id, '_wpnonce' );
+
 		// name is set by update_post_data
 		$client       = ( isset( $_POST['sa_metabox_client'] ) && $_POST['sa_metabox_client'] != '' ) ? sanitize_text_field( wp_unslash( $_POST['sa_metabox_client'] ) ) : '' ;
 		$website      = ( isset( $_POST['sa_metabox_website'] ) && $_POST['sa_metabox_website'] != '' ) ? sanitize_text_field( wp_unslash( $_POST['sa_metabox_website'] ) ) : '' ;
@@ -224,8 +227,8 @@ class SI_Projects extends SI_Controller {
 	public static function update_post_data( $data = array(), $post = array() ) {
 		if ( $post['post_type'] == SI_Project::POST_TYPE ) {
 			$title = $post['post_title'];
-			if ( isset( $_POST['sa_metabox_name'] ) && $_POST['sa_metabox_name'] != '' ) {
-				$title = sanitize_text_field( wp_unslash( $_POST['sa_metabox_name'] ) );
+			if ( isset( $_POST['sa_metabox_name'] ) && $_POST['sa_metabox_name'] != '' ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified by WP core before wp_insert_post_data fires
+				$title = sanitize_text_field( wp_unslash( $_POST['sa_metabox_name'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			}
 			// modify the post title
 			$data['post_title'] = $title;
@@ -293,7 +296,7 @@ class SI_Projects extends SI_Controller {
 	 * @return
 	 */
 	public static function save_doc_project_selection( $post_id = 0 ) {
-		$doc_project = ( isset( $_POST['doc_project'] ) ) ? sanitize_text_field( wp_unslash( $_POST['doc_project'] ) ) : '' ;
+		$doc_project = ( isset( $_POST['doc_project'] ) ) ? sanitize_text_field( wp_unslash( $_POST['doc_project'] ) ) : '' ; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified by WP core post save flow before this callback fires
 		$doc = si_get_doc_object( $post_id );
 		$doc->set_project_id( $doc_project );
 	}
@@ -353,7 +356,7 @@ class SI_Projects extends SI_Controller {
 			'label' => __( 'Start Date', 'sprout-invoices' ),
 			'type' => 'date',
 			'required' => $required,
-			'default' => ( $project && $project->get_start_date() ) ? date( 'Y-m-d', $project->get_start_date() ) : '',
+			'default' => ( $project && $project->get_start_date() ) ? gmdate( 'Y-m-d', $project->get_start_date() ) : '',
 			'placeholder' => '',
 		);
 
@@ -362,7 +365,7 @@ class SI_Projects extends SI_Controller {
 			'label' => __( 'End Date', 'sprout-invoices' ),
 			'type' => 'date',
 			'required' => $required,
-			'default' => ( $project && $project->get_end_date() ) ? date( 'Y-m-d', $project->get_end_date() ) : '',
+			'default' => ( $project && $project->get_end_date() ) ? gmdate( 'Y-m-d', $project->get_end_date() ) : '',
 			'placeholder' => '',
 		);
 
@@ -490,6 +493,7 @@ class SI_Projects extends SI_Controller {
 					echo '</dl>';
 					if ( count( $invoices ) > $split ) {
 						printf(
+							/* translators: %1$s: value, %2$s: value, %3$s: value */
 							esc_html__( '%1$sof %2$s most recent shown%3$s', 'sprout-invoices' ),
 							'<span class="description">...' . esc_html( $split ) . ' ',
 							'<a href="' . esc_url( get_edit_post_link( $id ) ) . '">' . esc_html( count( $invoices ) ) . '</a>',

@@ -1,4 +1,6 @@
-<?php do_action( 'si_payments_meta_box_pre' ) ?>
+<?php
+if ( ! defined( 'ABSPATH' ) ) exit;
+do_action( 'si_payments_meta_box_pre' ) ?>
 <div id="admin_payments_options_wrap" class="admin_fields clearfix">
 	<?php sa_admin_fields( $fields ); ?>
 	<div id="admin_payments_option" class="form-group">

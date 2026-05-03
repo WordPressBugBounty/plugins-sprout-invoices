@@ -1,4 +1,6 @@
-<?php if ( ! empty( $line_items ) ) : ?>
+<?php
+if ( ! defined( 'ABSPATH' ) ) exit;
+if ( ! empty( $line_items ) ) : ?>
 	<?php foreach ( $line_items as $position => $data ) : ?>
 		<?php if ( is_int( $position ) ) : // is not a child ?>
 			<?php
