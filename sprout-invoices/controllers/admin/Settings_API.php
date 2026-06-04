@@ -670,23 +670,25 @@ class SI_Settings_API extends SI_Controller {
 				'permission_callback' => function () {
 					return current_user_can( 'manage_sprout_invoices_options' );
 				},
-				'callback' => function () {
+				'callback' => function ( WP_REST_Request $request ) {
 					// phpcs:disable WordPress.Security.NonceVerification.Missing -- WordPress REST API validates authentication via X-WP-Nonce header; permission_callback enforces capability
-					$_POST = stripslashes_deep( $_POST );
-
-					if ( isset( $_POST['activate'] ) ) {
-						SA_Addons::activate_addon( sanitize_text_field( wp_unslash( $_POST['activate'] ) ) );
+					$params = $request->get_body_params();
+					if ( empty( $params ) ) {
+						$params = stripslashes_deep( $_POST );
 					}
 
-					if ( isset( $_POST['deactivate'] ) ) {
-						SA_Addons::deactivate_addon( sanitize_text_field( wp_unslash( $_POST['deactivate'] ) ) );
+					if ( isset( $params['activate'] ) ) {
+						SA_Addons::activate_addon( sanitize_text_field( wp_unslash( $params['activate'] ) ) );
+					}
 
+					if ( isset( $params['deactivate'] ) ) {
+						SA_Addons::deactivate_addon( sanitize_text_field( wp_unslash( $params['deactivate'] ) ) );
 					}
 					// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 					do_action( 'si_addons_managed' );
 
-					die( '1' );
+					return new WP_REST_Response( '1', 200 );
 				},
 			)
 		);

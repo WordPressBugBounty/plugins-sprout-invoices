@@ -392,6 +392,11 @@ new Vue( {
 		 */
 		activateAddOn: function( addOn, event ) {
 
+			// Setup wizard checkboxes use this handler for both enable and disable.
+			if ( event.target && 'checkbox' === event.target.type && ! event.target.checked ) {
+				return this.deactivateAddOn( addOn, event );
+			}
+
 			var addOnEl = jQuery(event.target),
 				action = { 'activate': addOn };
 				this.addons[addOn]['active'] = 1;

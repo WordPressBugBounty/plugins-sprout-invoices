@@ -3,9 +3,9 @@ Contributors: boldgrid, joemoto, dancameron, sproutapps, elanasparkle
 Donate link: https://sproutinvoices.com/?utm_medium=link&utm_campaign=free&utm_source=wordpress.org
 Tags: invoice, invoicing, billing, estimates, payments
 Requires at least: 5.1
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 7.2.5
-Stable tag: 20.8.13
+Stable tag: 20.8.14
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -140,6 +140,10 @@ For more detailed look, checkout the full featured [demo](https://sproutinvoices
 Form integrations for everyone!
 
 == Changelog ==
+
+= 20.8.14 =
+* **Fix:** Hardened permission checks on notification sending to ensure actions are limited to authorized users
+* **Fix:** General security and stability improvements
 
 = 20.8.13 =
 * **Fix:** Partial payment and deposits calculation error

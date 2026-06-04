@@ -141,8 +141,31 @@ class SI_Estimates extends SI_Controller {
 		if ( ! isset( $_REQUEST['sa_send_metabox_doc_id'] ) ) {
 			self::ajax_fail( 'Forget something (id)?' ); }
 
-		if ( get_post_type( sanitize_text_field( wp_unslash( $_REQUEST['sa_send_metabox_doc_id'] ) ) ) !== SI_Estimate::POST_TYPE ) {
+		$doc_id    = absint( wp_unslash( $_REQUEST['sa_send_metabox_doc_id'] ) );
+		$post_type = get_post_type( $doc_id );
+
+		/*
+		 * SI_Estimates and SI_Invoices both hook maybe_send_notification() onto the shared
+		 * wp_ajax_sa_send_est_notification action (the metabox JS posts every send through it).
+		 * When the document belongs to the sibling controller, yield to it with a bare return
+		 * rather than self::ajax_fail() -- a wp_die() here would stop the sibling handler from
+		 * ever running. A document that is neither an invoice nor an estimate is a genuine bad
+		 * request, so fail loudly instead of returning empty JSON.
+		 */
+		if ( SI_Invoice::POST_TYPE === $post_type ) {
 			return;
+		}
+
+		if ( SI_Estimate::POST_TYPE !== $post_type ) {
+			self::ajax_fail( 'Not an invoice or estimate.' );
+		}
+
+		/*
+		 * Capability check: only users who can edit this specific estimate may send its notifications.
+		 * The nonce alone is insufficient since it is exposed to all logged-in users via si_js_object.security.
+		 */
+		if ( ! current_user_can( 'edit_post', $doc_id ) ) {
+			self::ajax_fail( 'You do not have permission to send this notification.' );
 		}
 
 		$recipients = ( isset( $_REQUEST['sa_metabox_recipients'] ) )
@@ -163,7 +186,7 @@ class SI_Estimates extends SI_Controller {
 			self::ajax_fail( 'A recipient is required.' );
 		}
 
-		$estimate = SI_Estimate::get_instance( sanitize_text_field( wp_unslash( $_REQUEST['sa_send_metabox_doc_id'] ) ) );
+		$estimate = SI_Estimate::get_instance( $doc_id );
 		$sender_note = isset( $_REQUEST['sa_send_metabox_sender_note'] )
 			? sanitize_text_field( wp_unslash( $_REQUEST['sa_send_metabox_sender_note'] ) )
 			: '';

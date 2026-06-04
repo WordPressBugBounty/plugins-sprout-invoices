@@ -118,7 +118,7 @@
 						<?php call_user_func_array( $options['purchase_button_callback'], array( get_the_ID() ) ) ?>
 					<?php else : ?>
 						<a href="<?php si_payment_link( get_the_ID(), $slug ) ?>" data-slug="<?php echo esc_attr( $slug ) ?>" data-id="<?php the_ID() ?>" data-nonce="<?php echo esc_attr( wp_create_nonce( SI_Controller::NONCE ) ) ?>" class="payment_option toggle <?php if ( si_is_cc_processor( $slug ) ) { echo 'cc_processor'; } ?> <?php echo esc_attr( $slug ) ?>">
-							<span class="process_label"><?php echo esc_html( $options['label'] ) ?></span>
+							<span class="process_label"><?php echo esc_html( isset( $options['label'] ) ? $options['label'] : $slug ) ?></span>
 						</a>
 					<?php endif ?>
 					<?php do_action( 'si_default_theme_payment_option_desc', $slug ) ?>

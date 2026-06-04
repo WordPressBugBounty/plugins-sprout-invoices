@@ -363,9 +363,6 @@ if ( ! function_exists( 'pp' ) ) {
 	}
 
 	function wpbt() {
-		if ( function_exists( 'wp_debug_backtrace_summary' ) ) {
-			return wp_debug_backtrace_summary();
-		}
 		if ( ! function_exists( 'debug_backtrace' ) ) {
 			return '';
 		}

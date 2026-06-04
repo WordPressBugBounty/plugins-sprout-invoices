@@ -29,10 +29,10 @@ if ( count( $payment_options ) === 0 ) : ?>
 						<a href="<?php echo esc_url( si_get_payment_link( get_the_ID(), $slug ) ) ?>" data-slug="<?php echo esc_attr( $slug ) ?>" data-id="<?php the_ID() ?>" data-nonce="<?php echo esc_attr( wp_create_nonce( SI_Controller::NONCE ) ) ?>" class="payment_option <?php if ( si_is_cc_processor( $slug ) ) { echo 'cc_processor'; } ?> <?php echo esc_attr( $slug ) ?>">
 							<?php if ( isset( $options['icons'] ) ) : ?>
 								<?php foreach ( $options['icons'] as $path ) : ?>
-									<img src="<?php echo esc_url( $path ) ?>" alt="<?php echo esc_attr( $options['label'] ) ?>" height="48" />
+									<img src="<?php echo esc_url( $path ) ?>" alt="<?php echo esc_attr( isset( $options['label'] ) ? $options['label'] : $slug ) ?>" height="48" />
 								<?php endforeach ?>
 							<?php else : ?>
-								<span class="process_label"><?php echo esc_html( $options['label'] ) ?></span>
+								<span class="process_label"><?php echo esc_html( isset( $options['label'] ) ? $options['label'] : $slug ) ?></span>
 							<?php endif ?>
 						</a>
 					<?php endif ?>

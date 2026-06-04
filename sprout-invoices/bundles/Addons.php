@@ -129,7 +129,7 @@ class SA_Addons extends SI_Controller {
 	public static function render_settings_page() {
 		$sub_pages    = apply_filters( 'si_sub_admin_pages', array() );
 		uasort( $sub_pages, array( __CLASS__, 'sort_by_weight' ) );
-		$current_page = ( isset( $_GET['page'] ) ) ? str_replace( 'sprout-invoices-', '', sanitize_text_field( wp_unslash( $_GET['page'] ) ) ) : '';
+		$current_page = ( isset( $_GET['page'] ) ) ? str_replace( 'sprout-invoices-', '', sanitize_text_field( wp_unslash( $_GET['page'] ) ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only display parameter, no state change.
 		$addons       = self::get_addons();
 		$form_ints    = array(
 			'formidable_integration'    => 'SI_Formidable',
@@ -294,7 +294,10 @@ class SA_Addons extends SI_Controller {
 		if ( ! is_array( $active_addons ) ) {
 			return;
 		}
-		$array_key = array_search( $addon_key, $active_addons );
+		$array_key = array_search( $addon_key, $active_addons, true );
+		if ( false === $array_key ) {
+			return;
+		}
 		unset( $active_addons[ $array_key ] );
 		$active_addons = array_unique( array_filter( $active_addons ) );
 		update_option( self::ADDON_OPTION, $active_addons );

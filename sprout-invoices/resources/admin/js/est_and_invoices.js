@@ -175,7 +175,7 @@
 			$type_header = $('#line_items_header');
 
 		$type_list.after(si_js_object.inline_spinner);
-		$.post( ajaxurl, { action: 'sa_get_time_item', time: time },
+		$.post( ajaxurl, { action: 'sa_get_time_item', time: time, nonce: si_js_object.time_submission_nonce },
 			function( response ) {
 				if ( response.success ) {
 					var $row = $(response.data.option);
@@ -253,7 +253,7 @@
 			$type_header = $('#line_items_header');
 
 		$type_list.after(si_js_object.inline_spinner);
-		$.post( ajaxurl, { action: 'sa_get_expense_item', expense: expense },
+		$.post( ajaxurl, { action: 'sa_get_expense_item', expense: expense, nonce: si_js_object.expense_submission_nonce },
 			function( response ) {
 				if ( response.success ) {
 					var $row = $(response.data.option);
