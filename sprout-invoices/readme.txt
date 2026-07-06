@@ -5,7 +5,7 @@ Tags: invoice, invoicing, billing, estimates, payments
 Requires at least: 5.1
 Tested up to: 7.0
 Requires PHP: 7.2.5
-Stable tag: 20.8.14
+Stable tag: 20.8.15
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -140,6 +140,10 @@ For more detailed look, checkout the full featured [demo](https://sproutinvoices
 Form integrations for everyone!
 
 == Changelog ==
+
+= 20.8.15 =
+* **Fix:** Fatal error when creating recurring payment plans with Stripe PHP SDK 9.x
+* **Fix:** Undefined variable warnings in default and basic invoice templates
 
 = 20.8.14 =
 * **Fix:** Hardened permission checks on notification sending to ensure actions are limited to authorized users

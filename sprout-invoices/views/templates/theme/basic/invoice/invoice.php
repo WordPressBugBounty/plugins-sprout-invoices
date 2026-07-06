@@ -370,7 +370,8 @@ do_action( 'pre_si_invoice_view' ); ?>
 					<div class="history_message">
 						<?php
 						// Display last updated message if invoice was recently updated.
-						if ( isset( $last_updated ) && si_doc_last_updated() === $last_updated ) : ?>
+						$last_updated = si_doc_last_updated();
+						if ( $last_updated ) : ?>
 							<?php $days_since = si_get_days_ago( $last_updated ); ?>
 							<?php if ( 2 > $days_since ) : ?>
 							<a class="open" href="#history">

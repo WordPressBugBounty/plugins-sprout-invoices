@@ -56,7 +56,8 @@ do_action( 'pre_si_invoice_view' ); ?><!DOCTYPE html>
 				</div>
 
 				<div class="row history_message">
-					<?php if ( si_doc_last_updated() === $last_updated ) : ?>
+					<?php $last_updated = si_doc_last_updated(); ?>
+					<?php if ( $last_updated ) : ?>
 						<?php $days_since = si_get_days_ago( $last_updated ); ?>
 						<?php if ( 2 > $days_since ) : ?>
 							<a class="open" href="#history">
