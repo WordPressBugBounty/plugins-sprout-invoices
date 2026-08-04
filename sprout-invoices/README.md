@@ -6,6 +6,8 @@ Our mission at [Sprout Invoices](https://sproutinvoices.com/) is to build a suit
 ## Development
 The free and pro version live within the same repo. Clone the repo to your development environment and start developing, no depedencies need to be installed.
 
+Composer has no committed `composer.lock`. Dev dependencies use PHPUnit **9.6** (with `yoast/phpunit-polyfills` ^4.0) so the existing `test-*.php` suite discovers correctly on every Travis matrix PHP (7.4 and 8.3). PHPUnit 10+ expects class names to match filenames and does not load these hyphenated test files. CI runs `yarn run upgrade:deps` (`composer update`) without a lockfile. Runtime plugin support remains PHP 7.4+.
+
 Once you are ready to release follow the release process in the wiki: [Release Process](https://github.com/BoldGrid/sprout-invoices/wiki/Release-Process)
 
 ## Sprout Invoice Features

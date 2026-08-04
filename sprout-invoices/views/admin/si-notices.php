@@ -15,9 +15,9 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 	</div>
 <?php endif; ?>
 <?php if ( ! SI_RECOMMENDED_PHP_VERSION ) : ?>
-	<div class="notice notice-error">
+	<div class="notice notice-warning">
 		<p>
-			<?php esc_html_e( 'We noticed your PHP version is lower than 7.4. We recommend updating PHP to at least 7.4 to ensure full compatibility with Sprout Invoices.', 'sprout-invoices' ); ?>
+			<?php esc_html_e( 'We noticed your PHP version is lower than 8.0. We recommend updating PHP to at least 8.0 to ensure full compatibility with Sprout Invoices.', 'sprout-invoices' ); ?>
 		</p>
 	</div>
 <?php endif; ?>

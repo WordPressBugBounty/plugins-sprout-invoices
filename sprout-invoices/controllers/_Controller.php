@@ -1049,9 +1049,10 @@ abstract class SI_Controller extends Sprout_Invoices {
 	 *
 	 * Allows users to change invoice/estimate status via AJAX.
 	 *
-	 * Security model:
-	 * - Authenticated users: Must have edit_post capability for the document
-	 * - Unauthenticated users: Must provide the correct post hash for the specific document
+	 * Security model (via verify_front_end_doc_access):
+	 * - Users with edit_post: Full status management without a hash
+	 * - Guests / logged-in clients: Must provide a valid per-document doc_hash, and are
+	 *   limited to accept/decline on estimates
 	 *
 	 * The post hash acts as a secret token - only those with the full URL can change status.
 	 * This enables client self-service without requiring WordPress accounts.
@@ -1073,40 +1074,23 @@ abstract class SI_Controller extends Sprout_Invoices {
 			self::ajax_fail( 'Forget something?' );
 		}
 
-		$doc_id = sanitize_text_field( wp_unslash( $_REQUEST['id'] ) );
+		$doc_id = absint( wp_unslash( $_REQUEST['id'] ) );
 
-		// Authorization check: Either logged in with permission OR has the secret access hash
-		if ( is_user_logged_in() ) {
-			// Authenticated users need edit permission
-			if ( ! current_user_can( 'edit_post', $doc_id ) ) {
-				self::ajax_fail( 'You do not have permission to change this status.' );
-			}
-		} else {
-			// Unauthenticated users must provide the correct access hash for THIS specific document
-			if ( ! isset( $_REQUEST['doc_hash'] ) ) {
-				self::ajax_fail( 'Missing document access key.' );
-			}
-
-			$provided_hash = sanitize_text_field( wp_unslash( $_REQUEST['doc_hash'] ) );
-
-			// Ensure hash exists (generates on-the-fly if missing)
-			$actual_hash = SI_Upgrades::ensure_doc_hash( $doc_id );
-
-			// Verify the provided hash matches this specific document's hash
-			if ( empty( $actual_hash ) || ! hash_equals( $actual_hash, $provided_hash ) ) {
-				self::ajax_fail( 'Invalid document access key.' );
-			}
+		$access = self::verify_front_end_doc_access( $doc_id );
+		if ( true !== $access ) {
+			self::ajax_fail( $access );
 		}
 
 		$view = '';
 		$new_status = sanitize_text_field( wp_unslash( $_REQUEST['status'] ) );
 		$post_type  = get_post_type( $doc_id );
 
-		// Unauthenticated users are limited to accepting or declining estimates.
-		// No frontend UI exposes any other status action to unauthenticated clients:
-		// all four themes and the embeds bundle only render accept/decline buttons on
-		// estimates, and no invoice templates expose a status-change button at all.
-		if ( ! is_user_logged_in() ) {
+		// Hash-authenticated callers (guests and logged-in clients without edit_post)
+		// are limited to accepting or declining estimates. Full status management
+		// remains for users who can edit_post. No frontend UI exposes other status
+		// actions to clients: themes/embeds only render accept/decline on estimates.
+		$can_fully_manage = is_user_logged_in() && current_user_can( 'edit_post', $doc_id );
+		if ( ! $can_fully_manage ) {
 			if ( SI_Estimate::POST_TYPE !== $post_type || ! in_array( $new_status, array( 'accept', 'decline' ), true ) ) {
 				self::ajax_fail( 'You do not have permission to change this status.' );
 			}
@@ -1165,6 +1149,70 @@ abstract class SI_Controller extends Sprout_Invoices {
 	//////////////
 	// Utility //
 	//////////////
+
+	/**
+	 * Build a front-end document permalink that includes the access hash.
+	 *
+	 * Client Dashboard and summary links must carry `hash` so AJAX handlers that
+	 * call verify_front_end_doc_access() succeed for logged-in clients without edit_post.
+	 *
+	 * @param int   $doc_id Document post ID (invoice or estimate).
+	 * @param array $args   Additional query args (e.g. array( 'dashboard' => 1 )).
+	 * @return string Permalink with hash (and any extra args), or empty string on failure.
+	 */
+	public static function get_doc_permalink( $doc_id, $args = array() ) {
+		$doc_id = absint( $doc_id );
+		$url    = $doc_id ? get_permalink( $doc_id ) : false;
+		if ( ! $url ) {
+			return '';
+		}
+
+		$hash = SI_Upgrades::ensure_doc_hash( $doc_id );
+		if ( ! empty( $hash ) ) {
+			$args['hash'] = $hash;
+		}
+
+		if ( ! empty( $args ) ) {
+			$url = add_query_arg( $args, $url );
+		}
+
+		return $url;
+	}
+
+	/**
+	 * Verify front-end document access for AJAX handlers.
+	 *
+	 * Access is granted if the user can edit_post OR supplies a valid doc_hash.
+	 * Logged-in clients (who only have 'read' capability) can still access their
+	 * documents via a valid hash, enabling partial payments, e-signatures,
+	 * estimate accept/decline, and line-item comments.
+	 *
+	 * @param int $doc_id Document post ID (invoice or estimate).
+	 * @return true|string True on success, translated error message on failure.
+	 */
+	public static function verify_front_end_doc_access( $doc_id ) {
+		$doc_id = absint( $doc_id );
+		if ( ! $doc_id ) {
+			return __( 'Missing document.', 'sprout-invoices' );
+		}
+
+		if ( is_user_logged_in() && current_user_can( 'edit_post', $doc_id ) ) {
+			return true;
+		}
+
+		if ( ! isset( $_REQUEST['doc_hash'] ) ) {
+			return __( 'Missing document access key.', 'sprout-invoices' );
+		}
+
+		$provided_hash = sanitize_text_field( wp_unslash( $_REQUEST['doc_hash'] ) );
+		$actual_hash   = SI_Upgrades::ensure_doc_hash( $doc_id );
+
+		if ( empty( $actual_hash ) || ! hash_equals( $actual_hash, $provided_hash ) ) {
+			return __( 'Invalid document access key.', 'sprout-invoices' );
+		}
+
+		return true;
+	}
 
 	public static function is_si_admin() {
 		$bool = false;
@@ -1390,7 +1438,7 @@ abstract class SI_Controller extends Sprout_Invoices {
 					$files_to_ignore,
 					array(
 						'.editorconfig',
-						'.eslintrc.js',
+						'eslint.config.js',
 						'.gitattributes',
 						'.gitignore',
 						'.phpunit.result.cache',

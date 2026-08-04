@@ -241,6 +241,10 @@ class SI_Internal_Records extends SI_Controller {
 			wp_die( 'Not going to fall for it!' );
 		}
 
+		if ( ! current_user_can( 'edit_sprout_invoices' ) ) {
+			self::ajax_fail( 'User cannot create new posts!' );
+		}
+
 		if ( ! isset( $_REQUEST['record_id'] ) ) {
 			self::ajax_fail( 'No id given!' );
 		}

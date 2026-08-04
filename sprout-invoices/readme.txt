@@ -4,8 +4,8 @@ Donate link: https://sproutinvoices.com/?utm_medium=link&utm_campaign=free&utm_s
 Tags: invoice, invoicing, billing, estimates, payments
 Requires at least: 5.1
 Tested up to: 7.0
-Requires PHP: 7.2.5
-Stable tag: 20.8.15
+Requires PHP: 7.4
+Stable tag: 20.8.16
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -140,6 +140,12 @@ For more detailed look, checkout the full featured [demo](https://sproutinvoices
 Form integrations for everyone!
 
 == Changelog ==
+
+= 20.8.16 =
+* **Fix:** Hardened authentication on Stripe and Square payment webhooks
+* **Fix:** Hardened authorization checks on partial payment and e-signature AJAX actions
+* **Fix:** Require capability checks when updating private notes
+* **Fix:** Hardened Stripe Checkout cancel handling against unauthorized deletion
 
 = 20.8.15 =
 * **Fix:** Fatal error when creating recurring payment plans with Stripe PHP SDK 9.x
