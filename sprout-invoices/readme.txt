@@ -3,9 +3,9 @@ Contributors: boldgrid, joemoto, dancameron, sproutapps, elanasparkle
 Donate link: https://sproutinvoices.com/?utm_medium=link&utm_campaign=free&utm_source=wordpress.org
 Tags: invoice, invoicing, billing, estimates, payments
 Requires at least: 5.1
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 20.8.16
+Stable tag: 20.8.17
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -140,6 +140,10 @@ For more detailed look, checkout the full featured [demo](https://sproutinvoices
 Form integrations for everyone!
 
 == Changelog ==
+
+= 20.8.17 =
+* **Fix:** Keep the Square SDK loadable on PHP 7.4
+* **Update:** WordPress "Tested up to" 7.1
 
 = 20.8.16 =
 * **Fix:** Hardened authentication on Stripe and Square payment webhooks

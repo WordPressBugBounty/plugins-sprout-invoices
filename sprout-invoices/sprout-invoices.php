@@ -3,7 +3,7 @@
  * Plugin Name: Sprout Invoices - Client Invoicing & Estimates
  * Plugin URI: https://sproutinvoices.com
  * Description: Easily accept estimates, create invoices, and receive invoice payments on your WordPress site. Learn more at <a href="https://sproutinvoices.com">sproutinvoices.com</a>.
- * Version: 20.8.16
+ * Version: 20.8.17
  * Requires at least: 5.1
  * Requires PHP: 7.4
  * Author: BoldGrid

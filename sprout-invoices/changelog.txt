@@ -1,3 +1,272 @@
+= 20.8.17 =
+* **Fix:** Keep the Square SDK loadable on PHP 7.4
+* **Update:** WordPress "Tested up to" 7.1
+
+= 20.8.16 =
+* **Fix:** Hardened authentication on Stripe and Square payment webhooks
+* **Fix:** Hardened authorization checks on partial payment and e-signature AJAX actions
+* **Fix:** Require capability checks when updating private notes
+* **Fix:** Hardened Stripe Checkout cancel handling against unauthorized deletion
+
+= 20.8.15 =
+* **Fix:** Fatal error when creating recurring payment plans with Stripe PHP SDK 9.x
+* **Fix:** Undefined variable warnings in default and basic invoice templates
+
+= 20.8.14 =
+* **Fix:** Hardened permission checks on notification sending to ensure actions are limited to authorized users
+* **Fix:** General security and stability improvements
+
+= 20.8.13 =
+* **Fix:** Partial payment and deposits calculation error
+* **Fix:** WordPress plugin review compliance — nonce verification, input sanitization, direct file access guards, code quality, and internationalization improvements
+
+= 20.8.12 =
+* **Fix:** Updated plugin display name for WordPress.org compliance
+* **Fix:** Reviews link now points to full reviews page instead of filtered 5-star view
+* **Fix:** Replaced deprecated `null` parameter in `get_delete_post_link()` calls
+* **Fix:** Nonce values properly sanitized with `wp_unslash()` and `sanitize_text_field()` before verification
+* **Fix:** Replaced `esc_url_raw()` with `esc_url()` in all HTML output contexts
+* **Fix:** Sanitized `$_REQUEST` values passed to `add_query_arg()`
+* **Fix:** Resolved 131+ internationalization violations — dynamic values no longer passed directly to gettext functions
+* **Fix:** Update checker excluded from free build via `filter-free`
+
+= 20.8.11 =
+* **Security Fix:** Fixed vulnerability with document hash being exposed in rendered HTML for invoices and estimates
+
+= 20.8.10 =
+* **Security Fix:** Patched local file inclusion vulnerability
+* **Security Fix:** Authorization bypass vulnerability in client self-service features
+
+= 20.8.9 =
+* **Fix:** Changed to json for updating cc cache
+* **Fix:** Added capability checks
+* **Fix:** Partial payment fix
+
+= 20.8.7 =
+* **Fix:** Translation Error for Sprout Invoices [#1135](https://github.com/BoldGrid/sprout-invoices/issues/1135)
+
+= 20.8.6 =
+* **Fix:** Square folder missing [#1132](https://github.com/BoldGrid/sprout-invoices/issues/1132)
+* **Fix:** Change wording for "Not going to fall for it!" [#1130](https://github.com/BoldGrid/sprout-invoices/issues/1130)
+
+= 20.8.5 =
+* **Fix:** Fixed issue with invoice/estimate status not updating correctly.
+
+= 20.8.4 =
+* **Fix:** Fixed issue with Stripe Checkout webhook logic
+
+= 20.8.3 =
+* **Fix:** Fixed compatibility issue with WooCommerce PayPal Addon
+
+= 20.8.2 =
+* **Fix:** Fixed user permissions for invoice/estimate status.
+
+= 20.8.1 =
+* **Fix:** Fixed issue with invoice/estimate post id hash not working.
+
+= 20.8.0 =
+* **Removed:** Stripe Payment Processor, moved all user to use Stripe Checkout
+* **Removed:** Deprecated Paypal Payment Processor, moved users to the new PayPal processor in plugin
+* **Fix:** Fixed issue with Stripe Checkout and Negative numbers being added to line items
+* **Update:** Added logic so that Recurring and Subscription addons cannot be enabled at the same time
+* **Update:** Redesigned some of the addon grid to help the user experience
+
+= 20.7.3 =
+* **Fix:** Missing Data in Authorize.Net transaction data and data pasted to authorize
+* **Fix:** Authorize.net Fatal Error when displaying transaction errors
+* **Fix:** Fixed Expense Tracking Add-on, client not coming over to invoice or estimate
+* **Fix:** WooCommerce Invoice URL Hash isn't working
+* **Fix:** Issue with multiple emails with failed payments in PayPal
+* **Fix:** Estimate Acceptance Actions duration not working with Recurring Invoices addon
+* **Fix:** Estimate Acceptance Actions not working with Recurring Invoices addon
+* **Fix:** Square not capturing deposits
+* **Fix:** Square Currency Code is Case sensitivity
+* **Update:** Admin Payment not showing User who submitted it
+* **Fix:** Fixed issue with settings not saving on some litespeed servers ( 403 nonce errors ).
+* **Fix:** Fixed issue with invoice/estimate hash not working in other languages.
+* **Fix:** Fixed issue with save button disappearing when scrolling down.
+* **Update:** Added Get Pro button to settings page header.
+* **Update:** Added template section to the system health check.
+
+= 20.7.2 =
+* **Fix:** Fix: issues with saving settings due to nonce 403.
+
+= 20.7.1 =
+* **Fix:** Paypal Service Fee not adding properly
+* **Fix:** PayPal cancel function payment status changed to void
+* **Fix:** Recurring Invoices and duplicating invoices not working with Advanced ID Generation addon-on
+* **Fix:** WooCommerce session not being cleared after order is created
+* **Fix:** Voiding Payment causing 500 fatal error.
+
+= 20.7.0 =
+* **Feature:** Getting Started Wizard.
+* **Fix:** Fixed report page throwing PHP warnings filling up logs.
+* **Fix:** Update CCS classes to not conflict with "Copy & Delete Posts" plugin.
+* **Update:** Enabled WYSIWYG editor for notification templates.
+* **Fix:** Fixed issues with stripe webhook sending to many 400 requests in certain circumstances
+
+= 20.6.1 =
+* **Fix:** Set as Invoice status as Temp with Estimate Acceptance Addon not saving
+* **Fix:** Post titles not being correct from acceptance/duplication
+* **Fix:** Service fee not being added in PayPal
+* **Fix:** Added more detailed error messages for Authorize.net
+* **Fix:** $ variable not being initialized in signature addon in some cases
+* **Update:** Add loader icon to Stripe Checkout button when clicked
+* **Update:** Updated Sprout Invoice's Customizer panel to be split into sections for invoice and estimate respectively.
+* **Update:** Added functionality in Customizer to change Payment Processor button colors.
+* **Update:** Updated CSS and HTML so that all payment processor button are uniform.
+* **Fix:** Fixed issue with estimate save on PHP7 or lower.
+
+= 20.6.0 =
+* **Fix:** PayPal Processor deprecation issues. Created new PayPal Processor and Deprecated the other two
+* **Fix:** Fixed issue with toggle not working as intended
+* **Fix:** Estimate Title not duplicating to invoice from estimate acceptance
+* **Fix:** Estimate Title not duplicating when duplicating Estimates
+* **Fix:** Stripe Service fee not being calculated correctly when redirected to checkout
+* **Fix:** Fixed Estimate Acceptance hook for creating temp status invoice.
+* **Update:** Auto disabling Stripe and enables Stripe Checkout.
+
+= 20.5.5 =
+* **Fix:** Removed cached API key for PDF Crowd.
+* **Fix:** Updated 'Tested up to' version.
+* **Fix:** Fixed Square Webhook being set when not enabled.
+* **Added:** Filter to disable pending email on invoices.
+
+= 20.5.4 =
+* **Fix:** Fixed notification icons in Invoice/Estimate table not working.
+* **Fix:** Fixed issue with some payment processors not showing payment button before required signature is complete.
+* **Fix:** Fixed issue with Admin notifications not sending with Stripe Checkout Processor.
+* **Fix:** Fixed issue with AuthorizeNet transaction data in payments table.
+* **Fix:** Fixed issue with nonce verification in system health check.
+* **Update:** Update estimate acceptance to allow for Create Invoice in temp status.
+* **Update:** Updated Square UP to use Square Checkout page instead of embedded form.
+* **Update:** Updated Square UP SDK to 30.0.0.
+* **Added:** Added Stripe Removal Notice for December 2023
+* **Fix:** Fixed Sprout Client icon in Wordpress User table.s
+* **Fix:** Fixed Google Analytics notice option not setting.
+
+= 20.5.3 =
+* **Fix:** Fixed estimate status updates causing fatal error.
+* **Fix:** Fixed issue with estimate acceptance causing fatal error.
+* **Fix:** Fixed issue with shipping total doubling in the calculated total.
+* **Fix:** Fixed issue with client save causing fatal error with payment terms addon.
+
+= 20.5.2 =
+* **Fix:** Fixed PHP deprecation issues with invoice, estimate, and report models.
+* **Fix:** Fixed PHP deprecation issues with plugin updater class.
+* **Fix:** Currency Code setting not working with Stripe Checkout.
+* **Fix:** Fixed issue with Canadian Tax addon not rounding totals correctly.
+* **Fix:** Fixed issue with Authorize.net Payment Processor showing paid when payment is declined.
+* **Fix:** Fixed issue with fees not showing correctly on invoices.
+* **Fix:** Fixed issue with Payment Terms emails not sending.
+* **Fix:** Fixed issue where Authorize.net declined payments were still creating a payment entry and invoices were being marked as paid.
+* **Update:** Updated Recurring Invoices email template to be enabled by default.
+* **Feature:** Added hook to allow for customizing the description for Stripe Checkout payments.
+* **Fix:** Fixed issue when Invoices/Estimate emails were not being sent when saved as Pending Payments.
+* **Fix:** Fixed issue were notification cache was not being cleared when resetting sprout.
+* **Fix:** Fixed issue where duplicating invoices older than 30 days would have the wrong date.
+
+= 20.5.1 =
+* **Fix:** Fixes issue with logic for minimum payments with WooCommerce Addon.
+* **Update:** Moved maybe_partial_payment() to Partial Payments class.
+* **Update:** Moved maybe_partial_payment() to Partial Payments class as it is not needed or used in free version of plugin.
+
+= 20.5.0 =
+* **Fix:** Fixed issue with WooCommerce addon update_order_details() running outside of invoice checkout redirect.
+* **Fix:** Fixed issue with WooCommerce addon deposits and partial payments not working properly.
+* **Fix:** Fixed issue with WooCommerce addon adding two payment entries for deposits and partial payments.
+* **Fix:** Fixed issue with BCC hook adding BCC in notification emails.
+* **Feature:** Add Google Analytics.
+* **Feature:** Add Google Analytics and notice for opt-in.
+
+= 20.4.1 =
+* **Fix:** Fixed issue with WooCommerce addon maybe_change_total() running outside of invoice checkout redirect.
+* **Fix:** Fixed issue with WooCommerce addon totals not calculating qty correctly.
+
+= 20.4 =
+* **Fix:** Default Payment terms delete button showing the wrong cursor option.
+* **Fix:** Payment being marked as complete when cancelled through Stripe Checkout.
+* **Fix:** WooCommerce Payment redirect not working with the WooCommerce cart.
+* **Fix:** Partial Payments / Deposits not working with WooCommerce Payment redirect.
+* **Removed:** Sprout Invoices silent invoice creation. This is breaking WooCommerce payment options.
+* **Deprecated:** Sprout Invoices invoice product creation for WooCommerce cart.
+* **Fix:** Get amount always returns a float now.
+* **Fix:** Stripe Processing Fee not being added to Stripe Checkout.
+* **Fix:** Zapier Zaps disabling after being enabled in the Zapier Dashboard.
+* **Fix:** Time Tracking modal in WP admin menu not allowing you to log the times.
+* **Fix:** Tax addons not being added to line items in Stripe Checkout.
+* **Fix:** Pay Now button still showing Pay Deposit after has been paid.
+* **Fix:** WooCommerce totals not matching Sprout Invoice totals.
+* **Fix:** Added BCC hook to notification emails.
+* **Fix:** Added URL param for http_request_timeout hook to be compatible with plugins requiring it i.e. Jetpack
+* **Fix:** Vue Enqueue issues with WooCommerce Addon.
+* **Update:** WP coding standard updates
+
+= 20.3 =
+* **Update:** WooCommerce dropdown to include product description.
+* **Update:** Stripe SDK to 9.9.0.
+* **Fix:** WooCommerce dropdown to include all product category if it is not empty.
+* **Fix:** BrainTree Payment Processor.
+* **Fix:** Authorize.net Payment Processor.
+* **Fix:** Payment Express Payment Processor.
+* **Fix:** 3D secure not working working with Stripe.
+* **Fix:** Estimate dates not displaying properly in Estimates Dashboard.
+* **Fix:** Recurring Invoices yearly dates.
+* **Added:** Added Eslint for development environments.
+* **Update:** Added new Logo.
+* **Update:** Created mobile friendly basic and default themes.
+
+= 20.2 =
+* **Fix:** Italics not showing in notes.
+* **Fix:** Underline tag being escaped on invoice and estimates.
+* **Fix:** Strike-through tag being escaped on invoice and estimates.
+* **Fix:** Discounts not applying properly.
+* **Fix:** WooCommerce customer details not passing to invoices and clients in sprout invoices.
+* **Fix:** Accessibility issues.
+* **Fix:** WordPress Customizer error on certain themes.
+* **Fix:** Free and Pro license display issue.
+* **Fix:** History not displaying for signatures and viewed status
+* **Fix:** Invoice and Estimate PDFs not displaying the correct currency symbol.
+* **Update:** French Translation updates.
+* **Update:** EU Tax update to include decimals.
+* **Update:** Disable Payment terms email per client.
+* **Update:** Disable Client Summary per client.
+* **Update:** 8.1 Updates.
+* **Fix:** WooCommerce Product dropdown for line times.
+* **Fix:** WooCommerce Variable Product text for line items.
+* **Fix:** WooCommerce Product line items delete button.
+* **Fix:** BACs fixed to just use the Pay Now button.
+* **Fix:** Stripe Checkout Admin Payments.
+* **Fix:** Tax 1 and 2 not being added to Stripe Checkout.
+* **Update:** Stripe Price API updates.
+
+= 20.1 =
+* **Fix:** removed progress tracker.
+* **Fix:** Account credits not being applied on invoice creation.
+* **Fix:** Taxes and Discounts not showing in Stripe Checkout.
+* **Fix:** Alert for Reset Notifications Templates.
+* **Fix:** Added address capture in Stripe Checkout.
+* **Fix:** Updated JQuery.
+* **Fix:** SEPA debit default to false in stripe.
+* **Fix:** Dynamic Text dates not calculated correctly.
+* **Fix:** Stripe Key authentication on settings save.
+* **Improvement:** Added second address line to client info.
+* **Improvement:** Cash Feature for customer collecting cash.
+* **Improvement:** Updated country codes to allow for both UK and GB.
+* **Improvement:** PDFCrowd API version.
+* **Improvement:** Added ability to hook into the notification for custom notifications.
+* **Improvement:** Slate theme CSS and HTML updates.
+* **Improvement:** Auto invoices creating in WooCommerce addon
+* **Improvement:** Client Dashboard option to show all invoices/estimates.
+* **Improvement:** Added notice to update PHP version if 7.2 or lower.
+* **Improvement:** Added ability to use custom hook to set client info defaults.
+
+= 20.0 =
+* **Improvement:** Redesigned the settings page.
+* **Improvement:** Updated Addon Settings to be accessible from Addons page.
+* **Improvement:** Removed settings button from Addons with no settings.
+* **Fix:** Updated code to WordPress coding standards.
+
 = 19.9.11 =
 * **Fix:** Toggle Fatal Error
 * **Fix:** Recurring invoices not savings and producing invoices
@@ -17,31 +286,25 @@
 * Bug Fix: Note section doesn't take HTML
 
 = 19.9.9.1 =
-
 * New: Filter to not show messages for payment terms.
 * Update: Mobile styling changes for Basic theme
 * Fix: Payment Terms interest added for invoices with a zero balance.
 
 = 19.9 =
-
 * New: Stripe Checkout Integration for Biz+ licenses
 * Update: Additional translations
 
 = 19.8.5 =
-
 * Fix: Payment terms and auto billing with Sprout Billings.
 
 = 19.8.4 =
-
 * Fix: Basic theme issue with payment options
 
 = 19.8.3 =
-
 * Fix: TOS Agreement add-on incompatibility with e-signature add-on.
 * Update: Handle Stripe user tokens different.
 
 = 19.8.2 =
-
 * New: New filter for getting visitor ip, 'si_get_user_ip'.
 * Fix: Notification fixes for new interest email.
 * Fix: Adding interest fix.
@@ -51,9 +314,7 @@
 * Fix: Zapier payments info.
 * Fix: Square payment processor API keys incorrectly used.
 
-
 = 19.8 =
-
 * NEW: TOS Add-on
 * NEW: Processor Limits
 * NEW: Recurring Payment Terms
@@ -65,7 +326,6 @@
 * Update: Stripe updated for payment source management
 
 = 19.7.5 =
-
 * NEW: Ability to reset payment generation dates for subscription based invoices
 * Update: PDF Filter si_pdf_invoice_file_name passes doc_id
 * NEW: Filter si_do_attempt_status_update_on_get_balance
@@ -75,11 +335,9 @@
 * Update: Adding Stripe partner id
 
 = 19.7.2 =
-
 * Fix: Metabox saved when other posts are saved, i.e. WooCommerce orders.
 
 = 19.7.1 =
-
 * Update: Zapier Updates
 * Fix: Partial Payments setting invoices as paid under specific circumstances.
 * Fix: Notifications sent without complete information
@@ -87,7 +345,6 @@
 * New: Project times filter - si_project_get_associated_times
 
 = 19.7 =
-
 * Update: Zapier authentication simplification
 * New: [admin_note] shortcode added to more notifications
 * Fix: Due date changed after notification sent from invoices admin
@@ -95,20 +352,17 @@
 * Fix: PDF template color issues
 
 = 19.6.1 =
-
 * Update: New Zapier Integrations & Updates
 * Fix: Mobile view for admin tables
 * New: New Hook for Importing
 
 = 19.6 =
-
 * Fix: WooCommerce Cart Issue
 * New: Square Payment Notes
 * New Filter: "si_recurring_invoice_default_status" set the default status for recurring invoices
 * Update: Client wont need to sign invoice after signing the approved estimate
 
 = 19.5.9 =
-
 * Fix: WooCommerce Bug with "Cart is Empty"
 * New: Filter for WooCommerce to allow for products to be added back to the cart for payment from an invoice payment - "si_woo_payment_single_product_for_payment"
 * New: Invoice reciept delay with "si_create_invoice_receipts_upto"
@@ -120,7 +374,6 @@
 * Update: PDF Attachment
 
 = 19.5.8.1 =
-
 * Update: Scheduled posts in Zapier
 * Update: Change invoice status when sent before PDF is generated
 * Update: Select2 Update
@@ -128,11 +381,9 @@
 * Fix: Generating notifications for recurring invoices error under specific conditions
 
 = 19.5.7 =
-
 * Fix: Stripe filters caused error for plans
 
 = 19.5.6 =
-
 * Fix: PDF Template overrides were not working correctly for PDF Service
 * Fix: CSS Updates for report pages
 * Fix: Subscription payment reciepts not working after invoice was edited after payment.
@@ -142,7 +393,6 @@
 * Update: Optimizations
 
 = 19.5.5 =
-
 * NEW: Show the notification descriptions on the main admin page
 * NEW: Authorize.net line items
 * NEW: Points of Contact Add-on updated to allow manual sends
@@ -150,43 +400,35 @@
 * Fix: Advanced ID Generation for recurring/cloned invoices
 
 = 19.5.4 =
-
 * Fix: Recurring notifications not sending to all associated client users
 
 = 19.5.3 =
-
 * Fix: CSS Issue on payment page
 * Fix: Conditional bug that prevented the credit card form to show
 
 = 19.5.2 =
-
 * Fix: PHP Notices for older installs upgrading
 * Fix: A few Basic/Freelancer add-ons removed after a review that they shouldn't have been included
 * Fix: Service fee added after a fee was already added
 * Fix: Partial payments updated for better payment workflow, and styling
 
 = 19.5.1 =
-
 * Fix: Address not saving for some client records
 * Fix: Mercadopago sandbox option, and new filter for button
 
-
 = 19.5 =
-
 * NEW: Basic Theme
 * NEW: Phone and Fax
 * Update: CSS for Basic and Default themes
 * NEW: Shipping add-on support for new themes
 
 = 19.1.1 =
-
 * Fix: Settings not saved on sites with differing HOME/SITE urls.
 * Update: Partial Payments and Deposit option logic
 * Fix: Pointer conflicts
 * NEW: si_default_due_in_days includes invoice object as param
 
 = 19.1 =
-
 * New: Transition to new domain
 * New: New branding for Sprout Invoices
 * New: Getting started is changed up for new users
@@ -194,18 +436,15 @@
 * Fix: Login compat with default theme
 
 = 19.0.2 =
-
 * Fix: Developer logs incorrectly enabled under some circumstances.
 
 = 19.0.1 =
-
 * New: Start of transition to new domain
 * Fix: Admin views support smaller screens
 * New: Login view override support
 * Fix: Estimate ranges typo
 
 = 19.0 =
-
 * New: A lot of change to how Partial Payments and Deposits works. They're now an add-on that can be enabled/disabled.
 * New: Estimate Ranges Add-on
 * New: Manual recurring/payment-receipts creation
@@ -214,7 +453,6 @@
 * Fix: Payment Term notification status
 
 = 18.1.7 =
-
 * Fix: WooCommerce correctly updating invoice after order status changed.
 * Update: Service line item type has no qty, and manage admin prevents its use.
 * Fix: Service fee not automatically added if single processor is active
@@ -222,37 +460,31 @@
 * Update: Updated messaging for free users
 
 = 18.1.6 =
-
 * Fix/Refactor: Line item commenting
 * New: Filter to bypass service fee
 * New: Filter for WooCommerce product import
 
 = 18.1.5 =
-
 * Fix: Notification admin optimization
 * Fix: Notification content not resetting
 * Fix: Notification content reset with HTML
 * Fix: Add-on require logic causing errors on some setups
 
 = 18.1.4 =
-
 * Temp: Temporarily removing comments add-on
 * Fix: PDF CSS not showing terms/info titles
 * Fix: GST not calculated on reports correctly
 * Fix: Title of Invoice/Estimate not shown
 
 = 18.1.3 =
-
 * Fix: Improved PHP 7.1 Support
 * Fix: Stripe error section shown when there are no errors
 * Fix: Stripe settings not saving correctly
 
 = 18.1.1 =
-
 * Fix: Payment receipts for subscription payments not completing under certain circumstances.
 
 = 18.1 =
-
 * Update: Stripe SDK Updated
 * Fix: Account Credit Types
 * Update: Payment options template is using the invoice balance
@@ -260,38 +492,31 @@
 * Fix: Update old admin urls
 
 = 18.0.9 =
-
 * Update: Double check some meta for recurring and subscription payment invoice duplication, in case the WP_Query meta query is being hijacked.
 
 = 18.0.8 =
-
 * Update: Notification previews respect which format is selected
 
 = 18.0.7 =
-
 * Update: Test notifications brought back
 * Fixed: WooCommerce Add-on description updated
 
 = 18.0.6 =
-
 * NEW: New filter for invoice total - si_use_total_for_calculated_total
 * NEW: Add-ons settings no longer blank
 * Fixed: License key being reset after certain conditions
 * Fixed: Account Credits add-on unavailable
 
 = 18.0.5 =
-
 * Fixed: CC Settings not saving
 
 = 18.0.4 =
-
 * Fixed: Some js admin callbacks not working under some setups
 * Fixed: More Responize Admin
 * Fixed: Deprecated PHP Support
 * Fixed: Typos
 
 = 18.0 =
-
 * New: Completely New Admin
 * New: Integrated Support
 * New: Manual Notifications
@@ -302,32 +527,26 @@
 More information found [here](https://sproutinvoices.com/news/summer-update-brings-all-new-sprout-invoices-admin/).
 
 = 17.2.1 =
-
 * Update/Fix: Reset totals after invoices are cloned for subscriptions and recurring. This should address when servers cache the balance and it's not reset before the invoice is viewed.
 
 = 17.2 =
-
 * Update/New/Fix: New WYSIWYG Editor
 * Update: Sprout Billings styling updates
 * New: Duplication link
 
 = 17.1.0.1 =
-
 * Fix: Stripe user defaulting to admin under specific circumstances
 * Update: Better PDF Formatting and additional filters
 
 = 17.0.10 =
-
 * Fix: elements collapsing instead of auto flowing
 * Update: Allow for estimate totals cache to be reset
 
 = 17.0.9 =
-
 * Update: All Pro versions of Sprout Invoices include the advanced numbering add-on.
 * Fix: Stored PDF for notifications may not be stored with the correct file names.
 
 = 17.0.7 =
-
 * Fix: Prevent non existent users from being attributed to possible payments
 * Fix: CSS Updates
 * NEW: Notification shortcode for first_name
@@ -336,24 +555,19 @@ More information found [here](https://sproutinvoices.com/news/summer-update-brin
 * Fix: Estimate acceptance actions bug fix for invoice creation
 * Update: GMT for all history
 
-
 = 17.0.6 =
-
 * Update: Improved error messaging for PDF Service.
 
 = 17.0.5 =
-
 * Fix: PDF Service caching issue
 * Update: Reporting totals and column adjustments
 
 = 17.0.3 =
-
 * Fix/Update: Password protection compat for new PDF Service
 * Fix/Update: Ability to view PDF after invoice is paid (default theme)
 * Fix: Add-on caching issue
 
 = 17.0 =
-
 * NEW: PDF Service for better PDF creation!
 * Fix/Update: Status for records being updated irregularly
 * Update: Stripe API fixes
@@ -362,20 +576,16 @@ More information found [here](https://sproutinvoices.com/news/summer-update-brin
 * Update: Minor updates and bug fixes
 
 = 16.8.1 =
-
 * Update: New Stripe API Changes
 
 = 16.8 =
-
 * Update: Remove all form integrations add-ons since they're now in the .org repo for free
 
 = 16.7.6 =
-
 * Update: Freemius updated for free versions
 * Fix: Removed private bundled add-on
 
 = 16.7.5 =
-
 * Update: PO updates
 * Update: Remove Ready Status add-on because of incompatibilities
 * Fix: Recurring (more) fail checks
@@ -384,12 +594,10 @@ More information found [here](https://sproutinvoices.com/news/summer-update-brin
 * Fix: Fees should not be doubled up
 
 = 16.7 =
-
 * NEW: More options to change the colors for the default theme in the customizer
 * Update: Adjustments for better PDF add-on support
 
 = 16.6.0.1 =
-
 * Update: Reverting GMT offset changes from last release. Needs more testing.
 * Update: Offsite payment processor update
 * New: Filtering for checkboxes
@@ -399,34 +607,27 @@ More information found [here](https://sproutinvoices.com/news/summer-update-brin
 * Update: WooCommerce compatibility update
 
 = 16.5.7 =
-
 * Update: Point of Contact add-on will no longer force itself if unused.
 * Update: Use GMT offset everywhere
 * Fix: Signature add-on errors for default theme
 
 = 16.5.6 =
-
 * Fix: Some payment processsors were executing filters/actions without being active.
 
 = 16.5.5 =
-
 * Fix: Extraneous callback for updates on every load.
 * Fix: NMI bundle fix
 
 = 16.5.3 =
-
 * Fix: Pushing an update because business license holders were not receiving the proper bundle
 
 = 16.5.2 =
-
 * Fix: Latest version of WordPress handles taxonomy queries differently which may have resulted in some records being purged.
 
 = 16.5 =
-
 New pricing plans for all pro licenses
 
 = 16.0.4 =
-
 * Fix: date warnings displayed above recurring payments section
 * Updated: Adjust recurring invoice editing, so the start date is updated after every change.
 * Updated: Prevent future invoices from being generated.
@@ -436,7 +637,6 @@ New pricing plans for all pro licenses
 * Fix: Localization issues for estimates template
 
 = 16.0.4 =
-
 * Updated: New action for Default theme to show more info
 * Fix: Subscription payment method using wrong object param
 * Fix: Prevent error for non WP object
@@ -444,7 +644,6 @@ New pricing plans for all pro licenses
 * Updated: Woo integration updates for cached product
 
 = 16.0.1 =
-
 * New: Zapier Support
 * New: Recurring invoices re-write
 * New: ApproveMe integration support for Default Theme
@@ -459,52 +658,42 @@ New pricing plans for all pro licenses
 * Fix: WooCommerce Checkout w/ Shipping
 
 = 15.2 =
-
 * Fix: Free version deactivation bug
 * New: Spanish Translation
 * Updated: Templates have body classes
 
 = 15.1.8 =
-
 * Fix: Payment term notifications not being sent.
 
 = 15.1.7 =
-
 * Fix: Payment processor object not returned, causing CRON to fail under certain circumstances.
 
 = 15.1.6 =
-
 * Fix: Localization
 
 = 15.1.5 =
-
 * Fix: Recurring Invoices dups created with pre-start date save.
 * Fix: CA Tax error
 
 = 15.1.4 =
-
 * Fix: Notification shortcodes bug
 * Fix: Line item template overrides
 
 = 15.1.3 =
-
 * Fix: Jetpack compatibility issue
 * Fix: Avada Theme compat
 
 = 15.1.2 =
-
 * Fix: Estimate template function typo
 * Fix: Service Fee add-on updated
 * Update: Select2 Upgraded
 
 = 15.1 =
-
 * NEW: Sprout Billings support
 * Fix: Auto select the first payment method if only one exists
 * Fix: Multiple theme selections
 
 = 15.0 =
-
 * NEW: New Default Theme!!!!
 * NEW: Updates to support the new Service Fee add-on.
 * NEW: Fees are added to reports.
@@ -514,76 +703,61 @@ New pricing plans for all pro licenses
 * FIX: Bulk edit causing lost client association.
 
 = 14.0.5 =
-
 * FIX: Firefox support
 * UPDATE: EU Region name update
 * FIX: HTML Notifications add-on conflict with Test Notifications
 * FEATURE: CA GST Report Support
 
 = 14.0.4 =
-
 * FIX: Payment Term Notifications Disabled
 * FIX: WC Compat Check
 
 = 14.0.3 =
-
 * FIX: Shipping fees not loaded
 * NEW: Delay loading hook, si_delayed_load
 
 = 14.0.2 =
-
 * COMPAT: WPSEO compatibility
 
 = 14.0.1 =
-
 * FIX: Reset totals on submission
 * FIX: WooCommerce integration fixes for VAT
 * FIX: Payment obejct sent and interpreted as array
 
 = 14.0 =
-
 * NEW FEATURE: Payment Terms
 * FIX: Minor bug fixes all around
 
 = 13.0.4 =
-
 * FIX: WooCommerce Payments
 
 = 13.0.3 =
-
 * UPDATE: WooCommerce Tools Update
 * UPDATE: Ninja Forms THREES support
 
 = 13.0.1 =
-
 * FIX: Customizer not saving colors correctly
 * UPDATE: IP address method global use
 
 = 13.0.0 =
-
 * NEW: Notification status indicators
 * NEW: Digital signature support
 * FIX: Multiple bug fixes, including the escaping of notes
 
 = 12.1.1 =
-
 * FIX: Saving error for new PO payment processor
 * NEW: New method for is_processor_enabled.
 
 = 12.1 =
-
 * NEW: New PO processor
 
 = 12.0.2 =
-
 * FIX: Select2 Compat issues with themes and other plugins
 
 = 12.0.1 =
-
 * Commpatibility: ACF Pro
 
 = 12 =
-
 * New: Notification testing!
 * New: Ability to delete all SI records, great for a bad first import.
 * New: Project expense overview.
@@ -596,7 +770,6 @@ New pricing plans for all pro licenses
 * New: New notification filters.
 
 = 11 =
-
 * NEW: Compatibility with expense tracking add-on
 * NEW: Create new invoices for subscriptions payments.
 * NEW: Fees API!
@@ -610,15 +783,12 @@ New pricing plans for all pro licenses
 * Fix: Invoice status updates for void/complete
 
 = 10.3.2 =
-
 * Fix: PayPal issues with advanced tax add-ons
 
 = 10.3.1 =
-
 * Fix: Overdue invoices within widgets
 
 = 10.3 =
-
 * NEW: Add WooCommerce product import compatibility
 * Fix: Line item fix
 * Fix: Payment reminder refactored
@@ -626,34 +796,28 @@ New pricing plans for all pro licenses
 * Fix: PHP warning
 
 = 10.2 =
-
 * Fix: Dont' allow non editors to log credits.
 
 = 10.1 =
-
 * New: Project Panorama Integration
 * Fix: WooCommerce Integration Update Mechanism fix
 * Fix: UI for Recurring
 * Update: Translations
 
 = 10.0.8 =
-
 * Fix: Selection of of users from client admin
 * Change: Free updates
 
 = 10.0.7 =
-
 * Change: Option to help improve sprout invoices.
 * Fix: Fields error when no payment options are available
 * Fix: Account credits doesn't have an admin bar option
 * Fix: Slow loading servers need feedback on AJAX requests
 
 = 10.0.6 =
-
 * Fix: Select2 Compatibility issues
 
 = 10.0.5 =
-
 * Fix: PayPal transaction error when parent line items are used.
 * Fix: Line item totals not formatted
 * Fix: Select2 should not be loaded everywhere
@@ -661,7 +825,6 @@ New pricing plans for all pro licenses
 * Fix: Client payment processor limits fix
 
 = 10.0 =
-
 * New: Account credits and payment credits
 * New: Improved payment reminder (new reminder email)
 * New: Estimate approval reminder (new reminder email)
@@ -683,7 +846,6 @@ New pricing plans for all pro licenses
 * Fix: Misc. minor bug fixes
 
 = 9.4 =
-
 * Fix: Reporting fixes
 * Fix: Email address truncated on long top level domains.
 * New: Notifications action.
@@ -695,48 +857,39 @@ Security updates:
 * Security issue with unfinished (unreleased) JSON API.
 
 = 9.3 =
-
 * UPDATE: Default Invoice/Estimate Subject to ID
 * UPDATE: Localization update, including French translation
 
 = 9.2.2 =
-
 * UPDATE: Added more line item totals within the admin
 * FIX: Cloning line items would result in descriptions that couldn't be saved.
 * FIX: Extreme edge case calculation issues
 
 = 9.2.1 =
-
 * UPDATE: Theme compatibility improvements, e.g select2
 * FIX: discount calculation improvements
 
 = 9.2.0.1 =
-
 * FIX: Estimates issue
 
 = 9.2 =
-
 * FIX: Parent line item totals
 * OPT: Slight optimization for estimates and invoices
 
 = 9.1.1 =
-
 * FIX: PayPal cart total errors with invoices that utilize discounts, deposits, and taxes with fractional totals.
 
 = 9.1 =
-
 * NEW: Notes and Terms notification shortcodes
 * FIX: Zapier routing issues
 * FIX: Pass estimates notes to newly created invoice from estimate
 * FIX: Time tracking load order fix
 
 = 9.0.3 =
-
 * FIX: AJAX callback errors, i.e. client creation.
 * FIX: Localization changes causing errors on free version.
 
 = 9.0 =
-
 * NEW: Estimate and Invoice shortcodes
 * NEW: Improved reporting and filtering
 * NEW: Dashboard report caches are deleted on record updates
@@ -751,14 +904,12 @@ Security updates:
 * NEW: Associated client records are removed when a client is deleted.
 
 = 8.7.1 =
-
 * NEW: Filter for sending invoices to prevent filters. i.e. fix for PDF add-on. #165
 * FIX: Estimate dashboard not showing current records. #167
 * FIX: Fix for line item comments not showing highlighted icon when a comment is available. #166
 * FIX: Default Terms/Notes transposed in some cases.
 
 = 8.7 =
-
 * NEW: Filter to suppress notifications on an individual basis. #163
 * FIX: Default Terms/Notes for All Estimate/Invoices bug priority. #162
 * UPDATE: Submission Hooks & Line Item Type priority. #161
@@ -766,7 +917,6 @@ Security updates:
 * FIX: Estimate Submission Info Missing. #158
 
 = 8.6 =
-
 * NEW: Sprout Billings Support
 * NEW: Recurring dashboard updates
 * NEW: Form field wrapper classes
@@ -774,20 +924,17 @@ Security updates:
 * OPT: Prevent looping of meta_box saves
 
 = 8.5 =
-
 * NEW: Payment options templating
 * Fix: Caldera Forms compatibility
 * Update: Improved Sprout Clients compatibility with Client Dashboards
 
 = 8.4 =
-
 * NEW: Reduce overall size.
 * Fix: CSV Importing of already imported client users
 * Fix: Invoice template showing "Pending Payment" when balance is zero
 * Fix: Ultimate Member compatibility
 
 = 8.3.1 =
-
 * New: Save info meta action hook.
 * New: New add-on compatibility hooks.
 * New: New add-on hook to disable invoice creation.
@@ -795,40 +942,33 @@ Security updates:
 * FIX: Select2 compatibility issues with some plugins.
 
 = 8.2 =
-
 * New: Bundled add-on for admin filtering
 * New: Pricing options is a hook for invoice templates
 * New: Filter for attachments
 
 = 8.1.1 =
-
 * Fix: PHP Notice suppression on old line items.
 
 = 8.1 =
-
 * NEW: MercadoPago Support (payment button link callback)
 * NEW: Line item total sorting
 * Fix: Misc. Error fixes
 
 = 8.0.5 =
-
 * Fix: Escaped Addresses
 * Fix: Redactor fix from 8.0.4
 * Fix: WooCommerce compatibility with their outdated version of select2
 
 = 8.0.3 =
-
 * Fix: Estimates and pre-defined items
 * Fix: Estimates not saved advanced columns correctly
 * NEW: New filters for some bundled add-ons
 
 = 8.0.2 =
-
 * Fix: Javascript error when adding new users on clients page (select2 incompatibility)
 * Fix: Javascript error on some admin pages
 
 = 8.0 =
-
 * New: Line Item Types and new management
 * New: Pre-defined editing with new types
 * New: Pre-defined item selection search
@@ -837,11 +977,9 @@ Security updates:
 * New: New bulk send of invoices or estimates
 
 = 7.6.1 =
-
 * FIX: Possible security fix with exposed estimates/invoices with site.com?post_type=*
 
 = 7.6 =
-
 * FIX: Deposit notification sent only if the payment is complete (not pending)
 * FIX: Allow for deposit total to be set before saving
 * FIX: Help section added to the new reporting dashboards
@@ -849,40 +987,33 @@ Security updates:
 * FIX: PayPal line item totaling issues preventing some payments
 
 = 7.5 =
-
 * NEW: Sprout Client Compatibility
 
 = 7.4 =
-
 * NEW: Deposit filter allows for new add-ons
 * CHANGE: More Responsive Admin
 * CHANGE: Improved no-index via http headers
 
 = 7.3 =
-
 * FIX: Edit post link fix for notification shortcodes
 * FIX: Remove "pre=" header that some SEO plugins add
 * CHANGE: [dashboard_link] available on User Creation notification
 * CHANGE: Free Version messaging updates
 
 = 7.2.1 =
-
 * FIX: Updates for Pro Versions
 
 = 7.1 =
-
 * NEW: Sprout Invoice specific user roles
 * FIX: Multiple Sprout Invoices settings conflict fix
 
 = 7.0.3 =
-
 * FIX: Free version issues with redactor add-on
 * FIX: Time tracker not accepting fractions
 * FIX: Time Tracker on Dashboard issue
 * FIX: Deposits issue for free version
 
 = 7.0 =
-
 https://sproutinvoices.com/news/sprout-invoices-7-0-banners-release-party-🎉/
 
 * NEW: WooCommerce Integration is now bundled (for pro users).
@@ -908,7 +1039,6 @@ https://sproutinvoices.com/news/sprout-invoices-7-0-banners-release-party-🎉/
 * FIX: Language translations updated (7.0.2)
 
 = 6.2 =
-
 * FIX: Estimate creation via API fix
 * FIX: Pointer Dismissals
 * FIX: Dashboard caching issue
@@ -916,33 +1046,26 @@ https://sproutinvoices.com/news/sprout-invoices-7-0-banners-release-party-🎉/
 * FIX: Minor importer updates for sanitization
 
 = 6.1.6 =
-
 * FIX: Importers failing under certain circumstances.
 
 = 6.1.5 =
-
 * FIX: Some escaping fixes from 6.1.1 for some sites using PayPal
 
 = 6.1.4 =
-
 * FIX: API callback fix for activation/deactivation and updates.
 
 = 6.1.3 =
-
 * UPDATE: 4.2 Compatibility
 * FIX: Some escaping issues from 6.1.1
 
 = 6.1.2 =
-
 * FIX: Some escaping issues from 6.1.1
 
 = 6.1.1 =
-
 * SECURITY: Reviewed all uses of add_query_arg, regardless if $url is passed esc_url is used.
 * SECURITY: Reviewed and updated every case of echoing an un-escaped variable; with a very strict standard of making every variable escaped or casted as an int/float.
 
 = 6.1 =
-
 * NEW: Sprout Invoices Addons Page
 * NEW: Manage bundled addons (for paid users)
 * NEW: Filter the Admin Notification To: email address with `si_admin_notification_to_address`
@@ -951,21 +1074,17 @@ https://sproutinvoices.com/news/sprout-invoices-7-0-banners-release-party-🎉/
 * FIX: PayPal Totals issue with Tax + Deposit #69
 
 = 6.0.5 =
-
 * FIX: Toggl incompatibility issue
 * FIX: set_invoice_id error
 
 = 6.0.3 =
-
 * FIX: Estimate template error.
 * FIX: Projects page error under come configurations
 
 = 6.0.1 =
-
 * FIX: Estimate approval failing under certain circumstances.
 
 = 6.0 =
-
 * NEW: Zapier Integration (pro version)
 * NEW: CSV Importing
 * NEW: Toggl Integration (pro version)
@@ -986,46 +1105,38 @@ https://sproutinvoices.com/news/sprout-invoices-7-0-banners-release-party-🎉/
 * FIX: Payment date should be post_date
 
 = 5.5 =
-
 * FIX: Invoices and Estimates were being returned in public search queries.
 
 = 5.4.1 =
-
 * FIX: Import admin
 
 = 5.4 =
-
 * FIX: Return all clients on Client Dashboard
 * Improvement: Freshbooks import
 * Improvement: Added nofollow for robots in header meta tag
 * New: Create a payment when an invoice is marked as paid.
 
 = 5.3 =
-
 * NEW: Improve WP-Invoice Importer
 
 = 5.2 =
-
 * NEW: 'si_default_due_in_days' filter added
 * FIX: Dynamic text within notification shortcodes
 * Misc. Fixes
 
 = 5.1 =
-
 * New: Compatibility class to resolve other plugins problems, e.g. Gravity Forms erring out js on custom post type pages
 * FIX: More error reports for missing notifications.
 * FIX: Customizer filter should only be for the front-end
 * FIX: Client Dashboard was blank when a non-client was logged in
 
 = 5.0.2 =
-
 * FIX: Client Dashboard notification error; fixed with better abstraction
 * FIX: Shortcode fix
 * FIX: Free version fix for PayPal
 * FIX: Add Customizer to the SI menu for clarity
 
 = 5.0.1 =
-
 * FIX: Comment issue with multiple line items open
 * FIX: PayPal total issue when invoice has a deposit and previous payments
 * FIX: Estimate line item button styling issue
@@ -1033,20 +1144,17 @@ https://sproutinvoices.com/news/sprout-invoices-7-0-banners-release-party-🎉/
 * FIX: Compatibility fix with other plugins/themes using .tooltip
 
 = 5.0 =
-
 * NEW: Line item commenting (pro version)
 * NEW: Pre-defined line items (pro version)
 * NEW: Dynamic text (pro version)
 * UPDATED: Admin UI tweaks
 
 = 4.5 =
-
 * IMPROVEMENT: UI update so other plugins wont conflict.
 * Fix: [invoice_total_due] should respect deposit amounts
 * Update: Future status
 
 = 4.4 =
-
 * IMPROVEMENT: Estimates and Invoices can have strings for IDs
 * IMPROVEMENT: Force private URL under circumstances when auto-draft is tried to use
 * IMPROVEMENT: Optimize logic for screen checking
@@ -1056,7 +1164,6 @@ https://sproutinvoices.com/news/sprout-invoices-7-0-banners-release-party-🎉/
 * UPDATE: Datatables library update
 
 = 4.3.3 =
-
 * FIX: Estimate Accept/Decline not working on some setups.
 * IMPROVEMENT: Improved security on estimates.
 * IMPROVEMENT: Re-worked currency formatting again.
@@ -1064,13 +1171,11 @@ https://sproutinvoices.com/news/sprout-invoices-7-0-banners-release-party-🎉/
 * UPDATE: PO Updates.
 
 = 4.3.2 =
-
 * IMPROVEMENT: Auto updates
 * UPDATE: PO updates
 * FIX: Better handling of client dashboard page id caching
 
 = 4.3.1 =
-
 * FIX: Expiration dates not displaying
 * NEW: Currency formating options
 * FIX: Client dashboard updates
@@ -1080,11 +1185,9 @@ https://sproutinvoices.com/news/sprout-invoices-7-0-banners-release-party-🎉/
 * FIX: Newly created invoices from a recurring schedule will have it's due date and issue date set
 
 = 4.2.1 =
-
 * FIX: JS issues on client management page.
 
 = 4.2 =
-
 * FIX: Fix for nested items
 * IMPROVEMENT: Nesting items UX/UI
 * CHANGE: localeconv() defaults so money is always formated
@@ -1093,66 +1196,54 @@ https://sproutinvoices.com/news/sprout-invoices-7-0-banners-release-party-🎉/
 * CHANGE: Taxes are floats not integers
 
 = 4.1.2 =
-
 * FIX: Compatibility fix with some plugins, namely Visual Composer
 * FIX: Fixing bad build with white screen of death. Sorry! Seriously! Sorry!
 
 = 4.1 =
-
 * NEW: Allow to clean up notifications, which is a fix from a bug in an older version.
 * CHANGE: Updates to the free version.
 
 = 4.0.3 =
-
 * CHANGE: Again...improving automatic money formatting for non-US currencies
 * FIX: Translation fix
 * FIXES: Misc. minor code updates
 
 = 4.0.2 =
-
 * CHANGE: Improving automatic money formatting for non-US currencies
 
 = 4.0 =
-
 * NEW: Client Dashboards
 * NEW: HTML notification add-on support
 * NEW: Time importing from Freshbooks
 * Misc. bug fixes and updates
 
 = 3.5 =
-
 * Change: Payment notification after admin payment
 * Improved: State and Country Selection
 * Improved: Language translations
 * Improved: Filtering localeconv
 
 = 3.4 =
-
 * Fix: Notification activation
 * Fix: FF incompatibility with status update drop-down
 * Change: Invoice ID shown on payments page
 
 = 3.3.1 =
-
 * Fix: Estimates not being associated with Invoices correctly
 * Added: Filtering localeconv with si_localeconv
 
 = 3.3 =
-
 * Fix: Charts on reports dashboard not working
 * Fix: Misnamed Dutch translation files
 
 = 3.2.3 =
-
 * Fix: Firefox not allowing negative value in qty inputs
 
 = 3.2.2 =
-
 * Fix: Missing .mo files for new translations
 * Fix: Quantity fields not allowing for decimals and negatives with some OSs
 
 = 3.2 =
-
 * New: Import time from Freshbooks
 * New: Add PO Number and separate Tax line items to templates
 * New: pt_BR and nl Translations
@@ -1161,32 +1252,26 @@ https://sproutinvoices.com/news/sprout-invoices-7-0-banners-release-party-🎉/
 * Fix: Some minor php warnings and notices
 
 = 3.1 =
-
 * Dashboard updates including method to flush cached values
 * Notification shortcode filters
 
 = 3.0.1 =
-
 * Reporting fixes
 
 = 3.0 =
-
 * New: Recurring Payments (aka subscriptions)
 * New: Recurring Invoices
 * Fix: Less than a bunch more than a couple
 
 = 2.0.9 =
-
 * Confirmation page fix
 * Improved CC processing for future add-ons
 * Firefox style issue in admin
 
 = 2.0.8 =
-
 * Tested bump for 4.1
 
 = 2.0.7 =
-
 * Change/New: Estimate and Invoice templates are no longer using wp_head and wp_footer. Instead use si_head and si_footer (respectively). This allows for the templates to not be subjected to plugins and themes that inject code with those hooks. If you've created a custom template you should look into changing those functions.
 * Change: Use the_content filter on line items only, and create a filter to bypass
 * Fix: Client and user creation confusion
@@ -1194,14 +1279,12 @@ https://sproutinvoices.com/news/sprout-invoices-7-0-banners-release-party-🎉/
 * Fix: Currency code improvements
 
 = 2.0.6 =
-
 * _Bug Fixes:_
 	* Client currency code not defaulting
 	* Bug fix for sites without permalinks
 	* AJAX bug fixes for clients and other sections
 
 = 2.0 =
-
 * _NEW:_
 	* Projects
 	* Time Tracking (premium version)
@@ -1215,7 +1298,6 @@ https://sproutinvoices.com/news/sprout-invoices-7-0-banners-release-party-🎉/
 	* New possibilities for add-ons
 
 = 1.1.5 =
-
 * _Changes:_
 	* More hooks and filters
 	* fix for unit tests
@@ -1234,7 +1316,6 @@ https://sproutinvoices.com/news/sprout-invoices-7-0-banners-release-party-🎉/
 	* Critical Paypal EC update to capture payment
 
 = 1.1.3 =
-
 * _Changes:_
 	* New hooks for estimates and invoice templates
 	* Starting to create some unit tests
@@ -1245,7 +1326,6 @@ https://sproutinvoices.com/news/sprout-invoices-7-0-banners-release-party-🎉/
 	* Total calculation issue with template tag
 
 = 1.1.2 =
-
 * _Changes:_
 	* No index on estimates and invoices!
 	* Paypal line items will not longer use qty since PP prevents fractions (now?)
@@ -1260,23 +1340,19 @@ https://sproutinvoices.com/news/sprout-invoices-7-0-banners-release-party-🎉/
 	* Other minor bug fixes
 
 = 1.1.1 =
-
 * _Bug Fixes:_
 	* Estimates slug not created
 	* Clone warning (strict notices)
 	* Other minor bug fixes
 	* Better support for sites without permalinks setup
 
-
 = 1.1.0.1 =
-
 * _Bug Fixes:_
 	* Saving error
 	* Line item width after payment
 	* Line item width after payment
 
 = 1.1 =
-
 * _Features:_
 	* Improved Invoice and Estimate templates
 	* Client specific invoice templates
@@ -1291,18 +1367,15 @@ https://sproutinvoices.com/news/sprout-invoices-7-0-banners-release-party-🎉/
 	* Few error prevention updates
 
 = 1.0.10.3.1 =
-
 * _Bug Fixes_
 	* Freshbooks payment import fix. FBAPI uses an unconventional amount format (i.e. 353634.980)
 
 = 1.0.10 =
-
 * _Bug Fixes_
 	* Client could have non-user_ids associated
 	* Handle text input with bad formatting better
 
 = 1.0.9.1 =
-
 * _Bug Fixes_
 	* Deposits bug for free versions
 	* Tasks clarification for free version
@@ -1311,7 +1384,6 @@ https://sproutinvoices.com/news/sprout-invoices-7-0-banners-release-party-🎉/
 	* Custom template messaging improvements
 
 = 1.0.8 =
-
 * _Bug Fixes_
 	* Client creation via AJAX/Modal
 	* Quick send bug fixes for Estimates and Invoices
@@ -1322,11 +1394,9 @@ https://sproutinvoices.com/news/sprout-invoices-7-0-banners-release-party-🎉/
 	* Major overhaul of importing from freshbooks, harvest and WP-Invoices.
 
 = 1.0.7 =
-
 * Much improved importing with AJAX
 
 = 1.0.6 =
-
 * Auto upgrades fix for pro users
 
 = 1.0.5 =
@@ -1337,11 +1407,9 @@ https://sproutinvoices.com/news/sprout-invoices-7-0-banners-release-party-🎉/
 * Minor bug fixes
 
 = 1.0.2 =
-
 * Settings API improvements
 
 = 1.0.1 =
-
 * Localization support!
 * Invoice/Esitmate metabox order fix
 * Translatable string improvements
@@ -1355,7 +1423,6 @@ https://sproutinvoices.com/news/sprout-invoices-7-0-banners-release-party-🎉/
 * Load order update to improve add-on support
 
 = 1.0 =
-
 Welcome! This is a big update and a big step for us.
 
 * There's a free version and most like you're using it.
@@ -1368,62 +1435,48 @@ Welcome! This is a big update and a big step for us.
 * Multiple taxes
 
 = 0.9.9.5 - 1.0 GM =
-
 * Subject line fix.
 
 = 0.9.9.4 - 1.0 GM =
-
 * WP-Invoice Importer Bug fix: Import any type
 * WP-Invoice Importer Bug fix: Fix devision by zero error
 * WP-Invoice Importer Bug fix: Add si_default_country_code filter to set default country code.
 
 = 0.9.9.4 - 1.0 GM =
-
 * Strict standards fixins
 
 = 0.9.9.2 - 1.0 GM =
-
 * Some versions of PHP will bomb when checking if method_exists on a nonexistant class. Silly...
 
 = 0.9.9.1 =
-
 * Minor bug fixes
 
 = 0.9.9 =
-
 * Plugin updates fix
 * Add-ons not loading, e.g. Stripe.
 
 = 0.9.8.4 =
-
 * Dashboard fix
 
 = 0.9.8.4 =
-
 * Import progress fix.
 
 = 0.9.8.1 =
-
 * Fix deposit and cleanup files
 
 = 0.9.2 =
-
 * Admin bar links
 * Additional hooks and filters required by submission integration add-on
 * Minor updates
 
 = 0.9.1 =
-
 * Line Item UI changes.
 * Invoice Style fixes
 * Plugin updater conflict.
 * Better documentation and linking to site.
 
-
 = 0.9 =
-
 * Initial Release
 
 = 0.9.0.3 =
-
 * Remove debugging logs from release branch.
