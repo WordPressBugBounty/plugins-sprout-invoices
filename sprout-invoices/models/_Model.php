@@ -175,16 +175,21 @@ abstract class SI_Post_Type extends Sprout_Invoices {
 	 */
 	private static function post_type_messages( $name, $args ) {
 		global $post, $post_id;
+		$post_type = $name;
 		switch ( $name ) {
 			default:
 				$name = str_replace( 'sa_', '', $name );
 				break;
 		}
 		if ( $args['public'] ) {
+			$view_url = get_permalink( $post_id );
+			if ( class_exists( 'SI_Controller' ) && SI_Controller::is_front_end_doc_post_type( $post_type ) ) {
+				$view_url = SI_Controller::get_doc_permalink( $post_id );
+			}
 			$messages = array(
 				0 => '', // Unused. Messages start at index 1.
 				/* translators: %1$s: value, %2$s: value, %3$s: value */
-				1 => sprintf( __( '%1$s updated. <a href="%2$s">View %3$s</a>', 'sprout-invoices' ), ucfirst( $name ), esc_url( get_permalink( $post_id ) ), $name ),
+				1 => sprintf( __( '%1$s updated. <a href="%2$s">View %3$s</a>', 'sprout-invoices' ), ucfirst( $name ), esc_url( $view_url ), $name ),
 				2 => __( 'Custom field updated.', 'sprout-invoices' ),
 				3 => __( 'Custom field deleted.', 'sprout-invoices' ),
 				/* translators: %s: value */
@@ -192,15 +197,15 @@ abstract class SI_Post_Type extends Sprout_Invoices {
 				/* translators: %s: date and time of the revision */
 				5 => isset( $_GET['revision'] ) ? sprintf( __( '%1$s restored to revision from %2$s', 'sprout-invoices' ), ucfirst( $name ), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false, // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: GET revision param used to build display message, no state change
 				/* translators: %1$s: value, %2$s: value, %3$s: value */
-				6 => sprintf( __( '%1$s published. <a href="%2$s">View %3$s</a>', 'sprout-invoices' ), ucfirst( $name ), esc_url( get_permalink( $post_id ) ), $name ),
+				6 => sprintf( __( '%1$s published. <a href="%2$s">View %3$s</a>', 'sprout-invoices' ), ucfirst( $name ), esc_url( $view_url ), $name ),
 				/* translators: %s: value */
 				7 => sprintf( __( '%s saved.', 'sprout-invoices' ), ucfirst( $name ) ),
 				/* translators: %1$s: value, %2$s: value, %3$s: value */
-				8 => sprintf( __( '%1$s submitted. <a target="_blank" href="%2$s">Preview %3$s</a>', 'sprout-invoices' ), ucfirst( $name ), esc_url( add_query_arg( 'preview', 'true', get_permalink( $post_id ) ) ), $name ),
+				8 => sprintf( __( '%1$s submitted. <a target="_blank" href="%2$s">Preview %3$s</a>', 'sprout-invoices' ), ucfirst( $name ), esc_url( add_query_arg( 'preview', 'true', $view_url ) ), $name ),
 				/* translators: %1$s: value, %2$s: value, %3$s: value, %4$s: value */
-				9 => sprintf( __( '%3$s scheduled for: <strong>%1$s</strong>. <a target="_blank" href="%2$s">Preview %4$s</a>', 'sprout-invoices' ), $name, date_i18n( __( 'M j, Y @ G:i', 'sprout-invoices' ), strtotime( $post->post_date ) ), esc_url( get_permalink( $post_id ) ), $name ),
+				9 => sprintf( __( '%3$s scheduled for: <strong>%1$s</strong>. <a target="_blank" href="%2$s">Preview %4$s</a>', 'sprout-invoices' ), $name, date_i18n( __( 'M j, Y @ G:i', 'sprout-invoices' ), strtotime( $post->post_date ) ), esc_url( $view_url ), $name ),
 				/* translators: %1$s: value, %2$s: value, %3$s: value */
-				10 => sprintf( __( '%1$s draft updated. <a target="_blank" href="%2$s">Preview %3$s</a>', 'sprout-invoices' ), ucfirst( $name ), esc_url( add_query_arg( 'preview', 'true', get_permalink( $post_id ) ) ), $name ),
+				10 => sprintf( __( '%1$s draft updated. <a target="_blank" href="%2$s">Preview %3$s</a>', 'sprout-invoices' ), ucfirst( $name ), esc_url( add_query_arg( 'preview', 'true', $view_url ) ), $name ),
 			);
 		} else { // post types that are not public should not have links to a post
 			$messages = array(

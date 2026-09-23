@@ -942,7 +942,7 @@ if ( ! function_exists( 'si_get_payment_url' ) ) :
 		if ( ! $invoice_id && isset( $_SERVER['REQUEST_URI'] ) ) {
 			$invoice_id = url_to_postid( esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) );
 		}
-		$url = add_query_arg( array( SI_Checkouts::CHECKOUT_QUERY_VAR => SI_Checkouts::PAYMENT_PAGE, SI_Checkouts::CHECKOUT_ACTION => SI_Checkouts::PAYMENT_PAGE ), get_permalink( $invoice_id ) );
+		$url = add_query_arg( array( SI_Checkouts::CHECKOUT_QUERY_VAR => SI_Checkouts::PAYMENT_PAGE, SI_Checkouts::CHECKOUT_ACTION => SI_Checkouts::PAYMENT_PAGE ), SI_Controller::get_doc_permalink( $invoice_id ) );
 
 		return apply_filters( 'si_get_payment_url', esc_url_raw( $url ), $invoice_id );
 	}
@@ -963,7 +963,7 @@ if ( ! function_exists( 'si_get_review_url' ) ) :
 		if ( ! $invoice_id && isset( $_SERVER['REQUEST_URI'] ) ) {
 			$invoice_id = url_to_postid( esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) );
 		}
-		$url = add_query_arg( array( SI_Checkouts::CHECKOUT_ACTION => SI_Checkouts::REVIEW_PAGE ), get_permalink( $invoice_id ) );
+		$url = add_query_arg( array( SI_Checkouts::CHECKOUT_ACTION => SI_Checkouts::REVIEW_PAGE ), SI_Controller::get_doc_permalink( $invoice_id ) );
 
 		return apply_filters( 'si_get_review_url', esc_url_raw( $url ), $invoice_id );
 	}
@@ -984,7 +984,7 @@ if ( ! function_exists( 'si_get_complete_url' ) ) :
 		if ( ! $invoice_id && isset( $_SERVER['REQUEST_URI'] ) ) {
 			$invoice_id = url_to_postid( esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) );
 		}
-		$url = add_query_arg( array( SI_Checkouts::CHECKOUT_ACTION => SI_Checkouts::CONFIRMATION_PAGE ), get_permalink( $invoice_id ) );
+		$url = add_query_arg( array( SI_Checkouts::CHECKOUT_ACTION => SI_Checkouts::CONFIRMATION_PAGE ), SI_Controller::get_doc_permalink( $invoice_id ) );
 
 		return apply_filters( 'si_get_complete_url', esc_url_raw( $url ), $invoice_id );
 	}

@@ -187,6 +187,24 @@ class SI_Internal_Records extends SI_Controller {
 	// AJAX //
 	///////////
 
+	public static function can_manage_private_notes_for( $associate_id ) {
+		$associate_id = absint( $associate_id );
+		return current_user_can( 'edit_sprout_invoices' ) && $associate_id && current_user_can( 'edit_post', $associate_id );
+	}
+
+	private static function can_access_record( $record ) {
+		if ( ! is_a( $record, 'SI_Record' ) ) {
+			return false;
+		}
+
+		$associate_id = absint( $record->get_associate_id() );
+		if ( SI_Controller::PRIVATE_NOTES_TYPE === $record->get_type() ) {
+			return self::can_manage_private_notes_for( $associate_id );
+		}
+
+		return current_user_can( 'manage_sprout_invoices_records' ) && $associate_id && current_user_can( 'edit_post', $associate_id );
+	}
+
 	public static function maybe_delete_record() {
 		if ( ! isset( $_REQUEST['nonce'] ) ) {
 			wp_die( 'Forget something?' );
@@ -196,22 +214,30 @@ class SI_Internal_Records extends SI_Controller {
 			wp_die( 'Not going to fall for it!' );
 		}
 
-		if ( current_user_can( 'manage_sprout_invoices_records' ) ) {
-			$record_id = isset( $_REQUEST['record_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['record_id'] ) ) : null;
-			wp_delete_post( $record_id, true );
-			do_action( 'si_deleted_record', $record_id );
+		$record_id = isset( $_REQUEST['record_id'] ) ? absint( wp_unslash( $_REQUEST['record_id'] ) ) : 0;
+		$record    = SI_Record::get_instance( $record_id );
+
+		if ( ! self::can_access_record( $record ) ) {
+			status_header( 403 );
+			self::ajax_fail( 'User cannot manage this record!' );
 		}
+
+		wp_delete_post( $record_id, true );
+		do_action( 'si_deleted_record', $record_id );
 	}
 
 	public static function edit_private_note() {
-		if ( ! current_user_can( 'edit_sprout_invoices' ) ) {
-			self::ajax_fail( 'User cannot create new posts!' );
-		}
 		if ( ! isset( $_REQUEST['note_id'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			self::ajax_fail( 'No id given!' );
 		}
-		$record_id = sanitize_text_field( wp_unslash( $_REQUEST['note_id'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$record = SI_Record::get_instance( $record_id );
+		$record_id = absint( wp_unslash( $_REQUEST['note_id'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$record    = SI_Record::get_instance( $record_id );
+
+		if ( ! self::can_access_record( $record ) ) {
+			status_header( 403 );
+			self::ajax_fail( 'User cannot manage this record!' );
+		}
+
 		$record_post = $record->get_post();
 		$fields = array();
 		$fields['note'] = array(
@@ -241,17 +267,19 @@ class SI_Internal_Records extends SI_Controller {
 			wp_die( 'Not going to fall for it!' );
 		}
 
-		if ( ! current_user_can( 'edit_sprout_invoices' ) ) {
-			self::ajax_fail( 'User cannot create new posts!' );
-		}
-
 		if ( ! isset( $_REQUEST['record_id'] ) ) {
 			self::ajax_fail( 'No id given!' );
 		}
 
-		$record_id    = sanitize_text_field( wp_unslash( $_REQUEST['record_id'] ) );
+		$record_id    = absint( wp_unslash( $_REQUEST['record_id'] ) );
 		$private_note = isset( $_REQUEST['private_note'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['private_note'] ) ) : '';
 		$record       = SI_Record::get_instance( $record_id );
+
+		if ( ! self::can_access_record( $record ) ) {
+			status_header( 403 );
+			self::ajax_fail( 'User cannot manage this record!' );
+		}
+
 		$record->set_data( $private_note, false );
 		exit();
 	}

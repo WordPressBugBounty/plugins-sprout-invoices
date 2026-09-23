@@ -68,6 +68,19 @@ class SI_Fees extends SI_Controller {
 	// AJAX //
 	///////////
 
+	/**
+	 * Fee delete is part of invoice/estimate editing, not the records admin table.
+	 * Authors and editors hold edit_sprout_invoices; object-level edit_post
+	 * still prevents cross-document tampering.
+	 *
+	 * @param int $doc_id Invoice or estimate ID.
+	 * @return bool
+	 */
+	public static function can_manage_fee( $doc_id ) {
+		$doc_id = absint( $doc_id );
+		return current_user_can( 'edit_sprout_invoices' ) && $doc_id && current_user_can( 'edit_post', $doc_id );
+	}
+
 	public static function maybe_delete_fee() {
 		if ( ! isset( $_REQUEST['nonce'] ) ) {
 			wp_die( 'Forget something?' );
@@ -78,8 +91,12 @@ class SI_Fees extends SI_Controller {
 			wp_die( 'Not going to fall for it!' );
 		}
 
-		$doc_id = isset( $_REQUEST['doc_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['doc_id'] ) ) : '';
+		$doc_id = isset( $_REQUEST['doc_id'] ) ? absint( wp_unslash( $_REQUEST['doc_id'] ) ) : 0;
 		$fee_id = isset( $_REQUEST['fee_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['fee_id'] ) ) : '';
+
+		if ( ! self::can_manage_fee( $doc_id ) ) {
+			wp_send_json_error( array( 'message' => 'Insufficient permissions.' ), 403 );
+		}
 
 		$doc = si_get_doc_object( $doc_id );
 

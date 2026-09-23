@@ -61,9 +61,11 @@ abstract class SI_Controller extends Sprout_Invoices {
 		// No index
 		add_action( 'pre_si_invoice_view', array( __CLASS__, 'add_x_robots_header' ) );
 		add_action( 'pre_si_estimate_view', array( __CLASS__, 'add_x_robots_header' ) );
+		add_action( 'pre_si_doc_login_challenge_view', array( __CLASS__, 'add_x_robots_header' ) );
 
-		// archive page
+		// Archive pages and unauthorized front-end document singles
 		add_filter( 'pre_get_posts', array( __CLASS__, 'filter_post_type_query' ) );
+		add_action( 'template_redirect', array( __CLASS__, 'maybe_deny_front_end_doc_view' ), -1 );
 
 
 		// Include files
@@ -105,28 +107,227 @@ abstract class SI_Controller extends Sprout_Invoices {
 	}
 
 	/**
-	 * Prevent the archive page of site.com?post_type=sa_invoice/estimate
-	 * @param  object $query
-	 * @return object $query
+	 * Prevent invoice/estimate archives and unauthorized single views.
+	 *
+	 * Sent documents use published post status, so permalinks and `/?p=<id>`
+	 * would otherwise render customer data without a document key.
+	 *
+	 * @param WP_Query $query Query.
+	 * @return WP_Query
 	 * @since 8.0
 	 */
 	public static function filter_post_type_query( $query ) {
-		if ( is_admin() ) {
+		if ( is_admin() || ! $query->is_main_query() ) {
 			return $query;
 		}
 
-		if ( $query->is_single() ) {
+		if ( $query->is_single() || $query->is_singular() ) {
+			self::maybe_block_unauthorized_doc_query( $query );
 			return $query;
 		}
 
-		if ( $query->is_main_query() ) {
-			$type = $query->get( 'post_type' );
-			if ( in_array( $type, array( SI_Invoice::POST_TYPE, SI_Estimate::POST_TYPE ) ) ) {
-				$query->set( 'post_type', 'post' );
-			}
+		$type = $query->get( 'post_type' );
+		if ( in_array( $type, array( SI_Invoice::POST_TYPE, SI_Estimate::POST_TYPE ), true ) ) {
+			$query->set( 'post_type', 'post' );
 		}
 
 		return $query;
+	}
+
+	/**
+	 * 404 main-query singles for invoices/estimates unless the viewer is allowed.
+	 *
+	 * @param WP_Query $query Main query.
+	 * @return void
+	 */
+	public static function maybe_block_unauthorized_doc_query( $query ) {
+		$doc_id = self::get_front_end_doc_id_from_query( $query );
+		if ( ! $doc_id ) {
+			return;
+		}
+
+		if ( self::can_reach_front_end_doc_single( $doc_id ) ) {
+			/**
+			 * `/?p=<id>` defaults to post_type `post`. Authorized document
+			 * views must query the invoice/estimate type or WP 404s the ID.
+			 */
+			$query->set( 'post_type', get_post_type( $doc_id ) );
+			return;
+		}
+
+		$query->set( 'p', 0 );
+		$query->set( 'page_id', 0 );
+		$query->set( 'name', '' );
+		$query->set( SI_Invoice::POST_TYPE, '' );
+		$query->set( SI_Estimate::POST_TYPE, '' );
+		$query->set( 'post_type', 'post' );
+		$query->set( 'post__in', array( 0 ) );
+		$query->set_404();
+		$query->is_single   = false;
+		$query->is_singular = false;
+	}
+
+	/**
+	 * Deny rendered invoice/estimate templates when the query still resolved.
+	 *
+	 * @return void
+	 */
+	public static function maybe_deny_front_end_doc_view() {
+		if ( is_admin() ) {
+			return;
+		}
+
+		if ( ! is_singular( array( SI_Invoice::POST_TYPE, SI_Estimate::POST_TYPE ) ) ) {
+			return;
+		}
+
+		$doc_id = get_queried_object_id();
+		if ( self::can_reach_front_end_doc_single( $doc_id ) ) {
+			self::do_not_cache();
+			return;
+		}
+
+		global $wp_query;
+		$wp_query->set_404();
+		status_header( 404 );
+		nocache_headers();
+	}
+
+	/**
+	 * Resolve an invoice or estimate ID from a front-end query.
+	 *
+	 * Covers `/?p=<id>`, `/?page_id=<id>`, and CPT permalink slugs.
+	 *
+	 * @param WP_Query $query Query.
+	 * @return int Document post ID or 0.
+	 */
+	public static function get_front_end_doc_id_from_query( $query ) {
+		$candidate_id = absint( $query->get( 'p' ) );
+		if ( ! $candidate_id ) {
+			$candidate_id = absint( $query->get( 'page_id' ) );
+		}
+
+		if ( $candidate_id ) {
+			return self::is_front_end_doc_post_type( get_post_type( $candidate_id ) ) ? $candidate_id : 0;
+		}
+
+		foreach ( array( SI_Invoice::POST_TYPE, SI_Estimate::POST_TYPE ) as $post_type ) {
+			$slug = $query->get( $post_type );
+			if ( ! $slug && $query->get( 'post_type' ) === $post_type ) {
+				$slug = $query->get( 'name' );
+			}
+			if ( ! $slug ) {
+				continue;
+			}
+
+			$found = get_posts(
+				array(
+					'name'             => $slug,
+					'post_type'        => $post_type,
+					'post_status'      => 'any',
+					'posts_per_page'   => 1,
+					'suppress_filters' => true,
+					'fields'           => 'ids',
+				)
+			);
+			if ( ! empty( $found ) ) {
+				return absint( $found[0] );
+			}
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Whether a post type is a front-end Sprout Invoices document.
+	 *
+	 * @param string $post_type Post type.
+	 * @return bool
+	 */
+	public static function is_front_end_doc_post_type( $post_type ) {
+		return in_array( $post_type, array( SI_Invoice::POST_TYPE, SI_Estimate::POST_TYPE ), true );
+	}
+
+	/**
+	 * Hash supplied on a document view or AJAX request.
+	 *
+	 * Emails and singles use `hash`. Front-end AJAX posts `doc_hash`. Both names
+	 * are accepted on GET and REQUEST so a client who can view a document can
+	 * also complete actions from that same request.
+	 *
+	 * @return string
+	 */
+	public static function get_provided_front_end_doc_hash() {
+		foreach ( array( $_GET, $_REQUEST ) as $source ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Public document key, not a nonce.
+			if ( isset( $source['hash'] ) && '' !== $source['hash'] ) {
+				return sanitize_text_field( wp_unslash( $source['hash'] ) );
+			}
+			if ( isset( $source['doc_hash'] ) && '' !== $source['doc_hash'] ) {
+				return sanitize_text_field( wp_unslash( $source['doc_hash'] ) );
+			}
+		}
+
+		return '';
+	}
+
+	/**
+	 * Whether the current request may render an invoice or estimate.
+	 *
+	 * Allowed: users who can edit the document, users with edit_sprout_invoices,
+	 * or a matching per-document access hash from the query string.
+	 *
+	 * @param int $doc_id Document post ID.
+	 * @return bool
+	 */
+	public static function user_can_view_front_end_doc( $doc_id ) {
+		$doc_id = absint( $doc_id );
+		if ( ! $doc_id || ! self::is_front_end_doc_post_type( get_post_type( $doc_id ) ) ) {
+			return false;
+		}
+
+		if ( is_user_logged_in() && ( current_user_can( 'edit_post', $doc_id ) || current_user_can( 'edit_sprout_invoices' ) ) ) {
+			$allowed = true;
+		} else {
+			$provided = self::get_provided_front_end_doc_hash();
+			$actual   = SI_Upgrades::ensure_doc_hash( $doc_id );
+			$allowed  = ( '' !== $provided && '' !== $actual && hash_equals( $actual, $provided ) );
+		}
+
+		return (bool) apply_filters( 'si_user_can_view_front_end_doc', $allowed, $doc_id );
+	}
+
+	/**
+	 * Whether a request that cannot view a document may still be challenged for access.
+	 *
+	 * The Login add-on replaces document output with its password/sign-in form on
+	 * `si_doc_template`, so a client holding only a permalink and a password has to
+	 * reach that template instead of a 404. Add-ons opt in per document; the form
+	 * itself, not this method, decides whether content is finally rendered.
+	 *
+	 * @param int $doc_id Document post ID.
+	 * @return bool
+	 */
+	public static function front_end_doc_has_login_challenge( $doc_id ) {
+		$doc_id = absint( $doc_id );
+		if ( ! $doc_id || ! self::is_front_end_doc_post_type( get_post_type( $doc_id ) ) ) {
+			return false;
+		}
+
+		return (bool) apply_filters( 'si_front_end_doc_login_challenge', false, $doc_id );
+	}
+
+	/**
+	 * Whether a front-end single view may be rendered or challenged.
+	 *
+	 * Only single document views use this. Embeds, AJAX handlers, and PDF
+	 * requests keep the stricter user_can_view_front_end_doc() gate because
+	 * nothing in those paths substitutes a login form for the document.
+	 *
+	 * @param int $doc_id Document post ID.
+	 * @return bool
+	 */
+	public static function can_reach_front_end_doc_single( $doc_id ) {
+		return self::user_can_view_front_end_doc( $doc_id ) || self::front_end_doc_has_login_challenge( $doc_id );
 	}
 
 	/**
@@ -211,7 +412,14 @@ abstract class SI_Controller extends Sprout_Invoices {
 			'inline_spinner' => '<span class="spinner si_inline_spinner" style="visibility:visible;display:inline-block;"></span>',
 		);
 
-		if ( is_single() && ( get_post_type( get_the_ID() ) === SI_Invoice::POST_TYPE ) ) {
+		/**
+		 * Totals are document content. The Login add-on renders its form on a
+		 * single view the requester has not authenticated for yet, so these are
+		 * withheld until the access gate itself is satisfied.
+		 */
+		$doc_is_viewable = is_single() && self::user_can_view_front_end_doc( get_the_ID() );
+
+		if ( $doc_is_viewable && ( get_post_type( get_the_ID() ) === SI_Invoice::POST_TYPE ) ) {
 			$si_js_object += array(
 				'invoice_id'     => get_the_ID(),
 				'invoice_amount' => si_get_invoice_calculated_total(),
@@ -219,7 +427,7 @@ abstract class SI_Controller extends Sprout_Invoices {
 			);
 		}
 
-		if ( is_single() && ( get_post_type( get_the_ID() ) === SI_Estimate::POST_TYPE ) ) {
+		if ( $doc_is_viewable && ( get_post_type( get_the_ID() ) === SI_Estimate::POST_TYPE ) ) {
 			$si_js_object += array(
 				'estimate_id'    => get_the_ID(),
 				'estimate_total' => si_get_estimate_total(),
@@ -998,12 +1206,12 @@ abstract class SI_Controller extends Sprout_Invoices {
 			self::ajax_fail( 'We could not process that request. Please contact system administrator.' );
 		}
 
-		$associated_id = isset( $_REQUEST['associated_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['associated_id'] ) ) : 0;
+		$associated_id = isset( $_REQUEST['associated_id'] ) ? absint( wp_unslash( $_REQUEST['associated_id'] ) ) : 0;
 
 		// Authorization check: Either logged in with permission OR has the secret access hash
 		if ( is_user_logged_in() ) {
-			// Authenticated users need edit_sprout_invoices capability
-			if ( ! current_user_can( 'edit_sprout_invoices' ) ) {
+			if ( ! SI_Internal_Records::can_manage_private_notes_for( $associated_id ) ) {
+				status_header( 403 );
 				self::ajax_fail( 'You do not have permission to create notes.' );
 			}
 		} else {
@@ -1024,7 +1232,7 @@ abstract class SI_Controller extends Sprout_Invoices {
 		}
 
 		$notes = isset( $_REQUEST['notes'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['notes'] ) ) : '';
-		$record_id = SI_Internal_Records::new_record( $notes, SI_Controller::PRIVATE_NOTES_TYPE, sanitize_text_field( wp_unslash( $_REQUEST['associated_id'] ) ), '', 0, false );
+		$record_id = SI_Internal_Records::new_record( $notes, SI_Controller::PRIVATE_NOTES_TYPE, $associated_id, '', 0, false );
 		$error = ( $record_id ) ? '' : esc_html__( 'Private note failed to save, try again.', 'sprout-invoices' );
 		$data = array(
 			'id' => $record_id,
@@ -1034,13 +1242,11 @@ abstract class SI_Controller extends Sprout_Invoices {
 			'error' => $error,
 		);
 
-		header( 'Content-type: application/json' );
 		if ( self::DEBUG ) {
 			header( 'Access-Control-Allow-Origin: *' );
 		}
 
-		echo wp_json_encode( $data );
-		exit();
+		wp_send_json( $data );
 
 	}
 
@@ -1180,12 +1386,37 @@ abstract class SI_Controller extends Sprout_Invoices {
 	}
 
 	/**
+	 * Home URL that renders a document through the embeds shortcode.
+	 *
+	 * Temp and archived documents redirect here instead of rendering a single
+	 * view. The embed shortcode gates query-string `si_id` with the same access
+	 * hash, so a key already in the request has to survive the redirect or the
+	 * target renders nothing. Viewers allowed by a password cookie or a client
+	 * login keep that weaker grant instead of being handed a shareable key.
+	 *
+	 * @param int $doc_id Document post ID (invoice or estimate).
+	 * @return string Home URL carrying `si_id` and the requester's own `hash`.
+	 */
+	public static function get_doc_embed_url( $doc_id ) {
+		$doc_id = absint( $doc_id );
+		$args   = array( 'si_id' => $doc_id );
+
+		$provided = self::get_provided_front_end_doc_hash();
+		$actual   = SI_Upgrades::ensure_doc_hash( $doc_id );
+		if ( '' !== $provided && ! empty( $actual ) && hash_equals( $actual, $provided ) ) {
+			$args['hash'] = $actual;
+		}
+
+		return add_query_arg( $args, get_home_url() );
+	}
+
+	/**
 	 * Verify front-end document access for AJAX handlers.
 	 *
-	 * Access is granted if the user can edit_post OR supplies a valid doc_hash.
-	 * Logged-in clients (who only have 'read' capability) can still access their
-	 * documents via a valid hash, enabling partial payments, e-signatures,
-	 * estimate accept/decline, and line-item comments.
+	 * Same grants as user_can_view_front_end_doc(): staff with edit capability,
+	 * a matching document key (`hash` or `doc_hash`), or add-on grants such as a
+	 * password cookie or associated client login. A login-form challenge alone
+	 * is not enough; those requests still fail closed.
 	 *
 	 * @param int $doc_id Document post ID (invoice or estimate).
 	 * @return true|string True on success, translated error message on failure.
@@ -1196,22 +1427,15 @@ abstract class SI_Controller extends Sprout_Invoices {
 			return __( 'Missing document.', 'sprout-invoices' );
 		}
 
-		if ( is_user_logged_in() && current_user_can( 'edit_post', $doc_id ) ) {
+		if ( self::user_can_view_front_end_doc( $doc_id ) ) {
 			return true;
 		}
 
-		if ( ! isset( $_REQUEST['doc_hash'] ) ) {
+		if ( '' === self::get_provided_front_end_doc_hash() ) {
 			return __( 'Missing document access key.', 'sprout-invoices' );
 		}
 
-		$provided_hash = sanitize_text_field( wp_unslash( $_REQUEST['doc_hash'] ) );
-		$actual_hash   = SI_Upgrades::ensure_doc_hash( $doc_id );
-
-		if ( empty( $actual_hash ) || ! hash_equals( $actual_hash, $provided_hash ) ) {
-			return __( 'Invalid document access key.', 'sprout-invoices' );
-		}
-
-		return true;
+		return __( 'Invalid document access key.', 'sprout-invoices' );
 	}
 
 	public static function is_si_admin() {

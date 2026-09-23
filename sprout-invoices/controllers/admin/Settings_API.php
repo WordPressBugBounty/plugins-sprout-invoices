@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * @subpackage Settings
  */
 class SI_Settings_API extends SI_Controller {
+	const PROGRESS_NONCE = 'si_progress_view';
 
 	/**
 	 * The name of the settings page.
@@ -233,6 +234,16 @@ class SI_Settings_API extends SI_Controller {
 	 * @return void
 	 */
 	public static function ajax_view_sprout_progress_window() {
+		check_ajax_referer( self::PROGRESS_NONCE, 'nonce' );
+
+		if ( ! current_user_can( 'manage_sprout_invoices_options' ) ) {
+			wp_die(
+				esc_html__( 'Unauthorized', 'sprout-invoices' ),
+				'',
+				array( 'response' => 403 )
+			);
+		}
+
 		self::sprout_progress_window();
 		exit();
 	}
@@ -520,7 +531,9 @@ class SI_Settings_API extends SI_Controller {
 			'SI_Settings',
 			array(
 				'nonce'            => wp_create_nonce( 'wp_rest' ),
+				'progressNonce'    => wp_create_nonce( self::PROGRESS_NONCE ),
 				'restURL'          => esc_url_raw( rest_url() ),
+				'adminURL'         => esc_url_raw( admin_url() ),
 				'options'          => apply_filters( 'si_settings_options', self::add_settings_options() ),
 				'addons'           => SA_Addons::get_addons_vue(),
 				'payment_gateways' => SI_Payment_Processors::get_all_processors(),

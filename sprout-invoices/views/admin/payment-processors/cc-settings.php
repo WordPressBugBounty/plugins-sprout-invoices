@@ -5,7 +5,7 @@ foreach ( $processor_settings as $key => $section_settings ) : ?>
 		<?php if ( isset( $section_settings['title'] ) && '' !== $section_settings['title'] ) : ?>
 			<?php echo esc_html( $section_settings['title'] ); ?>
 		<?php endif ?>
-		<a id="si-back" href='#section-payment-processors' v-on:click="makeTabActive('payment-processors')" v-bind:class="{ active : isActiveTab('payment-processors') == true }"><span title="Back To Processors" class="dashicons dashicons-undo"></span></a>
+		<a id="si-back" href='#payment-processors' v-on:click="makeTabActive('payment-processors')" v-bind:class="{ active : isActiveTab('payment-processors') == true }"><span title="Back To Processors" class="dashicons dashicons-undo"></span></a>
 	</div>
 	<div class="si-box-bottom">
 		<?php if ( isset( $section_settings['description'] ) && '' !== $section_settings['description'] ) : ?>

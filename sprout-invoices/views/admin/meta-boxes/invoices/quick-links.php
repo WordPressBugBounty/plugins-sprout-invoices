@@ -26,8 +26,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 	<div id="edit-slug-box" class="clearfix">
 		<b><?php esc_html_e( 'Permalink', 'sprout-invoices' ) ?></b>
-		<span id="permalink-select" tabindex="-1"><?php echo esc_url( get_permalink( $id ) ) ?></span>
-		<span id="view-post-btn"><a href="<?php echo esc_url( get_permalink( $id ) ) ?>" class="button button-small"><?php esc_html_e( 'View Invoice', 'sprout-invoices' ) ?></a></span>
+		<span id="permalink-select" tabindex="-1"><?php echo esc_url( SI_Controller::get_doc_permalink( $id ) ) ?></span>
+		<span id="view-post-btn"><a href="<?php echo esc_url( SI_Controller::get_doc_permalink( $id ) ) ?>" class="button button-small"><?php esc_html_e( 'View Invoice', 'sprout-invoices' ) ?></a></span>
 		<?php if ( apply_filters( 'show_upgrade_messaging', true ) ) {
 			printf(
 				// translators: %1$s: tooltip text for upgrade helptip

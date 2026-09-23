@@ -397,10 +397,21 @@ class SI_Templating_API extends SI_Controller {
 
 			if ( is_single() ) {
 
-				if ( ! current_user_can( 'edit_sprout_invoices' ) && apply_filters( 'si_redirect_temp_status', true ) ) {
+				$can_view = self::user_can_view_front_end_doc( get_queried_object_id() );
+				if ( ! $can_view && ! self::front_end_doc_has_login_challenge( get_queried_object_id() ) ) {
+					$not_found = get_query_template( '404' );
+					return $not_found ? $not_found : $template;
+				}
+
+				/**
+				 * Unauthorized-but-challengeable requests fall through to the
+				 * si_doc_template login form below; they must not be redirected
+				 * to an embed URL that carries the document hash.
+				 */
+				if ( $can_view && ! current_user_can( 'edit_sprout_invoices' ) && apply_filters( 'si_redirect_temp_status', true ) ) {
 					$status = get_post_status();
 					if ( in_array( $status, array( SI_Invoice::STATUS_TEMP, SI_Invoice::STATUS_ARCHIVED ) ) ) {
-						wp_safe_redirect( add_query_arg( array( 'si_id' => get_the_id() ), get_home_url() ) );
+						wp_safe_redirect( self::get_doc_embed_url( get_the_id() ) );
 						exit();
 					}
 				}
@@ -432,10 +443,21 @@ class SI_Templating_API extends SI_Controller {
 
 			if ( is_single() ) {
 
-				if ( ! current_user_can( 'edit_sprout_invoices' ) && apply_filters( 'si_redirect_temp_status', true ) ) {
+				$can_view = self::user_can_view_front_end_doc( get_queried_object_id() );
+				if ( ! $can_view && ! self::front_end_doc_has_login_challenge( get_queried_object_id() ) ) {
+					$not_found = get_query_template( '404' );
+					return $not_found ? $not_found : $template;
+				}
+
+				/**
+				 * Unauthorized-but-challengeable requests fall through to the
+				 * si_doc_template login form below; they must not be redirected
+				 * to an embed URL that carries the document hash.
+				 */
+				if ( $can_view && ! current_user_can( 'edit_sprout_invoices' ) && apply_filters( 'si_redirect_temp_status', true ) ) {
 					$status = get_post_status();
 					if ( in_array( $status, array( SI_Estimate::STATUS_TEMP, SI_Estimate::STATUS_ARCHIVED ) ) ) {
-						wp_safe_redirect( add_query_arg( array( 'si_id' => get_the_id() ), get_home_url() ) );
+						wp_safe_redirect( self::get_doc_embed_url( get_the_id() ) );
 						exit();
 					}
 				}

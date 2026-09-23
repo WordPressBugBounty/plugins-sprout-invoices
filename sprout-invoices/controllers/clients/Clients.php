@@ -258,7 +258,7 @@ class SI_Clients extends SI_Controller {
 
 		$user_id = 0;
 		// Attempt to create a user
-		if ( isset( $_POST['sa_metabox_email'] ) && $_POST['sa_metabox_email'] != '' ) {
+		if ( isset( $_POST['sa_metabox_email'] ) && $_POST['sa_metabox_email'] != '' && current_user_can( 'create_users' ) ) {
 			$user_args = array(
 				'user_login'   => sanitize_text_field( wp_unslash( $_POST['sa_metabox_email'] ), 'sprout-invoices' ),
 				'display_name' => isset( $_POST['sa_metabox_name'] ) ? sanitize_text_field( wp_unslash( $_POST['sa_metabox_name'] ), 'sprout-invoices' ) : sanitize_text_field( wp_unslash( $_POST['sa_metabox_email'] ), 'sprout-invoices' ),
@@ -894,8 +894,10 @@ class SI_Clients extends SI_Controller {
 		}
 
 		$user_id = 0;
-		// Attempt to create a user
-		if ( isset( $_REQUEST['sa_client_email'] ) && $_REQUEST['sa_client_email'] != '' ) {
+		// Attempt to create a user when the caller can create accounts. Editors
+		// and authors may still create the client without an associated WP user,
+		// matching the client metabox path.
+		if ( isset( $_REQUEST['sa_client_email'] ) && $_REQUEST['sa_client_email'] != '' && current_user_can( 'create_users' ) ) {
 			$user_args = array(
 				'user_login'   => sanitize_text_field( wp_unslash( $_REQUEST['sa_client_email'] ) ),
 				'display_name' => isset( $_REQUEST['sa_client_name'] )
@@ -934,10 +936,8 @@ class SI_Clients extends SI_Controller {
 				'title' => get_the_title( $client_id ),
 			);
 
-		header( 'Content-type: application/json' );
 		if ( self::DEBUG ) { header( 'Access-Control-Allow-Origin: *' ); }
-		echo wp_json_encode( $response );
-		exit();
+		wp_send_json( $response );
 	}
 
 	/**
@@ -962,8 +962,9 @@ class SI_Clients extends SI_Controller {
 		if ( ! wp_verify_nonce( $nonce, self::SUBMISSION_NONCE ) ) {
 			self::ajax_fail( 'Not going to fall for it!' ); }
 
-		if ( ! current_user_can( 'publish_sprout_invoices' ) ) {
-			self::ajax_fail( 'User cannot create new posts!' );
+		if ( ! current_user_can( 'create_users' ) ) {
+			status_header( 403 );
+			self::ajax_fail( 'User cannot create accounts!' );
 		}
 
 		// Attempt to create a user
@@ -976,6 +977,11 @@ class SI_Clients extends SI_Controller {
 
 		if ( ! is_a( $client, 'SI_Client' ) ) {
 			self::ajax_fail( 'Client not found' );
+		}
+
+		if ( ! current_user_can( 'edit_post', $client_id ) ) {
+			status_header( 403 );
+			self::ajax_fail( 'User cannot edit this client!' );
 		}
 
 		$user_args = array(
@@ -1016,6 +1022,11 @@ class SI_Clients extends SI_Controller {
 
 		if ( ! is_a( $client, 'SI_Client' ) ) {
 			self::ajax_fail( 'Client not found.' );
+		}
+
+		if ( ! current_user_can( 'edit_post', $client_id ) ) {
+			status_header( 403 );
+			self::ajax_fail( 'User cannot view this client.' );
 		}
 
 		global $post;

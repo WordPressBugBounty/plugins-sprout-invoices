@@ -5,7 +5,7 @@ Tags: invoice, invoicing, billing, estimates, payments
 Requires at least: 5.1
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 20.8.17
+Stable tag: 20.8.18
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -141,8 +141,14 @@ Form integrations for everyone!
 
 == Changelog ==
 
+= 20.8.18 =
+* **Security Fix:** Strengthen access controls for invoices and estimates
+* **Security Fix:** Harden authorization checks for privileged operations
+* **Fix:** Use the same invoice and estimate access grants for AJAX as for document views
+* **Fix:** Correct payment processor Settings button URLs
+* **Fix:** Point payment processor tab links at the matching page anchor
+
 = 20.8.17 =
-* **Fix:** Keep the Square SDK loadable on PHP 7.4
 * **Update:** WordPress "Tested up to" 7.1
 
 = 20.8.16 =

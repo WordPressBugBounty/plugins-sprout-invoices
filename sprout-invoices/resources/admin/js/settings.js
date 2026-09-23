@@ -64,12 +64,15 @@ new Vue( {
 
 		// Load Settings Page
 		loadSettingsPage: function( val ) {
+			// Subdirectory and mapped installs are not at the domain root, so never assume /wp-admin/.
+			var adminURL = ( 'undefined' !== typeof SI_Settings && SI_Settings.adminURL ) ? SI_Settings.adminURL : '/wp-admin/';
+
 			if ( val in this.addons ) {
-				window.location.href = '/wp-admin/admin.php?page=sprout-invoices&tab=addons&section=' + val + '#addon_settings';
+				window.location.href = adminURL + 'admin.php?page=sprout-invoices&tab=addons&section=' + val + '#addon_settings';
 			}
 
 			if ( val in this.paymentGateways ) {
-				window.location.href = '/wp-admin/admin.php?page=sprout-invoices&tab=payment_processors&section=' + val + '#payment_processor_settings';
+				window.location.href = adminURL + 'admin.php?page=sprout-invoices&tab=payment_processors&section=' + val + '#payment_processor_settings';
 			}
 
 		},
@@ -201,7 +204,10 @@ new Vue( {
 
 					url: ajaxurl,
 					method: 'POST',
-					data: { action: 'si_progress_view' },
+					data: {
+						action: 'si_progress_view',
+						nonce: SI_Settings.progressNonce,
+					},
 
 					// set the nonce in the request header
 					beforeSend: function( request ) {

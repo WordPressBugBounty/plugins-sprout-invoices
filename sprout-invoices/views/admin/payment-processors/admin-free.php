@@ -27,7 +27,7 @@
 								<div id="sticky-wrapper" class="sticky-wrapper">
 									<ul class="si-left-nav">
 										<a class="si-tab-item" href='#start' v-on:click="makeTabActive('start')" v-bind:class="{ active : isActiveTab('start') == true }"><?php esc_html_e( 'General Payment Settings', 'sprout-invoices' ); ?></a>
-										<a class="si-tab-item" href='#section-payment-processors' v-on:click="makeTabActive('payment-processors')" v-bind:class="{ active : isActiveTab('payment-processors') == true }"><?php esc_html_e( 'Payment Processors', 'sprout-invoices' ); ?></a>
+										<a class="si-tab-item" href='#payment-processors' v-on:click="makeTabActive('payment-processors')" v-bind:class="{ active : isActiveTab('payment-processors') == true }"><?php esc_html_e( 'Payment Processors', 'sprout-invoices' ); ?></a>
 									</ul>
 								</div>
 							</div>

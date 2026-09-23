@@ -8,7 +8,7 @@
 <?php if ( isset( $invoice_template ) ) : ?>
 	<label class="si_input_label"><?php esc_html_e( 'Invoices', 'sprout-invoices' ); ?></label>
 	<?php if ( ! empty( $invoice_id ) ) : ?>
-		<?php $invoice_url = esc_url_raw( add_query_arg( array( 'url' => rawurlencode( get_permalink( $invoice_id ) ) ), admin_url( 'customize.php' ) ) ); ?>
+		<?php $invoice_url = esc_url_raw( add_query_arg( array( 'url' => rawurlencode( SI_Controller::get_doc_permalink( $invoice_id ) ) ), admin_url( 'customize.php' ) ) ); ?>
 		<p>
 			<?php
 			printf(
@@ -39,7 +39,7 @@
 <?php if ( isset( $estimate_template ) ) : ?>
 	<label class="si_input_label"><?php esc_html_e( 'Estimates', 'sprout-invoices' ); ?></label>
 		<?php if ( ! empty( $estimate_id ) ) : ?>
-			<?php $estimate_url = esc_url_raw( add_query_arg( array( 'url' => rawurlencode( get_permalink( $estimate_id ) ) ), admin_url( 'customize.php' ) ) ); ?>
+			<?php $estimate_url = esc_url_raw( add_query_arg( array( 'url' => rawurlencode( SI_Controller::get_doc_permalink( $estimate_id ) ) ), admin_url( 'customize.php' ) ) ); ?>
 			<p>
 				<?php
 					printf(

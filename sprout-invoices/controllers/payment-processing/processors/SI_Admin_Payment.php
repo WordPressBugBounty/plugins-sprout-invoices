@@ -21,6 +21,15 @@ class SI_Admin_Payment extends SI_Controller {
 		return self::PAYMENT_SLUG;
 	}
 
+	private static function normalize_payment_amount( $amount ) {
+		if ( ! is_numeric( $amount ) ) {
+			return false;
+		}
+
+		$amount = (float) $amount;
+		return is_finite( $amount ) && 0 < $amount ? $amount : false;
+	}
+
 	public static function init() {
 
 		if ( is_admin() ) {
@@ -103,6 +112,10 @@ class SI_Admin_Payment extends SI_Controller {
 	}
 
 	public static function show_payment_view( $post, $metabox ) {
+		if ( ! current_user_can( 'manage_sprout_invoices_payments' ) || ! current_user_can( 'edit_post', $post->ID ) ) {
+			return;
+		}
+
 		if ( $post->post_status == 'auto-draft' ) {
 			printf( '<p>%s</p>', esc_html__( 'Save this invoice before adding any payments.', 'sprout-invoices' ) );
 			return;
@@ -170,9 +183,13 @@ class SI_Admin_Payment extends SI_Controller {
 
 
 	public static function save_admin_payment( $post_id, $post, $callback_args, $invoice_id = null ) {
+		if ( ! current_user_can( 'manage_sprout_invoices_payments' ) || ! current_user_can( 'edit_post', $post_id ) ) {
+			return false;
+		}
+
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Nonce verified by WP core post save flow before this metabox callback fires
 		$invoice = SI_Invoice::get_instance( $post_id );
-		$amount = ( isset( $_REQUEST['sa_metabox_payment_amount'] ) ) ? sanitize_text_field( wp_unslash( $_REQUEST['sa_metabox_payment_amount'] ) ) : 0 ;
+		$amount = ( isset( $_REQUEST['sa_metabox_payment_amount'] ) ) ? self::normalize_payment_amount( sanitize_text_field( wp_unslash( $_REQUEST['sa_metabox_payment_amount'] ) ) ) : false;
 		$number = ( isset( $_REQUEST['sa_metabox_payment_transaction_id'] ) ) ? sanitize_text_field( wp_unslash( $_REQUEST['sa_metabox_payment_transaction_id'] ) ) : '' ;
 		$date   = ( isset( $_REQUEST['sa_metabox_payment_date'] ) ) ? sanitize_text_field( wp_unslash( $_REQUEST['sa_metabox_payment_date'] ) ) : '' ;
 		$notes  = ( isset( $_REQUEST['sa_metabox_payment_notes'] ) ) ? sanitize_text_field( wp_unslash( $_REQUEST['sa_metabox_payment_notes'] ) ) : '' ;
@@ -208,11 +225,18 @@ class SI_Admin_Payment extends SI_Controller {
 			self::ajax_fail( 'Forget something?' );
 		}
 
-		if ( get_post_type( sanitize_text_field( wp_unslash( $_REQUEST['sa_metabox_invoice_id'] ) ) ) != SI_Invoice::POST_TYPE ) {
+		$invoice_id = absint( wp_unslash( $_REQUEST['sa_metabox_invoice_id'] ) );
+
+		if ( ! current_user_can( 'manage_sprout_invoices_payments' ) || ! current_user_can( 'edit_post', $invoice_id ) ) {
+			status_header( 403 );
+			self::ajax_fail( 'User cannot manage payments for this invoice.' );
+		}
+
+		if ( get_post_type( $invoice_id ) != SI_Invoice::POST_TYPE ) {
 			self::ajax_fail( 'Error: Invoice PT mismatch.' );
 		}
 
-		$amount = ( isset( $_REQUEST['sa_metabox_payment_amount'] ) ) ? sanitize_text_field( wp_unslash( $_REQUEST['sa_metabox_payment_amount'] ) ) : 0 ;
+		$amount = ( isset( $_REQUEST['sa_metabox_payment_amount'] ) ) ? self::normalize_payment_amount( sanitize_text_field( wp_unslash( $_REQUEST['sa_metabox_payment_amount'] ) ) ) : false;
 		$number = ( isset( $_REQUEST['sa_metabox_payment_transaction_id'] ) ) ? sanitize_text_field( wp_unslash( $_REQUEST['sa_metabox_payment_transaction_id'] ) ) : '' ;
 		$date   = ( isset( $_REQUEST['sa_metabox_payment_date'] ) ) ? sanitize_text_field( wp_unslash( $_REQUEST['sa_metabox_payment_date'] ) ) : '' ;
 		$notes  = ( isset( $_REQUEST['sa_metabox_payment_notes'] ) ) ? sanitize_text_field( wp_unslash( $_REQUEST['sa_metabox_payment_notes'] ) ) : '' ;
@@ -221,7 +245,7 @@ class SI_Admin_Payment extends SI_Controller {
 			self::ajax_fail( 'No payment amount set.' );
 		}
 
-		self::create_admin_payment( sanitize_text_field( wp_unslash( $_REQUEST['sa_metabox_invoice_id'] ) ), $amount, $number, $date, $notes );
+		self::create_admin_payment( $invoice_id, $amount, $number, $date, $notes );
 
 		header( 'Content-type: application/json' );
 		if ( self::DEBUG ) { header( 'Access-Control-Allow-Origin: *' ); }
