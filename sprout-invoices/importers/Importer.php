@@ -277,6 +277,68 @@ class SI_Importer extends SI_Controller {
 	// Utility //
 	/////////////
 
+	/**
+	 * Read a CSV that must live inside the uploads directory.
+	 *
+	 * A rejected path returns false. An empty array means the file was opened
+	 * and contained no data rows.
+	 *
+	 * @since 20.8.19
+	 *
+	 * @param string $filename   CSV path.
+	 * @param string $delimiter  Field delimiter.
+	 * @param string $fieldnames Optional header row.
+	 * @return array|false
+	 */
+	protected static function csv_rows_in_uploads( $filename = '', $delimiter = ',', $fieldnames = '' ) {
+		$invalid_path = ! is_string( $filename )
+			|| '' === $filename
+			|| false !== strpos( $filename, "\0" )
+			|| false !== strpos( $filename, '..' );
+
+		if ( $invalid_path ) {
+			return false;
+		}
+
+		$upload_dir = wp_upload_dir();
+		$base_path  = ! empty( $upload_dir['basedir'] ) ? realpath( $upload_dir['basedir'] ) : false;
+		$real_path  = realpath( $filename );
+
+		if ( false === $base_path || false === $real_path ) {
+			return false;
+		}
+
+		$base_path = trailingslashit( wp_normalize_path( $base_path ) );
+		$real_path = wp_normalize_path( $real_path );
+
+		if ( 0 !== strpos( $real_path, $base_path ) || ! is_file( $real_path ) || ! is_readable( $real_path ) ) {
+			return false;
+		}
+
+		if ( strlen( $fieldnames ) > 0 ) {
+			$header = explode( ',', $fieldnames );
+		} else {
+			$header = null;
+		}
+
+		$data   = array();
+		$handle = fopen( $real_path, 'r' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- WP_Filesystem doesn't support streaming CSV row-by-row
+		if ( false === $handle ) {
+			return false;
+		}
+
+		while ( ( $row = fgetcsv( $handle, 1000, $delimiter ) ) !== false ) {
+			if ( ! $header ) {
+				$header = $row;
+			} else {
+				$data[] = array_combine( $header, $row );
+			}
+		}
+		fclose( $handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- WP_Filesystem doesn't support streaming CSV row-by-row
+
+		return $data;
+	}
+
 	public static function sanitize_subdomain( $url = '' ) {
 		$parsed_url = wp_parse_url( $url );
 		if ( ! isset( $parsed_url['host'] ) ) { // the path was given

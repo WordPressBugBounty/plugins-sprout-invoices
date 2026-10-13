@@ -35,7 +35,7 @@
 	si.docEdit.refresh_client_submit_meta = function( $client_id ) {
 		var $submit_box = $('#si_client_submit .submitbox'),
 			$user_modal = $('#user_creation_modal');
-		$.post( ajaxurl, { action: 'sa_client_submit_metabox', client_id: $client_id },
+		$.post( ajaxurl, { action: 'sa_client_submit_metabox', client_id: $client_id, nonce: si_js_object.client_submit_metabox_nonce },
 			function( data ) {
 				$user_modal.remove();
 				$submit_box.html(data);

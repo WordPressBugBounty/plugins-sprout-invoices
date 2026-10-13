@@ -21,7 +21,7 @@ class SI_Field_Table_Row extends SI_Field {
 	/**
 	 * Render the field.
 	 *
-	 * @since SINCEVERSION
+	 * @since 20.7.0
 	 */
 	public function render() {
 		$field_markup = $this->get_field_markup();

@@ -1,3 +1,8 @@
+= 20.8.19 =
+* **Security Fix:** Harden client association, CSV import, and developer log handling
+* **Security Fix:** Harden private-note and message request checks
+* **Fix:** Skip related invoice and estimate links when the linked post no longer exists
+
 = 20.8.18 =
 * **Security Fix:** Strengthen access controls for invoices and estimates
 * **Security Fix:** Harden authorization checks for privileged operations

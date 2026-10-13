@@ -5,7 +5,7 @@ Tags: invoice, invoicing, billing, estimates, payments
 Requires at least: 5.1
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 20.8.18
+Stable tag: 20.8.19
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -140,6 +140,11 @@ For more detailed look, checkout the full featured [demo](https://sproutinvoices
 Form integrations for everyone!
 
 == Changelog ==
+
+= 20.8.19 =
+* **Security Fix:** Harden client association, CSV import, and developer log handling
+* **Security Fix:** Harden private-note and message request checks
+* **Fix:** Skip related invoice and estimate links when the linked post no longer exists
 
 = 20.8.18 =
 * **Security Fix:** Strengthen access controls for invoices and estimates

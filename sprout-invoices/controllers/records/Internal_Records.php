@@ -16,6 +16,7 @@ class SI_Internal_Records extends SI_Controller {
 	const SETTINGS_PAGE = 'si_records';
 	const NONCE = 'si_records';
 	const RECORD_PURGE_NONCE = 'si_record_purge_nonce';
+	const EDIT_PRIVATE_NOTE_VIEW_NONCE = 'si_edit_private_note_view_';
 	private static $instance;
 
 	public static function get_admin_page( $prefixed = true ) {
@@ -205,6 +206,32 @@ class SI_Internal_Records extends SI_Controller {
 		return current_user_can( 'manage_sprout_invoices_records' ) && $associate_id && current_user_can( 'edit_post', $associate_id );
 	}
 
+	/**
+	 * Build the admin URL used to view one private note.
+	 *
+	 * @since 20.8.19
+	 *
+	 * @param int $record_id Record ID.
+	 * @return string
+	 */
+	public static function get_edit_private_note_url( $record_id ) {
+		$record_id = absint( $record_id );
+		if ( ! $record_id ) {
+			return '';
+		}
+
+		return add_query_arg(
+			array(
+				'action'  => 'si_edit_private_note_view',
+				'width'   => 600,
+				'height'  => 350,
+				'note_id' => $record_id,
+				'nonce'   => wp_create_nonce( self::EDIT_PRIVATE_NOTE_VIEW_NONCE . $record_id ),
+			),
+			admin_url( 'admin-ajax.php' )
+		);
+	}
+
 	public static function maybe_delete_record() {
 		if ( ! isset( $_REQUEST['nonce'] ) ) {
 			wp_die( 'Forget something?' );
@@ -227,10 +254,21 @@ class SI_Internal_Records extends SI_Controller {
 	}
 
 	public static function edit_private_note() {
-		if ( ! isset( $_REQUEST['note_id'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! isset( $_REQUEST['note_id'] ) || ! is_scalar( $_REQUEST['note_id'] ) ) {
 			self::ajax_fail( 'No id given!' );
 		}
-		$record_id = absint( wp_unslash( $_REQUEST['note_id'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$record_id = absint( wp_unslash( $_REQUEST['note_id'] ) );
+
+		$nonce = '';
+		if ( isset( $_REQUEST['nonce'] ) && is_scalar( $_REQUEST['nonce'] ) ) {
+			$nonce = sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) );
+		}
+
+		if ( ! $nonce || ! wp_verify_nonce( $nonce, self::EDIT_PRIVATE_NOTE_VIEW_NONCE . $record_id ) ) {
+			status_header( 403 );
+			self::ajax_fail( 'Invalid request.' );
+		}
+
 		$record    = SI_Record::get_instance( $record_id );
 
 		if ( ! self::can_access_record( $record ) ) {

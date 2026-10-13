@@ -22,7 +22,7 @@ class SI_Field extends SI_Controller {
 	/**
 	 * The Field Name
 	 *
-	 * @since SINCEVERSION
+	 * @since 20.7.0
 	 *
 	 * @var string
 	 */
@@ -31,7 +31,7 @@ class SI_Field extends SI_Controller {
 	/**
 	 * The Field Label
 	 *
-	 * @since SINCEVERSION
+	 * @since 20.7.0
 	 *
 	 * @var string
 	 */
@@ -40,7 +40,7 @@ class SI_Field extends SI_Controller {
 	/**
 	 * The Field Description
 	 *
-	 * @since SINCEVERSION
+	 * @since 20.7.0
 	 *
 	 * @var string
 	 */
@@ -49,7 +49,7 @@ class SI_Field extends SI_Controller {
 	/**
 	 * The Field Type
 	 *
-	 * @since SINCEVERSION
+	 * @since 20.7.0
 	 *
 	 * @var string
 	 */
@@ -58,7 +58,7 @@ class SI_Field extends SI_Controller {
 	/**
 	 * The Field Options
 	 *
-	 * @since SINCEVERSION
+	 * @since 20.7.0
 	 *
 	 * @var array
 	 */
@@ -67,7 +67,7 @@ class SI_Field extends SI_Controller {
 	/**
 	 * Allowed HTML
 	 *
-	 * @since SINCEVERSION
+	 * @since 20.7.0
 	 *
 	 * @var array
 	 */
@@ -95,7 +95,7 @@ class SI_Field extends SI_Controller {
 	/**
 	 * Constructor
 	 *
-	 * @since SINCEVERSION
+	 * @since 20.7.0
 	 *
 	 * @param string $field_name Field Name.
 	 * @param string $field_label Field Label.
@@ -120,7 +120,7 @@ class SI_Field extends SI_Controller {
 	/**
 	 * Render the field.
 	 *
-	 * @since SINCEVERSION
+	 * @since 20.7.0
 	 */
 	public function render() {
 		$field_markup = $this->get_field_markup();
@@ -158,7 +158,7 @@ class SI_Field extends SI_Controller {
 	/**
 	 * Get the field markup.
 	 *
-	 * @since SINCEVERSION
+	 * @since 20.7.0
 	 */
 	public function get_field_markup() {
 		// This is empty, will be overridden by child classes.
@@ -167,7 +167,7 @@ class SI_Field extends SI_Controller {
 	/**
 	 * Get the field styles.
 	 *
-	 * @since SINCEVERSION
+	 * @since 20.7.0
 	 */
 	public function get_field_styles() {
 		// This is empty, will be overridden by child classes.

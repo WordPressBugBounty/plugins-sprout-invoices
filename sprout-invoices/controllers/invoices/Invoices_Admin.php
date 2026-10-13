@@ -110,9 +110,11 @@ class SI_Invoices_Admin extends SI_Invoices {
 		}
 		switch ( $column_name ) {
 			case 'doc_link':
-				$estimate_id = $invoice->get_estimate_id();
-				if ( $estimate_id ) {
-					printf( '<a class="doc_link" title="%s" href="%s">%s</a>', esc_attr__( 'Invoice\'s Estimate', 'sprout-invoices' ), esc_url( get_edit_post_link( $estimate_id ) ), '<div class="dashicons icon-sproutapps-estimates"></div>' );
+				$estimate_id   = $invoice->get_estimate_id();
+				$estimate_link = $estimate_id ? get_edit_post_link( $estimate_id ) : '';
+				// get_edit_post_link() is null when the estimate was deleted; esc_url() rejects null.
+				if ( $estimate_link ) {
+					printf( '<a class="doc_link" title="%s" href="%s">%s</a>', esc_attr__( 'Invoice\'s Estimate', 'sprout-invoices' ), esc_url( $estimate_link ), '<div class="dashicons icon-sproutapps-estimates"></div>' );
 				}
 			break;
 			case 'dates':

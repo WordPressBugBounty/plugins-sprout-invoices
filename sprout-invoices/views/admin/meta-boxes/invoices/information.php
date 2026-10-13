@@ -118,10 +118,14 @@ if ( 0 != $post->ID ) {
 </div>
 <?php do_action( 'doc_information_meta_box_client_row_after_client', $invoice ) ?>
 
-<?php if ( $estimate_id ) :  ?>
+<?php
+	$estimate_edit_link = $estimate_id ? get_edit_post_link( $estimate_id ) : '';
+	// Stored estimate id can outlive the estimate. get_edit_post_link() is null then; esc_url() rejects null.
+	if ( $estimate_edit_link ) :
+?>
 	<!-- Invoice -->
 	<div class="misc-pub-section" data-edit-id="estimate_id">
-		<span id="estimate_id" class="wp-media-buttons-icon"><?php esc_html_e( 'Associated Estimate:', 'sprout-invoices' ) ?> <b><a href="<?php echo esc_url( get_edit_post_link( $estimate_id ) ) ?>"><?php echo esc_html( get_the_title( $estimate_id ) ) ?></a></b></span>
+		<span id="estimate_id" class="wp-media-buttons-icon"><?php esc_html_e( 'Associated Estimate:', 'sprout-invoices' ) ?> <b><a href="<?php echo esc_url( $estimate_edit_link ) ?>"><?php echo esc_html( get_the_title( $estimate_id ) ) ?></a></b></span>
 	</div>
 <?php endif ?>
 

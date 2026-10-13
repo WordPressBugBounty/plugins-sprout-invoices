@@ -101,68 +101,298 @@ class SI_CSV_Import extends SI_Importer {
 		return $settings;
 	}
 
+	/**
+	 * Extensions and MIME types the importer accepts. The importer only ever
+	 * consumes CSV, so everything else is denied.
+	 *
+	 * @since 20.8.19
+	 *
+	 * @return array Extension => MIME type allowlist.
+	 */
+	private static function allowed_upload_mimes() {
+		return array( 'csv' => 'text/csv' );
+	}
+
+	/**
+	 * Lower case an extension reported by WordPress so it can be matched
+	 * against the lower case allowlist. WordPress echoes back the casing used
+	 * in the file name, so `report.CSV` is reported as `CSV`.
+	 *
+	 * @since 20.8.19
+	 *
+	 * @param  mixed $ext Extension reported by WordPress.
+	 * @return string Lower case extension, or an empty string.
+	 */
+	private static function normalize_extension( $ext ) {
+		if ( ! is_string( $ext ) ) {
+			return '';
+		}
+
+		return strtolower( $ext );
+	}
+
+	/**
+	 * Options that hold an uploaded import file path.
+	 *
+	 * @since 20.8.19
+	 *
+	 * @return array
+	 */
+	private static function file_options() {
+		return array(
+			self::CLIENT_FILE_OPTION,
+			self::INVOICE_FILE_OPTION,
+			self::ESTIMATE_FILE_OPTION,
+			self::PAYMENT_FILE_OPTION,
+		);
+	}
+
 	public static function save_options() {
 		if ( ! current_user_can( 'manage_sprout_invoices_importer' ) ) {
 			return;
 		}
 
-		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce verified by process_importer() or maybe_init_import() before this is called
+		$nonce = isset( $_POST[ self::PROCESS_ACTION ] ) ? sanitize_text_field( wp_unslash( $_POST[ self::PROCESS_ACTION ] ) ) : '';
+		if ( ! wp_verify_nonce( $nonce, self::PROCESS_ACTION ) ) {
+			return;
+		}
+
 		// Clear out progress
-		if ( isset( $_POST[ self::DELETE_PROGRESS ] ) && $_POST[ self::DELETE_PROGRESS ] == 'restart' ) {
+		if ( isset( $_POST[ self::DELETE_PROGRESS ] ) && 'restart' === sanitize_text_field( wp_unslash( $_POST[ self::DELETE_PROGRESS ] ) ) ) {
 			delete_option( self::PROGRESS_OPTION );
-			delete_option( self::CLIENT_FILE_OPTION );
-			delete_option( self::INVOICE_FILE_OPTION );
-			delete_option( self::ESTIMATE_FILE_OPTION );
-			delete_option( self::PAYMENT_FILE_OPTION );
+			foreach ( self::file_options() as $file_option ) {
+				self::delete_import_file( get_option( $file_option, '' ) );
+				delete_option( $file_option );
+			}
+		}
+
+		foreach ( self::file_options() as $file_option ) {
+			if ( ! isset( $_FILES[ $file_option ] ) || ! empty( $_FILES[ $file_option ]['error'] ) ) {
+				continue;
+			}
+
+			$uploaded = self::handle_csv_upload( $file_option );
+
+			if ( is_wp_error( $uploaded ) ) {
+				update_option( self::UPLOAD_ERROR_OPTION, $uploaded->get_error_message() );
+				continue;
+			}
+
+			// Replacing an import removes whatever was uploaded previously.
+			self::delete_import_file( get_option( $file_option, '' ) );
+			update_option( $file_option, $uploaded );
+		}
+	}
+
+	/**
+	 * Validate a single uploaded import file and move it into the uploads directory.
+	 *
+	 * The client supplied file name and MIME type are only used for comparison
+	 * against the bytes on disk; neither is trusted as the stored type.
+	 *
+	 * @since 20.8.19
+	 *
+	 * @param  string $file_option The $_FILES key being handled.
+	 * @return string|WP_Error Absolute path of the stored file, or an error.
+	 */
+	private static function handle_csv_upload( $file_option ) {
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce verified by save_options() before this is called
+		if ( ! isset( $_FILES[ $file_option ]['tmp_name'], $_FILES[ $file_option ]['name'] ) ) {
+			return new WP_Error( 'si_csv_upload_incomplete', __( 'The upload was incomplete.', 'sprout-invoices' ) );
+		}
+
+		$tmp_name = sanitize_text_field( wp_unslash( $_FILES[ $file_option ]['tmp_name'] ) );
+		$name     = sanitize_file_name( wp_unslash( $_FILES[ $file_option ]['name'] ) );
+		$size     = isset( $_FILES[ $file_option ]['size'] ) ? (int) $_FILES[ $file_option ]['size'] : 0;
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
+		if ( '' === $name || ! is_uploaded_file( $tmp_name ) ) {
+			return new WP_Error( 'si_csv_upload_invalid', __( 'The upload could not be verified.', 'sprout-invoices' ) );
+		}
+
+		$allowed_mimes = self::allowed_upload_mimes();
+		$filetype      = wp_check_filetype_and_ext( $tmp_name, $name, $allowed_mimes );
+		$ext           = self::normalize_extension( isset( $filetype['ext'] ) ? $filetype['ext'] : '' );
+
+		if ( '' === $ext || empty( $filetype['type'] ) ) {
+			return new WP_Error( 'si_csv_upload_type', __( 'Only CSV files can be imported.', 'sprout-invoices' ) );
+		}
+
+		// A corrected file name means the bytes did not match the given extension.
+		if ( ! empty( $filetype['proper_filename'] ) ) {
+			return new WP_Error( 'si_csv_upload_mismatch', __( 'The file contents do not match its extension.', 'sprout-invoices' ) );
+		}
+
+		if ( ! isset( $allowed_mimes[ $ext ] ) || $allowed_mimes[ $ext ] !== $filetype['type'] ) {
+			return new WP_Error( 'si_csv_upload_type', __( 'Only CSV files can be imported.', 'sprout-invoices' ) );
+		}
+
+		if ( ! self::is_csv_content( $tmp_name ) ) {
+			return new WP_Error( 'si_csv_upload_content', __( 'The uploaded file does not contain plain CSV content.', 'sprout-invoices' ) );
 		}
 
 		if ( ! function_exists( 'wp_handle_upload' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/file.php';
 		}
 
-		$upload_overrides = array( 'test_form' => false, 'test_type' => false, 'mimes' => array( 'csv' => 'text/csv' ) );
-		if ( isset( $_FILES[ self::CLIENT_FILE_OPTION ] ) && empty( $_FILES[ self::CLIENT_FILE_OPTION ]['error'] ) ) {
-			$client_csv_file = array_map( 'sanitize_text_field', wp_unslash( $_FILES[ self::CLIENT_FILE_OPTION ] ) );
-			$client_csv = wp_handle_upload( $client_csv_file, $upload_overrides );
-			if ( isset( $client_csv['error'] ) ) {
-				update_option( self::UPLOAD_ERROR_OPTION, $client_csv['error'] );
-			}
-			if ( isset( $client_csv['file'] ) && $client_csv['file'] != '' ) {
-				update_option( self::CLIENT_FILE_OPTION, $client_csv['file'] );
-			}
-		}
-		if ( isset( $_FILES[ self::INVOICE_FILE_OPTION ] ) && empty( $_FILES[ self::INVOICE_FILE_OPTION ]['error'] ) ) {
-			$invoice_csv_file = array_map( 'sanitize_text_field',  wp_unslash( $_FILES[ self::INVOICE_FILE_OPTION ] ) );
-			$invoice_csv = wp_handle_upload( $invoice_csv_file, $upload_overrides );
-			if ( isset( $invoice_csv['error'] ) ) {
-				update_option( self::UPLOAD_ERROR_OPTION, $invoice_csv['error'] );
-			}
-			if ( isset( $invoice_csv['file'] ) && $invoice_csv['file'] != '' ) {
-				update_option( self::INVOICE_FILE_OPTION, $invoice_csv['file'] );
-			}
-		}
-		if ( isset( $_FILES[ self::ESTIMATE_FILE_OPTION ] ) && empty( $_FILES[ self::ESTIMATE_FILE_OPTION ]['error'] ) ) {
-			$estimate_csv_file = array_map( 'sanitize_text_field',  wp_unslash( $_FILES[ self::ESTIMATE_FILE_OPTION ] ) );
-			$estimate_csv = wp_handle_upload( $estimate_csv_file, $upload_overrides );
-			if ( isset( $estimate_csv['error'] ) ) {
-				update_option( self::UPLOAD_ERROR_OPTION, $estimate_csv['error'] );
-			}
-			if ( isset( $estimate_csv['file'] ) && $estimate_csv['file'] != '' ) {
-				update_option( self::ESTIMATE_FILE_OPTION, $estimate_csv['file'] );
-			}
-		}
-		if ( isset( $_FILES[ self::PAYMENT_FILE_OPTION ] ) && empty( $_FILES[ self::PAYMENT_FILE_OPTION ]['error'] ) ) {
-			$payment_csv_file = array_map( 'sanitize_text_field',  wp_unslash( $_FILES[ self::PAYMENT_FILE_OPTION ] ) );
-			$payment_csv = wp_handle_upload( $payment_csv_file, $upload_overrides );
-			if ( isset( $payment_csv['error'] ) ) {
-				update_option( self::UPLOAD_ERROR_OPTION, $payment_csv['error'] );
-			}
-			if ( isset( $payment_csv['file'] ) && $payment_csv['file'] != '' ) {
-				update_option( self::PAYMENT_FILE_OPTION, $payment_csv['file'] );
-			}
-		}
-		// phpcs:enable WordPress.Security.NonceVerification.Missing
+		$file = array(
+			'name'     => $name,
+			'type'     => $filetype['type'], // The verified type, not the client's claim.
+			'tmp_name' => $tmp_name,
+			'error'    => 0,
+			'size'     => $size,
+		);
 
+		// test_type is left at its default so WordPress enforces the allowlist below.
+		$upload_overrides = array(
+			'test_form' => false,
+			'mimes'     => $allowed_mimes,
+		);
+
+		$upload = wp_handle_upload( $file, $upload_overrides );
+
+		if ( isset( $upload['error'] ) ) {
+			return new WP_Error( 'si_csv_upload_error', $upload['error'] );
+		}
+
+		if ( empty( $upload['file'] ) ) {
+			return new WP_Error( 'si_csv_upload_error', __( 'The CSV could not be uploaded.', 'sprout-invoices' ) );
+		}
+
+		// Confirm what landed on disk is still a CSV before it is recorded.
+		$landed     = wp_check_filetype( $upload['file'], $allowed_mimes );
+		$landed_ext = self::normalize_extension( isset( $landed['ext'] ) ? $landed['ext'] : '' );
+		if ( '' === $landed_ext || ! isset( $allowed_mimes[ $landed_ext ] ) ) {
+			self::delete_import_file( $upload['file'] );
+			return new WP_Error( 'si_csv_upload_type', __( 'Only CSV files can be imported.', 'sprout-invoices' ) );
+		}
+
+		return $upload['file'];
+	}
+
+	/**
+	 * Sniff the uploaded bytes to confirm they are plain CSV text rather than a
+	 * binary payload or a polyglot carrying executable markup.
+	 *
+	 * @since 20.8.19
+	 *
+	 * @param  string $path Absolute path to the uploaded temp file.
+	 * @return bool
+	 */
+	private static function is_csv_content( $path ) {
+		$csv_mimes = array(
+			'text/plain',
+			'text/csv',
+			'application/csv',
+			'text/x-csv',
+			'text/comma-separated-values',
+		);
+
+		if ( function_exists( 'finfo_open' ) ) {
+			$finfo = finfo_open( FILEINFO_MIME_TYPE );
+			if ( false !== $finfo ) {
+				$real_mime = finfo_file( $finfo, $path );
+				finfo_close( $finfo );
+				if ( ! in_array( $real_mime, $csv_mimes, true ) ) {
+					return false;
+				}
+			}
+		}
+
+		$handle = fopen( $path, 'rb' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- WP_Filesystem cannot stream the file in chunks
+		if ( false === $handle ) {
+			return false;
+		}
+
+		$markers = array( '<?', '<%', '<script', '<svg', '<!entity' );
+		$safe    = true;
+		$tail    = '';
+
+		while ( ! feof( $handle ) ) {
+			$chunk = fread( $handle, 8192 );
+			if ( false === $chunk ) {
+				$safe = false;
+				break;
+			}
+
+			// Overlap the previous chunk so a marker split across reads is caught.
+			$buffer = strtolower( $tail . $chunk );
+
+			if ( false !== strpos( $buffer, "\0" ) ) {
+				$safe = false;
+				break;
+			}
+
+			foreach ( $markers as $marker ) {
+				if ( false !== strpos( $buffer, $marker ) ) {
+					$safe = false;
+					break 2;
+				}
+			}
+
+			$tail = substr( $buffer, -16 );
+		}
+
+		fclose( $handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Paired with the fopen() above
+
+		return $safe;
+	}
+
+	/**
+	 * Delete an uploaded import file once it is no longer needed.
+	 *
+	 * Only paths inside the uploads directory are removed so a tampered option
+	 * value cannot be turned into an arbitrary file delete.
+	 *
+	 * @since 20.8.19
+	 *
+	 * @param  string $path Stored import file path.
+	 * @return void
+	 */
+	private static function delete_import_file( $path ) {
+		if ( ! is_string( $path ) || '' === $path ) {
+			return;
+		}
+
+		$real_path  = realpath( $path );
+		$upload_dir = wp_upload_dir();
+		$base_dir   = ( ! empty( $upload_dir['basedir'] ) ) ? realpath( $upload_dir['basedir'] ) : false;
+
+		if ( false === $real_path || false === $base_dir || ! is_file( $real_path ) ) {
+			return;
+		}
+
+		if ( ! self::is_within_directory( $real_path, $base_dir ) ) {
+			return;
+		}
+
+		wp_delete_file( $real_path );
+	}
+
+	/**
+	 * Determine whether a resolved path sits inside a directory.
+	 *
+	 * realpath() reports Windows paths with backslashes while trailingslashit()
+	 * only ever appends a forward slash, so both sides are normalized to forward
+	 * slashes before comparison. Comparing against the directory plus its
+	 * trailing slash keeps a sibling such as `uploads-backup` from matching the
+	 * `uploads` prefix.
+	 *
+	 * @since 20.8.19
+	 *
+	 * @param  string $path      Resolved file path.
+	 * @param  string $directory Resolved directory path.
+	 * @return bool
+	 */
+	private static function is_within_directory( $path, $directory ) {
+		if ( ! is_string( $path ) || ! is_string( $directory ) || '' === $path || '' === $directory ) {
+			return false;
+		}
+
+		$path      = wp_normalize_path( $path );
+		$directory = trailingslashit( wp_normalize_path( $directory ) );
+
+		return 0 === strpos( $path, $directory );
 	}
 
 	/**
@@ -185,6 +415,9 @@ class SI_CSV_Import extends SI_Importer {
 	 * @return json
 	 */
 	public static function return_progress( $array = array() ) {
+		if ( apply_filters( 'si_csv_capture_import_progress', false, $array ) ) {
+			return;
+		}
 		header( 'Content-type: application/json' );
 		if ( self::DEBUG ) { header( 'Access-Control-Allow-Origin: *' ); }
 		echo wp_json_encode( $array );
@@ -262,6 +495,10 @@ class SI_CSV_Import extends SI_Importer {
 		}
 
 		$clients = self::csv_to_array( $csv_file );
+		if ( ! is_array( $clients ) ) {
+			self::return_progress( self::unreadable_csv_progress( 'clients' ) );
+			return;
+		}
 		$total_records = count( $clients );
 
 		// Store the import progress
@@ -280,6 +517,7 @@ class SI_CSV_Import extends SI_Importer {
 			$progress['clients_complete'] = 1;
 			update_option( self::PROGRESS_OPTION, $progress );
 			delete_option( self::CLIENT_FILE_OPTION );
+			self::delete_import_file( $csv_file );
 		}
 
 		// Completed previously
@@ -341,6 +579,10 @@ class SI_CSV_Import extends SI_Importer {
 		}
 
 		$invoices = self::csv_to_array( $csv_file );
+		if ( ! is_array( $invoices ) ) {
+			self::return_progress( self::unreadable_csv_progress( 'estimates' ) );
+			return;
+		}
 		$total_records = count( $invoices );
 
 		// Store the import progress
@@ -358,6 +600,7 @@ class SI_CSV_Import extends SI_Importer {
 			$progress['estimates_complete'] = 1;
 			update_option( self::PROGRESS_OPTION, $progress );
 			delete_option( self::ESTIMATE_FILE_OPTION );
+			self::delete_import_file( $csv_file );
 
 			// Complete
 			self::return_progress( array(
@@ -433,6 +676,10 @@ class SI_CSV_Import extends SI_Importer {
 		}
 
 		$invoices = self::csv_to_array( $csv_file );
+		if ( ! is_array( $invoices ) ) {
+			self::return_progress( self::unreadable_csv_progress( 'invoices' ) );
+			return;
+		}
 		$total_records = count( $invoices );
 
 		// Store the import progress
@@ -450,6 +697,7 @@ class SI_CSV_Import extends SI_Importer {
 			$progress['invoices_complete'] = 1;
 			update_option( self::PROGRESS_OPTION, $progress );
 			delete_option( self::INVOICE_FILE_OPTION );
+			self::delete_import_file( $csv_file );
 
 			// Complete
 			self::return_progress( array(
@@ -522,6 +770,10 @@ class SI_CSV_Import extends SI_Importer {
 		}
 
 		$payments = self::csv_to_array( $csv_file );
+		if ( ! is_array( $payments ) ) {
+			self::return_progress( self::unreadable_csv_progress( 'payments' ) );
+			return;
+		}
 		$total_records = count( $payments );
 
 		// Store the import progress
@@ -539,6 +791,7 @@ class SI_CSV_Import extends SI_Importer {
 			$progress['payments_complete'] = 1;
 			update_option( self::PROGRESS_OPTION, $progress );
 			delete_option( self::PAYMENT_FILE_OPTION );
+			self::delete_import_file( $csv_file );
 
 			// Complete
 			self::return_progress( array(
@@ -872,25 +1125,29 @@ class SI_CSV_Import extends SI_Importer {
 		//
 	}
 
+	/**
+	 * Progress payload for a CSV that was not opened.
+	 *
+	 * @since 20.8.19
+	 *
+	 * @param string $step Import step key.
+	 * @return array
+	 */
+	protected static function unreadable_csv_progress( $step ) {
+		$message = __( 'The CSV could not be read. The import was not completed.', 'sprout-invoices' );
+
+		return array(
+			'error'   => true,
+			'message' => $message,
+			$step     => array(
+				'message'  => $message,
+				'progress' => 0,
+			),
+		);
+	}
+
 	protected static function csv_to_array( $filename = '', $delimiter = ',', $fieldnames = '' ) {
-		if ( ! file_exists( $filename ) || ! is_readable( $filename ) ) {
-			return false;
-		}
-		if ( strlen( $fieldnames ) > 0 ) {
-			$header = explode( ',', $fieldnames );
-		} else {
-			$header = null;
-		}
-		$data = array();
-		if ( ( $handle = fopen( $filename, 'r' ) ) !== false ) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- WP_Filesystem doesn't support streaming CSV row-by-row
-			while ( ( $row = fgetcsv( $handle, 1000, $delimiter ) ) !== false ) {
-				if ( ! $header ) {
-					$header = $row; } else {
-					$data[] = array_combine( $header, $row ); }
-			}
-			fclose( $handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- WP_Filesystem doesn't support streaming CSV row-by-row
-		}
-		return $data;
+		return self::csv_rows_in_uploads( $filename, $delimiter, $fieldnames );
 	}
 }
 add_action( 'init', array( 'SI_CSV_Import', 'register' ), 5 );

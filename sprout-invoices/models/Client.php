@@ -170,15 +170,54 @@ class SI_Client extends SI_Post_Type {
 	}
 
 	/**
+	 * Validate that an id resolves to an existing WordPress user.
+	 *
+	 * Association grants a user access to this client's estimates and invoices,
+	 * so an id that doesn't belong to a real account is never stored.
+	 *
+	 * @since 20.8.19
+	 *
+	 * @param  mixed $user_id
+	 * @return integer User id, or 0 when the id is not a real user.
+	 */
+	public static function validate_user_id( $user_id = 0 ) {
+		if ( ! is_numeric( $user_id ) ) {
+			return 0;
+		}
+
+		$user_id = absint( $user_id );
+		if ( ! $user_id ) {
+			return 0;
+		}
+
+		$user = get_userdata( $user_id );
+		if ( ! is_a( $user, 'WP_User' ) ) {
+			return 0;
+		}
+
+		return $user_id;
+	}
+
+	/**
 	 * Add single user to associated array
 	 * @param integer $user_id
+	 * @return boolean Whether the user was associated.
 	 */
 	public function add_associated_user( $user_id = 0 ) {
-		if ( is_numeric( $user_id ) && ! $this->is_user_associated( $user_id ) ) {
-			$this->add_post_meta( array(
-				self::$meta_keys['associated_users'] => $user_id,
-			) );
+		$user_id = self::validate_user_id( $user_id );
+		if ( ! $user_id ) {
+			return false;
 		}
+
+		if ( $this->is_user_associated( $user_id ) ) {
+			return false;
+		}
+
+		$this->add_post_meta( array(
+			self::$meta_keys['associated_users'] => $user_id,
+		) );
+
+		return true;
 	}
 
 	/**

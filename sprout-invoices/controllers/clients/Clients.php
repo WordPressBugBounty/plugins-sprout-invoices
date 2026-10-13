@@ -9,7 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * @subpackage Clients
  */
 class SI_Clients extends SI_Controller {
-	const SUBMISSION_NONCE = 'si_client_submission';
+	const SUBMISSION_NONCE      = 'si_client_submission';
+	const SUBMIT_META_BOX_NONCE = 'si_client_submit_metabox';
 
 
 	public static function init() {
@@ -39,6 +40,7 @@ class SI_Clients extends SI_Controller {
 			add_action( 'wp_ajax_sa_create_user',  array( __CLASS__, 'maybe_create_user' ), 10, 0 );
 
 			add_action( 'wp_ajax_sa_client_submit_metabox',  array( __CLASS__, 'submit_meta_box_view' ), 10, 0 );
+			add_filter( 'si_admin_scripts_localization', array( __CLASS__, 'ajax_l10n' ) );
 
 			// Improve admin search
 			add_filter( 'si_admin_meta_search', array( __CLASS__, 'filter_admin_search' ), 10, 2 );
@@ -164,15 +166,14 @@ class SI_Clients extends SI_Controller {
 
 	/**
 	 * Show custom submit box.
-	 * @param  WP_Post $post
-	 * @param  array $metabox
-	 * @return
+	 *
+	 * @param WP_Post $post    Client post.
+	 * @param array   $metabox Metabox configuration.
+	 * @return void
 	 */
 	public static function show_submit_meta_box( $post, $metabox ) {
 		$client = SI_Client::get_instance( $post->ID );
-
-		$args = apply_filters( 'si_get_users_for_association_args', array( 'fields' => array( 'ID', 'user_email', 'display_name' ) ) );
-		$users = get_users( $args );
+		$users  = self::users_offered_for_association( $post->ID );
 		self::load_view( 'admin/meta-boxes/clients/submit', array(
 				'id' => $post->ID,
 				'client' => $client,
@@ -188,6 +189,51 @@ class SI_Clients extends SI_Controller {
 		// add the user creation modal
 		$fields = self::user_form_fields( $post->ID );
 		self::load_view( 'admin/meta-boxes/clients/create-user-modal', array( 'fields' => $fields ) );
+	}
+
+	/**
+	 * Users the association selector may offer for this client.
+	 *
+	 * Page load and the refreshed metabox share this list. It is the association
+	 * query, limited to accounts current_user_can_associate_user() allows.
+	 * Already-associated users stay in the list so the view can render them
+	 * separately and still offer everyone else.
+	 *
+	 * @since 20.8.19
+	 *
+	 * @param int $client_id Client post ID.
+	 * @return array
+	 */
+	private static function users_offered_for_association( $client_id ) {
+		$args = apply_filters( 'si_get_users_for_association_args', array( 'fields' => array( 'ID', 'user_email', 'display_name' ) ) );
+		if ( ! is_array( $args ) ) {
+			$args = array();
+		}
+
+		$users = array();
+		foreach ( get_users( $args ) as $user ) {
+			if ( ! is_object( $user ) || empty( $user->ID ) ) {
+				continue;
+			}
+			if ( self::current_user_can_associate_user( $user->ID, $client_id ) ) {
+				$users[] = $user;
+			}
+		}
+
+		return $users;
+	}
+
+	/**
+	 * Add the client submit metabox nonce to the admin script data.
+	 *
+	 * @since 20.8.19
+	 *
+	 * @param array $js_object Admin script data.
+	 * @return array
+	 */
+	public static function ajax_l10n( $js_object = array() ) {
+		$js_object['client_submit_metabox_nonce'] = wp_create_nonce( self::SUBMIT_META_BOX_NONCE );
+		return $js_object;
 	}
 
 	/**
@@ -319,19 +365,134 @@ class SI_Clients extends SI_Controller {
 	 * @return
 	 */
 	public static function save_submit_meta_box( $post_id, $post, $callback_args, $estimate_id = null ) {
+		check_admin_referer( 'update-post_' . $post_id, '_wpnonce' );
 
 		$client = SI_Client::get_instance( $post_id );
-		$client->clear_associated_users();
-
-		if ( ! isset( $_POST['associated_users'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified by WP core post save flow before this metabox callback fires
+		if ( ! is_a( $client, 'SI_Client' ) ) {
 			return;
 		}
 
-		$associated_users = array_map( 'sanitize_text_field', wp_unslash( $_POST['associated_users'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		// Association grants front-end access to this client's documents, so the
+		// acting user has to be allowed to edit this specific client.
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			return;
+		}
+
+		$submitted = array();
+		if ( isset( $_POST['associated_users'] ) && is_array( $_POST['associated_users'] ) ) {
+			$submitted = array_map( 'absint', wp_unslash( $_POST['associated_users'] ) );
+		}
+
+		$associated_users = self::filter_associable_user_ids( $submitted, $post_id );
+
+		$client->clear_associated_users();
 		foreach ( $associated_users as $user_id ) {
 			$client->add_associated_user( $user_id );
 		}
 
+	}
+
+	/**
+	 * Reduce submitted user ids to those the current user may associate with a client.
+	 *
+	 * Ids that are already associated are kept as-is (they are existing state, not a
+	 * new grant) as long as they still resolve to a real user. Every new id has to be
+	 * offered by the server-side selector query and pass the association capability
+	 * check, so an arbitrary posted id is never bound to the client.
+	 *
+	 * @since 20.8.19
+	 *
+	 * @param  array $user_ids  Submitted user ids.
+	 * @param  int   $client_id
+	 * @return array Authorized user ids.
+	 */
+	public static function filter_associable_user_ids( $user_ids = array(), $client_id = 0 ) {
+		$candidates = array();
+		foreach ( (array) $user_ids as $user_id ) {
+			$user_id = SI_Client::validate_user_id( $user_id );
+			if ( $user_id && ! in_array( $user_id, $candidates, true ) ) {
+				$candidates[] = $user_id;
+			}
+		}
+
+		if ( empty( $candidates ) ) {
+			return array();
+		}
+
+		$client = SI_Client::get_instance( $client_id );
+		$current = ( is_a( $client, 'SI_Client' ) ) ? array_map( 'absint', $client->get_associated_users() ) : array();
+
+		$new_candidates = array_values( array_diff( $candidates, $current ) );
+		$offered = ( ! empty( $new_candidates ) ) ? self::get_offered_user_ids( $new_candidates ) : array();
+
+		$authorized = array();
+		foreach ( $candidates as $user_id ) {
+			// Existing associations are preserved so a save doesn't silently drop
+			// associations made by a higher privileged user.
+			if ( in_array( $user_id, $current, true ) ) {
+				$authorized[] = $user_id;
+				continue;
+			}
+
+			// New associations must come from the server-derived selector list.
+			if ( ! in_array( $user_id, $offered, true ) ) {
+				continue;
+			}
+
+			if ( ! self::current_user_can_associate_user( $user_id, $client_id ) ) {
+				continue;
+			}
+
+			$authorized[] = $user_id;
+		}
+
+		return $authorized;
+	}
+
+	/**
+	 * Resolve ids against the same user query that builds the association selector.
+	 *
+	 * @since 20.8.19
+	 *
+	 * @param  array $user_ids
+	 * @return array User ids the selector would offer.
+	 */
+	private static function get_offered_user_ids( $user_ids = array() ) {
+		$args = apply_filters( 'si_get_users_for_association_args', array( 'fields' => array( 'ID', 'user_email', 'display_name' ) ) );
+		if ( ! is_array( $args ) ) {
+			$args = array();
+		}
+
+		$args['fields']  = 'ID';
+		$args['include'] = $user_ids;
+		$args['number']  = count( $user_ids );
+
+		return array_map( 'absint', (array) get_users( $args ) );
+	}
+
+	/**
+	 * Whether the current user may grant a specific user access to a specific client.
+	 *
+	 * Client accounts are the role this plugin creates for client contacts, so any
+	 * user who can edit the client may associate one. Associating any other account
+	 * requires the ability to edit that account.
+	 *
+	 * @since 20.8.19
+	 *
+	 * @param  int $user_id
+	 * @param  int $client_id
+	 * @return boolean
+	 */
+	public static function current_user_can_associate_user( $user_id = 0, $client_id = 0 ) {
+		$user_id = SI_Client::validate_user_id( $user_id );
+		$can = false;
+
+		if ( $user_id && current_user_can( 'edit_post', $client_id ) ) {
+			$user = get_userdata( $user_id );
+			$can = current_user_can( 'edit_user', $user_id ) || in_array( SI_Client::USER_ROLE, (array) $user->roles, true );
+		}
+
+		return apply_filters( 'si_current_user_can_associate_user', $can, $user_id, $client_id );
 	}
 
 
@@ -1006,16 +1167,20 @@ class SI_Clients extends SI_Controller {
 	/**
 	 * Meta box view
 	 * Abstracted to be called via AJAX
-	 * @param int $client_id
 	 *
+	 * @param int $client_id Client post ID.
+	 * @return void
 	 */
 	public static function submit_meta_box_view( $client_id = 0 ) {
-		if ( ! current_user_can( 'edit_sprout_invoices' ) ) {
-			self::ajax_fail( 'User cannot create new posts!' );
+		check_ajax_referer( self::SUBMIT_META_BOX_NONCE, 'nonce' );
+
+		if ( ! current_user_can( 'create_users' ) ) {
+			status_header( 403 );
+			self::ajax_fail( 'User cannot manage client accounts!' );
 		}
 
-		if ( ! $client_id && isset( $_REQUEST['client_id'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only: client_id from REQUEST used only to load data for display, no state change
-			$client_id = sanitize_text_field( wp_unslash($_REQUEST['client_id'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! $client_id && isset( $_REQUEST['client_id'] ) ) {
+			$client_id = absint( wp_unslash( $_REQUEST['client_id'] ) );
 		}
 
 		$client = SI_Client::get_instance( $client_id );
@@ -1031,8 +1196,13 @@ class SI_Clients extends SI_Controller {
 
 		global $post;
 		$post = $client->get_post();
-		print wp_kses( self::show_submit_meta_box( $client->get_post(), array() ), SI_Settings_API::get_allowed_html() );
-		exit();
+
+		// The view context-escapes every dynamic value, so it renders directly; a
+		// kses pass here would drop the hidden inputs and document markup the
+		// refreshed metabox needs. The selector uses the same offered list as
+		// page load, not only users already associated with this client.
+		self::show_submit_meta_box( $client->get_post(), array() );
+		wp_die();
 	}
 
 	//////////////

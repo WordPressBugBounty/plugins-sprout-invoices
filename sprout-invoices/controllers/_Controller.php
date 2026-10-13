@@ -49,7 +49,6 @@ abstract class SI_Controller extends Sprout_Invoices {
 
 		// AJAX
 		add_action( 'wp_ajax_si_display_messages', array( __CLASS__, 'display_messages' ) );
-		add_action( 'wp_ajax_nopriv_si_display_messages', array( __CLASS__, 'display_messages' ) );
 
 		add_action( 'wp_ajax_si_number_formatter', array( __CLASS__, 'ajax_number_formatter' ) );
 
@@ -1622,7 +1621,7 @@ abstract class SI_Controller extends Sprout_Invoices {
 	/**
 	 * Registers Plugin Check filters so they run in all contexts.
 	 *
-	 * @since  X.X.X
+	 * @since 20.8.8
 	 * @static
 	 *
 	 * @link https://github.com/WordPress/plugin-check/blob/1.6.0/includes/Utilities/Plugin_Request_Utility.php#L160

@@ -53,7 +53,7 @@
 			<?php elseif ( SI_Controller::PRIVATE_NOTES_TYPE === $record->get_type() ) :  ?>
 				<?php echo wp_kses( wpautop( stripslashes_from_strings_only( $r_post->post_content ) ), $wp_kses_history ) ?>
 				<p>
-					<a class="thickbox si_tooltip edit_private_note" href="<?php echo esc_url( admin_url( 'admin-ajax.php?action=si_edit_private_note_view&width=600&height=350&note_id=' . $record_id ) ) ?>" id="show_edit_private_note_tb_link_<?php echo (int) $record_id ?>" title="<?php esc_html_e( 'Edit Note', 'sprout-invoices' ) ?>"><?php esc_html_e( 'Edit', 'sprout-invoices' ) ?></a>
+					<a class="thickbox si_tooltip edit_private_note" href="<?php echo esc_url( SI_Internal_Records::get_edit_private_note_url( $record_id ) ) ?>" id="show_edit_private_note_tb_link_<?php echo (int) $record_id ?>" title="<?php esc_html_e( 'Edit Note', 'sprout-invoices' ) ?>"><?php esc_html_e( 'Edit', 'sprout-invoices' ) ?></a>
 				</p>
 			<?php else : ?>
 				<?php echo wp_kses( wpautop( stripslashes_from_strings_only( $r_post->post_content ) ), $wp_kses_history ) ?>

@@ -656,6 +656,82 @@ class SI_Settings_API extends SI_Controller {
 	}
 
 	/**
+	 * Get the option keys that may be written through the settings REST route.
+	 *
+	 * Import file paths are intentionally excluded. Those options are populated
+	 * only from the server-side upload handler.
+	 *
+	 * @since 20.8.19
+	 *
+	 * @return array
+	 */
+	protected static function get_writable_setting_keys() {
+		$settings = array_keys( apply_filters( 'si_settings_options', self::add_settings_options() ) );
+		$excluded = array_merge(
+			array(
+				'si_client_csv_upload',
+				'si_invoice_csv_upload',
+				'si_estimate_csv_upload',
+				'si_payment_csv_upload',
+				'si_credit_csv_upload',
+			),
+			self::file_type_setting_keys()
+		);
+
+		return array_values( array_diff( $settings, $excluded ) );
+	}
+
+	/**
+	 * Option keys registered as file inputs.
+	 *
+	 * File settings store server paths. They are written by the upload handler,
+	 * not by the settings REST route.
+	 *
+	 * @since 20.8.19
+	 *
+	 * @return array
+	 */
+	protected static function file_type_setting_keys() {
+		$keys = array();
+		foreach ( self::get_si_settings() as $section ) {
+			$keys = array_merge( $keys, self::file_keys_in_setting_section( $section ) );
+		}
+
+		return $keys;
+	}
+
+	/**
+	 * Collect file-input keys from one settings section.
+	 *
+	 * @since 20.8.19
+	 *
+	 * @param mixed $section Settings section.
+	 * @return array
+	 */
+	protected static function file_keys_in_setting_section( $section ) {
+		$keys = array();
+		if ( ! is_array( $section ) ) {
+			return $keys;
+		}
+
+		if ( isset( $section['settings'] ) && is_array( $section['settings'] ) ) {
+			foreach ( $section['settings'] as $key => $field ) {
+				if ( isset( $field['option']['type'] ) && 'file' === $field['option']['type'] ) {
+					$keys[] = self::_sanitize_input_for_vue( $key );
+				}
+			}
+		}
+
+		foreach ( $section as $value ) {
+			if ( is_array( $value ) && isset( $value['settings'] ) && $value !== $section ) {
+				$keys = array_merge( $keys, self::file_keys_in_setting_section( $value ) );
+			}
+		}
+
+		return $keys;
+	}
+
+	/**
 	 * Register the rest route.
 	 *
 	 * @since 1.0.0
@@ -747,12 +823,15 @@ class SI_Settings_API extends SI_Controller {
 
 		// Nonce already checked in rest_cookie_check_errors() from WordPress Rest API.
 		$settings = stripslashes_deep( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$allowed  = array_flip( self::get_writable_setting_keys() );
 
 		foreach ( $settings as $option_key => $value ) {
-			if ( substr( $option_key, 0, strlen( 'si_' ) ) === 'si_' ) {
-				$value = apply_filters( 'si_settings_sanitize_pre_save', $value, $option_key );
-				update_option( $option_key, $value );
+			if ( ! is_string( $option_key ) || 0 !== strpos( $option_key, 'si_' ) || ! isset( $allowed[ $option_key ] ) ) {
+				continue;
 			}
+
+			$value = apply_filters( 'si_settings_sanitize_pre_save', $value, $option_key );
+			update_option( $option_key, $value );
 		}
 
 		// TODO REMOVE - don't flush the rewrite rules every time settings are saved...this will help those that have already installed though.

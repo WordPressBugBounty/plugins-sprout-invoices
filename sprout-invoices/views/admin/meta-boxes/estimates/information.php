@@ -119,12 +119,16 @@ if ( 0 != $post->ID ) {
 </div>
 <?php do_action( 'doc_information_meta_box_client_row_after_client', $estimate ) ?>
 
-<?php if ( $invoice_id ): ?>
+<?php
+	$invoice_edit_link = $invoice_id ? get_edit_post_link( $invoice_id ) : '';
+	// Stored invoice id can outlive the invoice. get_edit_post_link() is null then; esc_url() rejects null.
+	if ( $invoice_edit_link ) :
+?>
 	<!-- Invoice -->
 	<div class="misc-pub-section" data-edit-id="invoice_id">
-		<span id="invoice_id" class="wp-media-buttons-icon"><?php esc_html_e( 'Associated Invoice:', 'sprout-invoices' ) ?> <b><a href="<?php echo esc_url( get_edit_post_link( $invoice_id ) ) ?>"><?php echo esc_html( get_the_title( $invoice_id ) ) ?></a></b></span>
+		<span id="invoice_id" class="wp-media-buttons-icon"><?php esc_html_e( 'Associated Invoice:', 'sprout-invoices' ) ?> <b><a href="<?php echo esc_url( $invoice_edit_link ) ?>"><?php echo esc_html( get_the_title( $invoice_id ) ) ?></a></b></span>
 	</div>
-<?php elseif ( apply_filters( 'si_show_create_invoice_from_estimate_button', false ) ): ?>
+<?php elseif ( ! $invoice_id && apply_filters( 'si_show_create_invoice_from_estimate_button', false ) ) : ?>
 	<!-- Invoice -->
 	<div class="misc-pub-section" data-edit-id="invoice_id">
 		<a id="invoice_create" href="<?php echo esc_url( self::get_clone_post_url( get_the_ID(), SI_INVOICE::POST_TYPE ) ) ?>" class="button si_tooltip" <?php if ( $status == SI_Estimate::STATUS_TEMP ) echo 'disabled'; ?> title="<?php esc_html_e( 'Create an invoice from an approved estimate.', 'sprout-invoices' ) ?>"><span><?php esc_html_e( 'Create Invoice', 'sprout-invoices' ) ?></span></a>
